@@ -1,0 +1,74 @@
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SixOSDatKhamAppMobile.S0306_mVideoPlayerPage"
+             Title="Video hướng dẫn"
+             BackgroundColor="Black">
+           
+
+    <Grid BackgroundColor="Black"
+          RowDefinitions="Auto,*">
+
+        <!-- Header -->
+        <Grid BackgroundColor="#2196F3"
+              Padding="0"
+              ColumnDefinitions="Auto,*">
+            <!-- Nút back -->
+            <ImageButton Grid.Column="0"
+               Source="quaylai.png"
+               WidthRequest="24"
+               HeightRequest="24"
+               VerticalOptions="Center"
+                    Clicked="OnCloseClicked"
+                          Margin="15,13,0,10"
+                    />
+
+            <Label Grid.Column="1"
+                   Text="HƯỚNG DẪN ĐẶT LỊCH KHÁM"
+                   TextColor="White"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                      Margin="0,13,0,10"/>
+        </Grid>
+
+        <!-- Video Container -->
+        <Grid Grid.Row="1"
+              RowDefinitions="*,Auto">
+
+            <!-- Video Player -->
+            <WebView x:Name="VideoPlayer"
+                     Grid.Row="0"
+                     HorizontalOptions="Fill"
+                     VerticalOptions="Fill" 
+              
+                       Margin="0,220,0,10"/>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator x:Name="LoadingIndicator"
+                               Grid.Row="0"
+                               IsRunning="True"
+                               IsVisible="False"
+                               Color="White"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+
+            <!-- Error Message -->
+            <Label x:Name="ErrorMessage"
+                   Grid.Row="0"
+                   Text="Không thể tải video"
+                   TextColor="White"
+                   IsVisible="False"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+
+            <!-- Helper Text -->
+            <Label Grid.Row="1"
+                   Text="Nếu video không phát, vui lòng kiểm tra kết nối mạng"
+                   TextColor="LightGray"
+                   FontSize="12"
+                   HorizontalOptions="Center"
+                   Margin="0,10,0,10"/>
+        </Grid>
+    </Grid>
+</ContentPage>

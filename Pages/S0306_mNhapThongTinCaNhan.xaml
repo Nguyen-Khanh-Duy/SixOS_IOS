@@ -1,0 +1,686 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SixOSDatKhamAppMobile.Pages.S0306_mNhapThongTinCaNhan"
+             NavigationPage.HasNavigationBar="False"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             Title="Nhập Thông Tin Cá Nhân">
+
+    <Grid>
+        <!-- Phần màu đen 40px trên cùng -->
+        <BoxView Color="Black"
+                 HeightRequest="40"
+                 VerticalOptions="Start"
+                 HorizontalOptions="Fill"/>
+
+        <!-- NỘI DUNG CHÍNH (phần màu trắng) -->
+        <Grid Margin="0,40,0,0"
+              BackgroundColor="White"
+              VerticalOptions="FillAndExpand">
+
+            <!-- LOADING OVERLAY  -->
+            <Grid>
+                <!-- NỘI DUNG CHÍNH -->
+                <ScrollView Margin="0,0,0,50">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                          ColumnDefinitions="*,*"
+                          ColumnSpacing="15"
+                          RowSpacing="15">
+
+                        <!-- HEADER XANH CHỮ TRẮNG - Clean & Modern -->
+                        <Grid Grid.Row="0" Grid.ColumnSpan="2"
+                              Padding="15,15,15,15"
+                              BackgroundColor="#1A73E8"
+                              HeightRequest="65" >
+                            <Grid.ColumnDefinitions>
+                                <!-- Cột 1: Nút quay lại -->
+                                <ColumnDefinition Width="Auto"/>
+                                <!-- Cột 2: Tiêu đề trung tâm -->
+                                <ColumnDefinition Width="*"/>
+                                <!-- Cột 3: Nút QR -->
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 1. NÚT QUAY LẠI - Bên trái -->
+                            <HorizontalStackLayout Grid.Column="0"
+                                                   Spacing="8"
+                                                   VerticalOptions="Center">
+                                <ImageButton Source="quaylai.png"
+                                             BackgroundColor="Transparent"
+                                             WidthRequest="24"
+                                             HeightRequest="24"
+                                             VerticalOptions="Center"
+                                             Clicked="OnBackClicked"/>
+                            </HorizontalStackLayout>
+
+                            <!-- 2. TIÊU ĐỀ CHÍNH - Ở giữa -->
+                            <VerticalStackLayout Grid.Column="1"
+                                                 HorizontalOptions="Center"
+                                                 VerticalOptions="Center"
+                                                 Spacing="4">
+                                <Label Text="NHẬP THÔNG TIN CÁ NHÂN"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="White"
+                                       HorizontalOptions="Center"/>
+
+                                <!-- Gạch chân trang trí -->
+                                <BoxView HeightRequest="2"
+                                         WidthRequest="100"
+                                         Color="White"
+                                         HorizontalOptions="Center"
+                                         CornerRadius="1"
+                                         Opacity="0.8"/>
+                            </VerticalStackLayout>
+
+                            <!-- 3. NÚT QUÉT QR - Bên phải với KHUNG NỔI BẬT -->
+                            <Grid Grid.Column="2"
+                                  HorizontalOptions="End"
+                                  VerticalOptions="Center">
+                                <!-- KHUNG NỐI BẬT VỚI BORDER NẾT ĐỨT -->
+                                <Frame x:Name="qrButtonFrame"
+                                       Padding="0"
+                                       CornerRadius="5"
+                                       BorderColor="White"
+                                       HasShadow="False"
+                                       BackgroundColor="Transparent"
+                                       HeightRequest="35"
+                                       WidthRequest="45"
+                                       HorizontalOptions="End"
+                                       VerticalOptions="Center">
+                                    <!-- Lớp border nét đứt (dùng BoxView làm hiệu ứng) -->
+                                    <Grid>
+                                        <!-- Background mờ để làm nổi bật -->
+                                        <BoxView BackgroundColor="#FFFFFF"
+                                                Opacity="0.15"
+                                                CornerRadius="10"/>
+                                        <!-- Icon QR Button -->
+                                        <ImageButton Source="qr_cccd.png"
+                                                   BackgroundColor="Transparent"
+                                                   WidthRequest="35"
+                                                   HeightRequest="40"
+                                                   VerticalOptions="Center"
+                                                   HorizontalOptions="Center"
+                                                   Clicked="OnQuetQRClicked"/>
+                                    </Grid>
+                                </Frame>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Thông báo lỗi -->
+                        <Frame Grid.Row="1" Grid.ColumnSpan="2"
+                               x:Name="frameError"
+                               IsVisible="False"
+                               BackgroundColor="#FEF2F2"
+                               BorderColor="#FCA5A5"
+                               CornerRadius="10"
+                               Padding="15,10"
+                               Margin="0,0,0,10">
+                            <HorizontalStackLayout Spacing="10">
+                                <Label Text="⚠️"
+                                       FontSize="16"
+                                       TextColor="#DC2626"
+                                       VerticalOptions="Center"/>
+                                <Label x:Name="lblErrorMessage"
+                                       FontSize="13"
+                                       TextColor="#DC2626"
+                                       VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                        </Frame>
+
+                        <!-- Họ và tên -->
+                        <VerticalStackLayout Grid.Row="2" Grid.ColumnSpan="2"
+                                             Spacing="5" Margin="15,0,15,0">
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="Họ và tên"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E293B"/>
+                                <Label Text="*"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#DC2626"/>
+                            </HorizontalStackLayout>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="15,2"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Entry x:Name="entryHoTen"
+                                       Placeholder="Nhập họ và tên"
+                                       FontSize="14"
+                                       TextColor="#1E293B"
+                                       PlaceholderColor="#94A3B8"
+                                       BackgroundColor="Transparent"
+                                       VerticalOptions="Center" 
+                                       TextChanged="OnEntryTextChanged"/>
+                            </Frame>
+                            <Label x:Name="lblErrorHoTen"
+                                   Text=""
+                                   FontSize="12"
+                                   TextColor="#DC2626"
+                                   IsVisible="False"
+                                   Margin="5,0,0,0"/>
+                        </VerticalStackLayout>
+
+                        <!-- Ngày sinh và Giới tính -->
+                        <VerticalStackLayout Grid.Row="3" Grid.Column="0" Spacing="5" Margin="15,0,0,0">
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="Ngày sinh"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E293B"/>
+                                <Label Text="*"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#DC2626"/>
+                            </HorizontalStackLayout>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="0"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Grid ColumnDefinitions="*,Auto"
+                                      Padding="15,2">
+                                    <Entry x:Name="entryNgaySinh"
+                                           Placeholder="dd/MM/yyyy"
+                                           PlaceholderColor="#94A3B8"
+                                           FontSize="14"
+                                           TextColor="#1E293B"
+                                           BackgroundColor="Transparent"
+                                           VerticalOptions="Center"
+                                           IsReadOnly="True"
+                                           InputTransparent="True"
+                                           IsEnabled="True" />
+                                    <ImageButton Grid.Column="1"
+                                                 Source="ngaysinh.png"
+                                                 BackgroundColor="Transparent"
+                                                 WidthRequest="24"
+                                                 HeightRequest="24"
+                                                 VerticalOptions="Center"
+                                                 HorizontalOptions="End"
+                                                 Clicked="OnChonNgaySinhClicked"/>
+                                </Grid>
+                            </Frame>
+                            <Label x:Name="lblErrorNgaySinh"
+                                   Text=""
+                                   FontSize="12"
+                                   TextColor="#DC2626"
+                                   IsVisible="False"
+                                   Margin="5,0,0,0"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Row="3" Grid.Column="1"
+                                             Spacing="5" Margin="0,0,15,0">
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="Giới tính"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E293B"/>
+                                <Label Text="*"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#DC2626"/>
+                            </HorizontalStackLayout>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="0"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Grid ColumnDefinitions="*,Auto"
+                                      Padding="15,2">
+                                    <Picker x:Name="pickerGioiTinh"
+                                            Title="Chọn giới tính"
+                                            FontSize="14"
+                                            TextColor="#1E293B"
+                                            BackgroundColor="Transparent"
+                                            TitleColor="#64748B"
+                                            VerticalOptions="Center"
+                                            SelectedIndexChanged="OnPickerSelectionChanged"
+                                            ItemDisplayBinding="{Binding Name}">
+                                    </Picker>
+                                    <Label Grid.Column="1"
+                                           Text="▼"
+                                           FontSize="12"
+                                           TextColor="#64748B"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End"/>
+                                </Grid>
+                            </Frame>
+                            <Label x:Name="lblErrorGioiTinh"
+                                   Text=""
+                                   FontSize="12"
+                                   TextColor="#DC2626"
+                                   IsVisible="False"
+                                   Margin="5,0,0,0"/>
+                        </VerticalStackLayout>
+
+                        <!-- CCCD và Quốc tịch -->
+                        <VerticalStackLayout Grid.Row="4" Grid.Column="0"
+                                             Spacing="5" Margin="15,0,0,0">
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="Số CCCD/Passport"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E293B"/>
+                                <Label Text="*"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#DC2626"/>
+                            </HorizontalStackLayout>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="15,2"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Entry x:Name="entryCCCD"
+                                       Placeholder="Nhập số CCCD/Passport"
+                                       PlaceholderColor="#94A3B8" 
+                                       FontSize="14"
+                                       TextColor="#1E293B"
+                                       Keyboard="Numeric"
+                                       MaxLength="12"
+                                       BackgroundColor="Transparent"
+                                       VerticalOptions="Center"
+                                       TextChanged="OnEntryTextChanged"/>
+                            </Frame>
+                            <Label x:Name="lblErrorCCCD"
+                                   Text=""
+                                   FontSize="12"
+                                   TextColor="#DC2626"
+                                   IsVisible="False"
+                                   Margin="5,0,0,0"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Row="4" Grid.Column="1"
+                                             Spacing="5" Margin="0,0,15,0">
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="Quốc tịch"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E293B"/>
+                                <Label Text="*"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#DC2626"/>
+                            </HorizontalStackLayout>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="0"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Grid ColumnDefinitions="*,Auto"
+                                      Padding="15,2">
+                                    <Picker x:Name="pickerQuocTich"
+                                            Title="Chọn quốc tịch"
+                                            FontSize="14"
+                                            TextColor="#1E293B"
+                                            BackgroundColor="Transparent"
+                                            TitleColor="#64748B"
+                                            VerticalOptions="Center"
+                                            SelectedIndexChanged="OnPickerSelectionChanged"
+                                            ItemDisplayBinding="{Binding Name}">
+                                    </Picker>
+                                    <Label Grid.Column="1"
+                                           Text="▼"
+                                           FontSize="12"
+                                           TextColor="#64748B"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End"/>
+                                </Grid>
+                            </Frame>
+                            <Label x:Name="lblErrorQuocTich"
+                                   Text=""
+                                   FontSize="12"
+                                   TextColor="#DC2626"
+                                   IsVisible="False"
+                                   Margin="5,0,0,0"/>
+                        </VerticalStackLayout>
+
+                        <!-- Dân tộc và Nghề nghiệp -->
+                        <VerticalStackLayout Grid.Row="5" Grid.Column="0"
+                                             Spacing="5" Margin="15,0,0,0">
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="Dân tộc"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E293B"/>
+                                <Label Text="*"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#DC2626"/>
+                            </HorizontalStackLayout>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="0"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Grid ColumnDefinitions="*,Auto"
+                                      Padding="15,2">
+                                    <Picker x:Name="pickerDanToc"
+                                            Title="Chọn dân tộc"
+                                            FontSize="14"
+                                            TextColor="#1E293B"
+                                            BackgroundColor="Transparent"
+                                            TitleColor="#64748B"
+                                            VerticalOptions="Center"
+                                            SelectedIndexChanged="OnPickerSelectionChanged"
+                                            ItemDisplayBinding="{Binding Name}">
+                                    </Picker>
+                                    <Label Grid.Column="1"
+                                           Text="▼"
+                                           FontSize="12"
+                                           TextColor="#64748B"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End"/>
+                                </Grid>
+                            </Frame>
+                            <Label x:Name="lblErrorDanToc"
+                                   Text=""
+                                   FontSize="12"
+                                   TextColor="#DC2626"
+                                   IsVisible="False"
+                                   Margin="5,0,0,0"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Row="5" Grid.Column="1"
+                                             Spacing="5" Margin="0,0,15,0">
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="Nghề nghiệp"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E293B"/>
+                                <Label Text="*"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#DC2626"/>
+                            </HorizontalStackLayout>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="0"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Grid ColumnDefinitions="*,Auto"
+                                      Padding="15,2">
+                                    <Picker x:Name="pickerNgheNghiep"
+                                            Title="Chọn nghề nghiệp"
+                                            FontSize="14"
+                                            TextColor="#1E293B"
+                                            BackgroundColor="Transparent"
+                                            TitleColor="#64748B"
+                                            VerticalOptions="Center"
+                                            SelectedIndexChanged="OnPickerSelectionChanged"
+                                            ItemDisplayBinding="{Binding Name}">
+                                    </Picker>
+                                    <Label Grid.Column="1"
+                                           Text="▼"
+                                           FontSize="12"
+                                           TextColor="#64748B"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End"/>
+                                </Grid>
+                            </Frame>
+                            <Label x:Name="lblErrorNgheNghiep"
+                                   Text=""
+                                   FontSize="12"
+                                   TextColor="#DC2626"
+                                   IsVisible="False"
+                                   Margin="5,0,0,0"/>
+                        </VerticalStackLayout>
+
+                        <!-- Số điện thoại -->
+                        <VerticalStackLayout Grid.Row="6" Grid.ColumnSpan="2"
+                                             Spacing="5" Margin="15,0,15,0">
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="Số điện thoại"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E293B"/>
+                                <Label Text="*"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#DC2626"/>
+                            </HorizontalStackLayout>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="15,2"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Entry x:Name="entrySoDienThoai"
+                                       Placeholder="Nhập số điện thoại"
+                                       PlaceholderColor="#94A3B8"
+                                       FontSize="14"
+                                       TextColor="#1E293B"
+                                       Keyboard="Telephone"
+                                       MaxLength="10"
+                                       BackgroundColor="Transparent"
+                                       VerticalOptions="Center"
+                                       TextChanged="OnEntryTextChanged"/>
+                            </Frame>
+                            <Label x:Name="lblErrorSoDienThoai"
+                                   Text=""
+                                   FontSize="12"
+                                   TextColor="#DC2626"
+                                   IsVisible="False"
+                                   Margin="5,0,0,0"/>
+                        </VerticalStackLayout>
+
+                        <!-- Địa chỉ chi tiết -->
+                        <VerticalStackLayout Grid.Row="7" Grid.ColumnSpan="2"
+                                             Spacing="5" Margin="15,0,15,0">
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="Số nhà, tên đường"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E293B"/>
+                                <Label Text="*"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#DC2626"/>
+                            </HorizontalStackLayout>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="15,2"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Entry x:Name="entryDiaChi"
+                                       Placeholder="Nhập số nhà, tên đường"
+                                       PlaceholderColor="#94A3B8"
+                                       FontSize="14"
+                                       TextColor="#1E293B"
+                                       BackgroundColor="Transparent"
+                                       VerticalOptions="Center"
+                                       TextChanged="OnEntryTextChanged"/>
+                            </Frame>
+                            <Label x:Name="lblErrorDiaChi"
+                                   Text=""
+                                   FontSize="12"
+                                   TextColor="#DC2626"
+                                   IsVisible="False"
+                                   Margin="5,0,0,0"/>
+                        </VerticalStackLayout>
+
+                        <!-- Tỉnh/Thành phố -->
+                        <VerticalStackLayout Grid.Row="8" Grid.ColumnSpan="2"
+                                             Spacing="5" Margin="15,0,15,0">
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="Tỉnh/Thành phố"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E293B"/>
+                                <Label Text="*"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#DC2626"/>
+                            </HorizontalStackLayout>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="0"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Grid ColumnDefinitions="*,Auto"
+                                      Padding="15,2">
+                                    <Picker x:Name="pickerTinhThanh"
+                                            Title="Chọn tỉnh/thành phố"
+                                            FontSize="14"
+                                            TextColor="#1E293B"
+                                            BackgroundColor="Transparent"
+                                            TitleColor="#64748B"
+                                            VerticalOptions="Center"
+                                            SelectedIndexChanged="OnPickerSelectionChanged"
+                                            ItemDisplayBinding="{Binding Name}">
+                                    </Picker>
+                                    <Label Grid.Column="1"
+                                           Text="▼"
+                                           FontSize="12"
+                                           TextColor="#64748B"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End"/>
+                                </Grid>
+                            </Frame>
+                            <Label x:Name="lblErrorTinhThanh"
+                                   Text=""
+                                   FontSize="12"
+                                   TextColor="#DC2626"
+                                   IsVisible="False"
+                                   Margin="5,0,0,0"/>
+                        </VerticalStackLayout>
+
+                        <!-- Phường/Xã -->
+                        <VerticalStackLayout Grid.Row="9" Grid.ColumnSpan="2"
+                                             Spacing="5" Margin="15,0,15,0">
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="Phường/Xã"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E293B"/>
+                                <Label Text="*"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#DC2626"/>
+                            </HorizontalStackLayout>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="0"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Grid ColumnDefinitions="*,Auto"
+                                      Padding="15,2">
+                                    <Picker x:Name="pickerPhuongXa"
+                                            Title="Chọn phường/xã"
+                                            FontSize="14"
+                                            TextColor="#1E293B"
+                                            BackgroundColor="Transparent"
+                                            TitleColor="#64748B"
+                                            VerticalOptions="Center"
+                                            SelectedIndexChanged="OnPickerSelectionChanged"
+                                            ItemDisplayBinding="{Binding Name}">
+                                    </Picker>
+                                    <Label Grid.Column="1"
+                                           Text="▼"
+                                           FontSize="12"
+                                           TextColor="#64748B"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End"/>
+                                </Grid>
+                            </Frame>
+                            <Label x:Name="lblErrorPhuongXa"
+                                   Text=""
+                                   FontSize="12"
+                                   TextColor="#DC2626"
+                                   IsVisible="False"
+                                   Margin="5,0,0,0"/>
+                        </VerticalStackLayout>
+
+                        <!-- Email -->
+                        <VerticalStackLayout Grid.Row="10" Grid.ColumnSpan="2"
+                                             Spacing="5" Margin="15,0,15,0">
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="Email"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E293B"/>
+                            </HorizontalStackLayout>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="15,2"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Entry x:Name="entryEmail"
+                                       Placeholder="Nhập email (không bắt buộc)"
+                                       PlaceholderColor="#94A3B8"
+                                       FontSize="14"
+                                       TextColor="#1E293B"
+                                       Keyboard="Email"
+                                       BackgroundColor="Transparent"
+                                       VerticalOptions="Center"
+                                       TextChanged="OnEntryTextChanged"/>
+                            </Frame>
+                            <Label x:Name="lblErrorEmail"
+                                   Text=""
+                                   FontSize="12"
+                                   TextColor="#DC2626"
+                                   IsVisible="False"
+                                   Margin="5,0,0,0"/>
+                        </VerticalStackLayout>
+
+                        <!-- Nút TIẾP TỤC -->
+                        <Button Grid.Row="12" Grid.ColumnSpan="2" 
+                                Text="LƯU THÔNG TIN"
+                                BackgroundColor="{StaticResource PrimaryColor}"
+                                TextColor="White"
+                                FontSize="18"
+                                FontAttributes="Bold"
+                                CornerRadius="25"
+                               WidthRequest="240"
+                                HeightRequest="52"
+                                Margin="40,0"
+                                Clicked="OnTiepTucClicked"/>
+                    </Grid>
+                </ScrollView>
+
+                <!-- ===== LOADING OVERLAY ===== -->
+                <Grid x:Name="loadingOverlay"
+                      IsVisible="False"
+                      BackgroundColor="#CC000000"
+                      InputTransparent="False">
+                    <Frame BackgroundColor="White"
+                           CornerRadius="20"
+                           Padding="30"
+                           HasShadow="True"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           WidthRequest="200"
+                           HeightRequest="200">
+                        <VerticalStackLayout Spacing="20"
+                                             HorizontalOptions="Center"
+                                             VerticalOptions="Center">
+                            <!-- Spinner Animation -->
+                            <ActivityIndicator x:Name="loadingSpinner"
+                                               IsRunning="True"
+                                               Color="#1A73E8"
+                                               WidthRequest="60"
+                                               HeightRequest="60"
+                                               HorizontalOptions="Center"/>
+                            <!-- Loading Text -->
+                            <Label x:Name="loadingText"
+                                   Text="Đang tải..."
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="#1E293B"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center"/>
+                            <!-- Subtitle -->
+                            <Label x:Name="loadingSubtext"
+                                   Text="Vui lòng đợi"
+                                   FontSize="13"
+                                   TextColor="#64748B"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

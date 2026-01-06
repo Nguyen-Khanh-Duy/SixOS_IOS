@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SixOSDatKhamAppMobile.Pages.S0306_mHoSoBenhNhan"
+              NavigationPage.HasNavigationBar="False"
+             Title="Danh sách hồ sơ"
+             BackgroundColor="#F8FAFC">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto"
+      Padding="0">
+
+
+        <!--ROW 0: HEADER-->
+        <Grid Grid.Row="0"
+              Padding="15,15,15,15"
+              BackgroundColor="#1A73E8"
+              HeightRequest="60">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!--Nút back-->
+            <ImageButton Grid.Column="0"
+                         Source="quaylai.png"
+                         WidthRequest="24"
+                         HeightRequest="24"
+                         VerticalOptions="Center"
+                         Clicked="OnBackClicked"/>
+
+            <!--Tiêu đề-->
+            <Label Grid.Column="1"
+                   Text="HỒ SƠ"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"/>
+
+            <!--Nút Thêm hồ sơ (icon +) -->
+            <!--<ImageButton Grid.Column="2"
+                         Source="them.png" 
+                         WidthRequest="24"
+                         HeightRequest="24"
+                         VerticalOptions="Center"
+                         Clicked="OnThemHoSoClicked"/>-->
+        </Grid>
+
+        <!-- ROW 2: SEARCH SECTION -->
+        <Grid Grid.Row="2"
+              Padding="15,10,15,10"
+              BackgroundColor="White">
+
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="10"
+                  VerticalOptions="Center">
+
+                <!-- Thanh tìm kiếm -->
+                <Border Grid.Column="0"
+                        Stroke="#E2E8F0"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 25"
+                        BackgroundColor="#F8FAFC"
+                        Padding="10,0"
+                        HeightRequest="40"
+                        VerticalOptions="Center">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Image Source="timkiem.png"
+                               WidthRequest="20"
+                               HeightRequest="20"
+                               VerticalOptions="Center"
+                               Margin="10,0"/>
+
+                        <Entry x:Name="SearchEntry"
+                               Grid.Column="1"
+                               Placeholder="Tìm theo họ tên, SĐT, CCCD"
+                               FontSize="14"
+                               TextColor="#333333"
+                               PlaceholderColor="#94A3B8"
+                               VerticalOptions="Center"
+                               BackgroundColor="Transparent"
+                               TextChanged="OnSearchTextChanged"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!--ROW 3: DANH SÁCH HỒ SƠ-->
+        <Grid Grid.Row="3"
+              Padding="15,0,15,15">
+
+            <RefreshView x:Name="RefreshViewHoSo"
+                         IsRefreshing="False"
+                         RefreshColor="#1A73E8"
+                         Refreshing="OnRefresh">
+
+                <CollectionView x:Name="CollectionViewHoSo"
+                                SelectionMode="None">
+
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical"
+                                           ItemSpacing="15"/>
+                    </CollectionView.ItemsLayout>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Stroke="{Binding IsSelected, Converter={StaticResource BorderColorConverter}}"
+                                    StrokeThickness="{Binding IsSelected, Converter={StaticResource BorderThicknessConverter}}"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="{Binding BackgroundColor}"
+                                    Padding="0">
+
+                                <!--Thêm GestureRecognizer để tap chọn-->
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding TapToSelectCommand}"/>
+                                </Border.GestureRecognizers>
+
+                                <Grid RowDefinitions="Auto,Auto"
+                                      ColumnDefinitions="*,Auto"
+                                      Padding="20"
+                                      HeightRequest="160">
+
+                                    <!-- Thông tin chính -->
+                                    <VerticalStackLayout Grid.Row="0"
+                                                         Grid.Column="0"
+                                                         Grid.RowSpan="2"
+                                                         Spacing="8">
+
+                                        <!-- Họ tên -->
+                                        <Label Text="{Binding HoTen}"
+                                               FontSize="18"
+                                               FontAttributes="Bold"
+                                               TextColor="#1E293B"/>
+
+                                        <!-- Ngày sinh -->
+                                        <HorizontalStackLayout Spacing="8">
+                                            <Image Source="hoso1.png"
+                                                   WidthRequest="16"
+                                                   HeightRequest="16"
+                                                   VerticalOptions="Center"/>
+
+                                            <Label Text="{Binding NgaySinh, StringFormat='{0:dd-MM-yyyy}'}"
+                                                   FontSize="14"
+                                                   TextColor="#475569"/>
+                                        </HorizontalStackLayout>
+
+                                        <!-- Số điện thoại -->
+                                        <HorizontalStackLayout Spacing="8">
+                                            <Image Source="sdt.png"
+                                                   WidthRequest="16"
+                                                   HeightRequest="16"
+                                                   VerticalOptions="Center"/>
+
+                                            <Label Text="{Binding SoDienThoai}"
+                                                   FontSize="14"
+                                                   TextColor="#475569"/>
+                                        </HorizontalStackLayout>
+
+                                        <!-- CCCD -->
+                                        <HorizontalStackLayout Spacing="8">
+                                            <Image Source="cccd.png"
+                                                   WidthRequest="16"
+                                                   HeightRequest="16"
+                                                   VerticalOptions="Center"/>
+
+                                            <Label Text="{Binding CCCD}"
+                                                   FontSize="14"
+                                                   TextColor="#475569"/>
+                                        </HorizontalStackLayout>
+
+
+                                    </VerticalStackLayout>
+                                    <Grid RowDefinitions="Auto,*"
+                                          ColumnDefinitions="*,Auto">
+                                        <!-- Nút Chọn hồ sơ luôn ở trên -->
+                                        <Button Grid.Row="0"
+                                                Grid.Column="1"
+                                                Text="Xem thông tin"
+                                                BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
+                                                TextColor="{Binding IsSelected, Converter={StaticResource BoolToTextColorConverter}}"
+                                                FontSize="12"
+                                                Margin="0,40,0,0"
+                                                FontAttributes="Bold"
+                                                BorderWidth="1"
+                                                BorderColor="#1A73E8"
+                                                CornerRadius="5"
+                                                HeightRequest="35"
+                                                WidthRequest="100"
+                                                VerticalOptions="Start"
+                                                HorizontalOptions="End"
+                                                Padding="0"
+                                                Command="{Binding ChonHoSoCommand}" />
+                                    </Grid>
+
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+
+                    <!-- Footer: Chỉ hiển thị thông báo khi không có hồ sơ -->
+                    <CollectionView.Footer>
+                        <VerticalStackLayout Spacing="20"
+                                             Padding="0,20,0,20">
+
+                            <!-- Thông báo nếu không có hồ sơ -->
+                            <Label x:Name="LblKhongCoHoSo"
+                                   Text="Chưa có hồ sơ nào. Hãy nhấn nút + để thêm hồ sơ mới!"
+                                   FontSize="14"
+                                   TextColor="#94A3B8"
+                                   HorizontalOptions="Center"
+                                   IsVisible="False"/>
+                        </VerticalStackLayout>
+                    </CollectionView.Footer>
+                </CollectionView>
+            </RefreshView>
+        </Grid>
+        <!-- ROW 4: MENU BOTTOM -->
+        <Frame x:Name="menuBottomInfo"
+               Grid.Row="4"
+               BackgroundColor="{StaticResource White}"
+               CornerRadius="0"
+               Padding="0"
+               Margin="0"
+               HasShadow="True"
+               BorderColor="#E0E0E0">
+
+            <Grid ColumnDefinitions="*,*,*,*"
+                  ColumnSpacing="0"
+                  Padding="0">
+
+                <!-- Trang chủ -->
+                <VerticalStackLayout Grid.Column="0"
+                     Spacing="3"
+                     HorizontalOptions="Center"
+                     VerticalOptions="Center"
+                     Padding="10,8">
+
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTrangChuClicked"/>
+                    </VerticalStackLayout.GestureRecognizers>
+
+                    <Image Source="home.png"
+                           HeightRequest="24"
+                           WidthRequest="24"/>
+
+                    <Label Text="Trang chủ"
+                           FontSize="10"
+                           TextColor="{StaticResource PrimaryColor}"/>
+                </VerticalStackLayout>
+
+                <!-- Lịch hẹn -->
+                <Grid Grid.Column="1">
+                    <VerticalStackLayout Spacing="3"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center"
+                                 Padding="10,8">
+                        <Image Source="lichhen.png"
+                               HeightRequest="24"
+                               WidthRequest="24"/>
+                        <Label Text="Lịch hẹn"
+                               FontSize="10"
+                               TextColor="{StaticResource PrimaryColor}"/>
+                    </VerticalStackLayout>
+
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLichHenClicked"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+
+                <!-- Tra cứu -->
+                <VerticalStackLayout Grid.Column="2"
+                     Spacing="3"
+                     HorizontalOptions="Center"
+                     VerticalOptions="Center"
+                     Padding="10,8">
+
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnPhieuKhamClicked"/>
+                    </VerticalStackLayout.GestureRecognizers>
+
+                    <Image Source="loc1.png"
+                           HeightRequest="24"
+                           WidthRequest="24"/>
+
+                    <Label Text="Tra cứu"
+                           FontSize="10"
+                           TextColor="{StaticResource PrimaryColor}"/>
+                </VerticalStackLayout>
+
+                <!-- Tài khoản -->
+                <Grid Grid.Column="3">
+                    <VerticalStackLayout Spacing="3"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center"
+                                 Padding="10,8">
+                        <Image Source="taikhoan.png"
+                               HeightRequest="24"
+                               WidthRequest="24"/>
+                        <Label Text="Tài khoản"
+                               FontSize="10"
+                               TextColor="{StaticResource PrimaryColor}"/>
+                    </VerticalStackLayout>
+
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTaiKhoanClicked"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+
+            </Grid>
+        </Frame>
+
+    </Grid>
+</ContentPage>

@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SixOSDatKhamAppMobile.Pages.S0306_mChonCoSoKham"
+             Title="Chọn Cơ Sở Khám"
+              NavigationPage.HasNavigationBar="False"
+             BackgroundColor="#F8FAFC">
+
+    <Grid RowDefinitions="Auto,*,Auto"
+          Padding="0">
+
+        <!-- ROW 0: HEADER -->
+        <Grid Grid.Row="0"
+              Padding="15,15,15,15"
+              BackgroundColor="#1A73E8"
+              HeightRequest="60">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Nút back -->
+            <ImageButton Grid.Column="0"
+                         Source="quaylai.png"
+                         WidthRequest="24"
+                         HeightRequest="24"
+                         VerticalOptions="Center"
+                         Clicked="OnBackClicked"/>
+
+            <!-- Tiêu đề -->
+            <Label Grid.Column="1"
+                   Text="CHỌN CƠ SỞ KHÁM"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"/>
+        </Grid>
+
+        <!-- ROW 1: DANH SÁCH CƠ SỞ -->
+        <ScrollView Grid.Row="1"
+                    Padding="15,15,15,15">
+            <VerticalStackLayout x:Name="stackLayoutCoSo"
+                                 Spacing="15">
+
+                <!-- CƠ SỞ 1 -->
+                <Frame x:Name="frameCoSo1"
+       BackgroundColor="White"
+       BorderColor="#E2E8F0"
+       CornerRadius="12"
+       Padding="0"
+       HasShadow="True"
+       HeightRequest="230">
+
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+          Padding="20">
+
+                        <!-- Tên cơ sở -->
+                        <Grid Grid.Row="0"
+              ColumnDefinitions="*,Auto">
+
+                            <VerticalStackLayout Grid.Column="0"
+                                 Spacing="2">
+                                <Label Text="Bệnh viện Ung Bướu TP.HCM - Cơ Sở 1"
+                       FontSize="17"
+                       FontAttributes="Bold"
+                       TextColor="#1E293B"/>
+
+                                <BoxView HeightRequest="2"
+                         WidthRequest="187"
+                         Color="#1A73E8"
+                         CornerRadius="1"
+                         HorizontalOptions="Start"
+                         Margin="0,5,0,0"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <!-- Địa chỉ -->
+                        <HorizontalStackLayout Grid.Row="1"
+                               Spacing="8"
+                               Margin="0,15,0,0">
+                            <Image Source="diachi.png"
+                   WidthRequest="18"
+                   HeightRequest="18"
+                   VerticalOptions="Start"/>
+
+                            <Label Text="47 Nguyễn Huy Lượng, Phường Bình Thạnh"
+                   FontSize="14"
+                   TextColor="#475569"
+                   LineBreakMode="WordWrap"
+                   MaxLines="2"/>
+                        </HorizontalStackLayout>
+
+                        <!-- Số điện thoại -->
+                        <HorizontalStackLayout Grid.Row="2"
+                               Spacing="8"
+                               Margin="0,10,0,0">
+                            <Image Source="sdt.png"
+                   WidthRequest="18"
+                   HeightRequest="18"
+                   VerticalOptions="Center"/>
+
+                            <Label Text="(028) 38433022"
+                   FontSize="14"
+                   TextColor="#475569"/>
+                        </HorizontalStackLayout>
+
+                        <!-- Giờ làm việc -->
+                        <HorizontalStackLayout Grid.Row="3"
+                               Spacing="8"
+                               Margin="0,10,0,0">
+                            <Image Source="thu.png"
+                   WidthRequest="18"
+                   HeightRequest="18"
+                   VerticalOptions="Center"/>
+
+                            <Label Text="Thứ 2 - Thứ 6 (07:30 - 16:30)"
+                   FontSize="14"
+                   TextColor="#475569"/>
+                        </HorizontalStackLayout>
+
+                        <!-- Nút chọn cho cơ sở 1 -->
+                        <Button Grid.Row="4"
+        Grid.Column="0"
+        Grid.ColumnSpan="2"
+        x:Name="btnChonCoSo1"
+        Text="CHỌN"
+        BackgroundColor="#1A73E8"
+        TextColor="White"
+        FontSize="14"
+        FontAttributes="Bold"
+        CornerRadius="20"
+        HeightRequest="40"
+        Margin="0,15,0,0"
+        HorizontalOptions="Fill"
+        Clicked="OnChonCoSo1Clicked"/>
+
+                        <!-- Trạng thái đã chọn (ẩn ban đầu) -->
+                        <Frame Grid.Row="4"
+       Grid.Column="0"
+       Grid.ColumnSpan="2"
+       x:Name="frameSelected1"
+       BackgroundColor="#28C76F"
+       CornerRadius="20"
+       Padding="0"
+       HeightRequest="40"
+       Margin="0,15,0,0"
+       HorizontalOptions="Fill"
+       IsVisible="False">
+
+                            <Grid ColumnDefinitions="*,Auto,*"
+          VerticalOptions="Center"
+          HeightRequest="40">
+
+                                <!-- Cột trái trống để căn giữa -->
+                                <BoxView Grid.Column="0" 
+                 Color="Transparent"/>
+
+                                <!-- Nội dung trung tâm -->
+                                <HorizontalStackLayout Grid.Column="1"
+                               Spacing="8"
+                               VerticalOptions="Center">
+
+                                    <Label Text="ĐÃ CHỌN"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+
+                                <!-- Cột phải trống để căn giữa -->
+                                <BoxView Grid.Column="2" 
+                 Color="Transparent"/>
+                            </Grid>
+                        </Frame>
+                    </Grid>
+                </Frame>
+
+                <!-- CƠ SỞ 2 -->
+                <Frame x:Name="frameCoSo2"
+       BackgroundColor="White"
+       BorderColor="#E2E8F0"
+       CornerRadius="12"
+       Padding="0"
+       HasShadow="True"
+       HeightRequest="230">
+
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+          Padding="20">
+
+                        <!-- Tên cơ sở -->
+                        <Grid Grid.Row="0"
+              ColumnDefinitions="*,Auto">
+
+                            <VerticalStackLayout Grid.Column="0"
+                                 Spacing="2">
+                                <Label Text="Bệnh viện Ung Bướu TP.HCM - Cơ Sở 2"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="#1E293B"/>
+
+                                <BoxView HeightRequest="2"
+                         WidthRequest="187"
+                         Color="#1A73E8"
+                         CornerRadius="1"
+                         HorizontalOptions="Start"
+                         Margin="0,5,0,0"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <!-- Địa chỉ -->
+                        <HorizontalStackLayout Grid.Row="1"
+                               Spacing="8"
+                               Margin="0,15,0,0">
+                            <Image Source="diachi.png"
+                   WidthRequest="18"
+                   HeightRequest="18"
+                   VerticalOptions="Start"/>
+
+                            <Label Text="Số 12 Đường 400, Phường Tăng Nhơn Phú"
+                   FontSize="14"
+                   TextColor="#475569"
+                   LineBreakMode="WordWrap"
+                   MaxLines="2"/>
+                        </HorizontalStackLayout>
+
+                        <!-- Số điện thoại -->
+                        <HorizontalStackLayout Grid.Row="2"
+                               Spacing="8"
+                               Margin="0,10,0,0">
+                            <Image Source="sdt.png"
+                   WidthRequest="18"
+                   HeightRequest="18"
+                   VerticalOptions="Center"/>
+
+                            <Label Text="(028) 38227722 - (028) 38433021"
+                   FontSize="14"
+                   TextColor="#475569"/>
+                        </HorizontalStackLayout>
+
+                        <!-- Giờ làm việc -->
+                        <HorizontalStackLayout Grid.Row="3"
+                               Spacing="8"
+                               Margin="0,10,0,0">
+                            <Image Source="thu.png"
+                   WidthRequest="18"
+                   HeightRequest="18"
+                   VerticalOptions="Center"/>
+
+                            <Label Text="Thứ 2 - Thứ 6 (07:30 - 16:30)"
+                   FontSize="14"
+                   TextColor="#475569"/>
+                        </HorizontalStackLayout>
+                        <!-- Nút chọn cho cơ sở 2 -->
+                        <Button Grid.Row="4"
+        Grid.Column="0"
+        Grid.ColumnSpan="2"
+        x:Name="btnChonCoSo2"
+        Text="CHỌN"
+        BackgroundColor="#1A73E8"
+        TextColor="White"
+        FontSize="14"
+        FontAttributes="Bold"
+        CornerRadius="20"
+        HeightRequest="40"
+        Margin="0,15,0,0"
+        HorizontalOptions="Fill"
+        Clicked="OnChonCoSo2Clicked"/>
+
+                        <!-- Trạng thái đã chọn (ẩn ban đầu) -->
+                        <Frame Grid.Row="4"
+       Grid.Column="0"
+       Grid.ColumnSpan="2"
+       x:Name="frameSelected2"
+       BackgroundColor="#28C76F"
+       CornerRadius="20"
+       Padding="0"
+       HeightRequest="40"
+       Margin="0,15,0,0"
+       HorizontalOptions="Fill"
+       IsVisible="False">
+
+                            <Grid ColumnDefinitions="*,Auto,*"
+          VerticalOptions="Center"
+          HeightRequest="40">
+
+                                <!-- Cột trái trống để căn giữa -->
+                                <BoxView Grid.Column="0" 
+                 Color="Transparent"/>
+
+                                <!-- Nội dung trung tâm -->
+                                <HorizontalStackLayout Grid.Column="1"
+                               Spacing="8"
+                               VerticalOptions="Center">
+                                   
+                                    <Label Text="ĐÃ CHỌN"
+                FontSize="14"
+FontAttributes="Bold"
+TextColor="White"
+                   VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+
+                                <!-- Cột phải trống để căn giữa -->
+                                <BoxView Grid.Column="2" 
+                 Color="Transparent"/>
+                            </Grid>
+                        </Frame>
+                    </Grid>
+                </Frame>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+       
+    </Grid>
+</ContentPage>

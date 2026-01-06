@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:SixOSDatKhamAppMobile.Converters"
+             x:Class="SixOSDatKhamAppMobile.Pages.S0306_mKhamTheoGoi"
+              NavigationPage.HasNavigationBar="False"
+             Title="Chọn gói khám"
+             BackgroundColor="White">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+        <!-- Header -->
+        <Grid Grid.Row="0"
+              Padding="15"
+              BackgroundColor="#1A73E8"
+              HeightRequest="60"
+              ColumnSpacing="10">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ImageButton Grid.Column="0"
+                         Source="quaylai.png"
+                         WidthRequest="24"
+                         HeightRequest="24"
+                         VerticalOptions="Center"
+                         Clicked="OnBackButtonClicked"/>
+
+            <Label Grid.Column="1"
+                   Text="CHỌN GÓI KHÁM"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="#E2E8F0"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"/>
+        </Grid>
+
+        <!-- Thanh tiến trình (Steps Indicator) -->
+        <!-- Thanh tiến trình (Steps Indicator) -->
+        <Grid Grid.Row="1"
+      Padding="20,15,20,10"
+      BackgroundColor="White">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Bước 1: Chuyên gia (KHI TỪ FLOW CHUYÊN GIA) -->
+            <VerticalStackLayout Grid.Column="0"
+                 HorizontalOptions="Center"
+                 Spacing="5"
+                 IsVisible="{Binding ShowChuyenGiaAsStep1}">
+                <Frame CornerRadius="20"
+               Padding="0"
+               WidthRequest="40"
+               HeightRequest="40"
+               HorizontalOptions="Center"
+               BackgroundColor="#1A73E8"
+               BorderColor="#1A73E8">
+                    <Label Text="1"
+                   FontSize="18"
+                   TextColor="White"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Chuyên gia"
+               FontSize="12"
+               TextColor="#1A73E8"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Bước 1: Gói Khám (KHI TỪ FLOW GÓI KHÁM) -->
+            <VerticalStackLayout Grid.Column="0"
+                 HorizontalOptions="Center"
+                 Spacing="5"
+                 IsVisible="{Binding ShowGoiKhamAsStep2, Converter={StaticResource InverseBoolConverter}}">
+                <Frame CornerRadius="20"
+               Padding="0"
+               WidthRequest="40"
+               HeightRequest="40"
+               HorizontalOptions="Center"
+               BackgroundColor="#1A73E8"
+               BorderColor="#1A73E8">
+                    <Label Text="1"
+                   FontSize="18"
+                   TextColor="White"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Gói Khám"
+               FontSize="12"
+               TextColor="#1A73E8"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Đường kẻ 1 -->
+            <BoxView Grid.Column="1"
+             WidthRequest="20"
+             HeightRequest="2"
+             BackgroundColor="#E2E8F0"
+             VerticalOptions="Center"/>
+
+            <!-- Bước 2: Gói Khám (KHI TỪ FLOW CHUYÊN GIA) -->
+            <VerticalStackLayout Grid.Column="2"
+                         HorizontalOptions="Center"
+                         Spacing="5"
+                         IsVisible="{Binding ShowGoiKhamAsStep2}">
+                <Frame CornerRadius="20"
+               Padding="0"
+               WidthRequest="40"
+               HeightRequest="40"
+               HorizontalOptions="Center"
+               BackgroundColor="#1A73E8"
+               BorderColor="#1A73E8">
+                    <Label Text="2"
+                   FontSize="18"
+                   TextColor="White"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Gói Khám"
+               FontSize="12"
+               TextColor="#1A73E8"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Bước 2: Chuyên gia (KHI TỪ FLOW GÓI KHÁM) -->
+            <VerticalStackLayout Grid.Column="2"
+                         HorizontalOptions="Center"
+                         Spacing="5"
+                         IsVisible="{Binding ShowChuyenGiaAsStep1, Converter={StaticResource InverseBoolConverter}}">
+                <Frame CornerRadius="20"
+               Padding="0"
+               WidthRequest="40"
+               HeightRequest="40"
+               HorizontalOptions="Center"
+               BackgroundColor="White"
+               BorderColor="#E2E8F0">
+                    <Label Text="2"
+                   FontSize="18"
+                   TextColor="#94A3B8"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Chuyên gia"
+               FontSize="12"
+               TextColor="#94A3B8"
+               HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Đường kẻ 2 -->
+            <BoxView Grid.Column="3"
+             WidthRequest="20"
+             HeightRequest="2"
+             BackgroundColor="#E2E8F0"
+             VerticalOptions="Center"/>
+
+            <!-- Bước 3: Lịch khám -->
+            <VerticalStackLayout Grid.Column="4"
+                         HorizontalOptions="Center"
+                         Spacing="5">
+                <Frame CornerRadius="20"
+               Padding="0"
+               WidthRequest="40"
+               HeightRequest="40"
+               HorizontalOptions="Center"
+               BackgroundColor="White"
+               BorderColor="#E2E8F0">
+                    <Label Text="3"
+                   FontSize="18"
+                   TextColor="#94A3B8"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Lịch khám"
+               FontSize="12"
+               TextColor="#94A3B8"
+               HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Đường kẻ 3 -->
+            <BoxView Grid.Column="5"
+             WidthRequest="20"
+             HeightRequest="2"
+             BackgroundColor="#E2E8F0"
+             VerticalOptions="Center"/>
+
+            <!-- Bước 4: Xác nhận -->
+            <VerticalStackLayout Grid.Column="6"
+                         HorizontalOptions="Center"
+                         Spacing="5">
+                <Frame CornerRadius="20"
+               Padding="0"
+               WidthRequest="40"
+               HeightRequest="40"
+               HorizontalOptions="Center"
+               BackgroundColor="White"
+               BorderColor="#E2E8F0">
+                    <Label Text="4"
+                   FontSize="18"
+                   TextColor="#94A3B8"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Xác nhận"
+               FontSize="12"
+               TextColor="#94A3B8"
+               HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- ROW 2: Tìm kiếm và Lọc -->
+        <Grid Grid.Row="2"
+              Padding="15,10,15,10"
+              ColumnSpacing="10">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Thanh tìm kiếm -->
+            <Border Grid.Column="0"
+                    Stroke="#E2E8F0"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 25"
+                    BackgroundColor="#F8FAFC"
+                    HeightRequest="45"
+                    Padding="15,0">
+                <Grid ColumnDefinitions="Auto,*"
+                      ColumnSpacing="10">
+                    <Image Source="timkiem.png"
+                           WidthRequest="20"
+                           HeightRequest="20"
+                           VerticalOptions="Center"/>
+
+                    <Entry x:Name="SearchEntry"
+                           Grid.Column="1"
+                           Placeholder="Tìm kiếm gói khám..."
+                           FontSize="14"
+                           TextColor="#333333"
+                           PlaceholderColor="#94A3B8"
+                           VerticalOptions="Center"
+                           BackgroundColor="Transparent"
+                           TextChanged="OnSearchTextChanged"/>
+
+                    <!-- Loading indicator khi tìm kiếm -->
+                    <ActivityIndicator Grid.Column="1"
+                                       IsRunning="{Binding ShowSearchLoading}"
+                                       IsVisible="{Binding ShowSearchLoading}"
+                                       Color="#1A73E8"
+                                       HorizontalOptions="End"
+                                       VerticalOptions="Center"
+                                       WidthRequest="20"
+                                       HeightRequest="20"
+                                       Margin="0,0,10,0"/>
+                </Grid>
+            </Border>
+
+            <!-- Nút lọc -->
+            <Border Grid.Column="1"
+                    Stroke="#E2E8F0"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10"
+                    BackgroundColor="White"
+                    WidthRequest="90"
+                    HeightRequest="45"
+                    Padding="0">
+                <Button x:Name="BtnFilter"
+                        Text="Lọc"
+                        BackgroundColor="Transparent"
+                        TextColor="#1E293B"
+                        FontSize="14"
+                        BorderWidth="0"
+                        Clicked="OnFilterButtonClicked">
+                    <Button.ImageSource>
+                        <FileImageSource File="loc4.png" />
+                    </Button.ImageSource>
+                </Button>
+            </Border>
+        </Grid>
+
+        <!-- ROW 3: Nội dung chính -->
+        <Grid Grid.Row="3">
+
+            <!-- Loading overlay khi tải trang -->
+            <AbsoluteLayout IsVisible="{Binding ShowLoadingOverlay}">
+                <BoxView AbsoluteLayout.LayoutFlags="All"
+                 AbsoluteLayout.LayoutBounds="0,0,1,1"
+                 BackgroundColor="White"
+                 Opacity="0.8"/>
+
+                <VerticalStackLayout AbsoluteLayout.LayoutFlags="PositionProportional"
+                             AbsoluteLayout.LayoutBounds="0.5,0.5,-1,-1"
+                             Spacing="20"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center">
+
+                    <ActivityIndicator IsRunning="True"
+                               Color="#1A73E8"
+                               WidthRequest="50"
+                               HeightRequest="50"/>
+
+                    <Label Text="Đang tải gói khám..."
+                   FontSize="16"
+                   TextColor="#1E293B"
+                   HorizontalOptions="Center"/>
+
+                    <Label Text="Vui lòng chờ trong giây lát..."
+                   FontSize="14"
+                   TextColor="#64748B"
+                   HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </AbsoluteLayout>
+
+            <!-- Nội dung chính với ScrollView có tên để track scroll -->
+            <ScrollView x:Name="MainScrollView"
+                        IsVisible="{Binding ShowContent}"
+                        VerticalScrollBarVisibility="Never">
+                <Grid RowSpacing="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Row 0: Bộ lọc -->
+                    <Frame Grid.Row="0"
+                           x:Name="FilterPanel"
+                           BackgroundColor="#F8FAFC"
+                           BorderColor="#E2E8F0"
+                           CornerRadius="12"
+                           Padding="15"
+                           IsVisible="False"
+                           Margin="15,0,15,15">
+
+                        <VerticalStackLayout Spacing="15">
+
+                            <!-- Loading khi đang filter -->
+                            <AbsoluteLayout IsVisible="{Binding ShowFilterLoading}"
+                                    HeightRequest="50">
+                                <BoxView AbsoluteLayout.LayoutFlags="All"
+                                 AbsoluteLayout.LayoutBounds="0,0,1,1"
+                                 BackgroundColor="#F8FAFC"
+                                 Opacity="0.8"/>
+
+                                <ActivityIndicator AbsoluteLayout.LayoutFlags="PositionProportional"
+                                           AbsoluteLayout.LayoutBounds="0.5,0.5,-1,-1"
+                                           IsRunning="True"
+                                           Color="#1A73E8"/>
+                            </AbsoluteLayout>
+
+                            <!-- Giới tính -->
+                            <VerticalStackLayout Spacing="8"
+                                         IsVisible="{Binding ShowFilterContent}">
+                                <Label Text="Giới tính"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="#1E293B"/>
+
+                                <HorizontalStackLayout Spacing="10">
+                                    <Border x:Name="GenderAllBorder"
+                                    Stroke="#E2E8F0"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="#1A73E8"
+                                    Padding="15,8">
+                                        <Label Text="Tất cả"
+                                       FontSize="13"
+                                       FontAttributes="Bold"
+                                       TextColor="White"
+                                       HorizontalOptions="Center">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnGenderAllTapped"/>
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Border>
+
+                                    <Border x:Name="GenderMaleBorder"
+                                    Stroke="#E2E8F0"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="White"
+                                    Padding="15,8">
+                                        <Label Text="Nam"
+                                       FontSize="13"
+                                       TextColor="#475569"
+                                       HorizontalOptions="Center">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnGenderMaleTapped"/>
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Border>
+
+                                    <Border x:Name="GenderFemaleBorder"
+                                    Stroke="#E2E8F0"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="White"
+                                    Padding="15,8">
+                                        <Label Text="Nữ"
+                                       FontSize="13"
+                                       TextColor="#475569"
+                                       HorizontalOptions="Center">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnGenderFemaleTapped"/>
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Border>
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+
+                            <!-- Độ tuổi -->
+                            <VerticalStackLayout Spacing="8"
+                                         IsVisible="{Binding ShowFilterContent}">
+                                <Label Text="Độ tuổi"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="#1E293B"/>
+
+                                <HorizontalStackLayout Spacing="10">
+                                    <Border x:Name="AgeUnder45Border"
+                                    Stroke="#E2E8F0"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="White"
+                                    Padding="15,8">
+                                        <Label Text="Dưới 45 tuổi"
+                                       FontSize="13"
+                                       TextColor="#475569"
+                                       HorizontalOptions="Center">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnAgeUnder45Tapped"/>
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Border>
+
+                                    <Border x:Name="AgeOver45Border"
+                                    Stroke="#E2E8F0"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="White"
+                                    Padding="15,8">
+                                        <Label Text="Trên 45 tuổi"
+                                       FontSize="13"
+                                       TextColor="#475569"
+                                       HorizontalOptions="Center">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnAgeOver45Tapped"/>
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Border>
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+
+                            <!-- Loại gói -->
+                            <VerticalStackLayout Spacing="8"
+                                         IsVisible="{Binding ShowFilterContent}">
+                                <Label Text="Loại gói"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="#1E293B"/>
+
+                                <FlexLayout Direction="Row"
+                                    Wrap="Wrap"
+                                    JustifyContent="Start"
+                                    AlignItems="Start"
+                                    AlignContent="Start">
+
+                                    <Border x:Name="TypeAllBorder"
+                                    Stroke="#E2E8F0"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="#1A73E8"
+                                    Padding="15,8"
+                                    Margin="0,0,10,10">
+                                        <Label Text="Tất cả"
+                                       FontSize="13"
+                                       FontAttributes="Bold"
+                                       TextColor="White"
+                                       HorizontalOptions="Center">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnTypeAllTapped"/>
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Border>
+
+                                    <Border x:Name="TypeBasicBorder"
+                                    Stroke="#E2E8F0"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="White"
+                                    Padding="15,8"
+                                    Margin="0,0,10,10">
+                                        <Label Text="Cơ bản"
+                                       FontSize="13"
+                                       TextColor="#475569"
+                                       HorizontalOptions="Center">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnTypeBasicTapped"/>
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Border>
+
+                                    <Border x:Name="TypeAdvancedBorder"
+                                    Stroke="#E2E8F0"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="White"
+                                    Padding="15,8"
+                                    Margin="0,0,10,10">
+                                        <Label Text="Nâng cao"
+                                       FontSize="13"
+                                       TextColor="#475569"
+                                       HorizontalOptions="Center">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnTypeAdvancedTapped"/>
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Border>
+                                </FlexLayout>
+                            </VerticalStackLayout>
+
+                            <!-- Nút Áp dụng -->
+                            <Button Text="ÁP DỤNG"
+                            BackgroundColor="#1A73E8"
+                            TextColor="White"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            CornerRadius="10"
+                            HeightRequest="45"
+                            Clicked="OnApplyFilterClicked"
+                            IsVisible="{Binding ShowFilterContent}"/>
+
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Row 1: Kết quả tìm kiếm -->
+                    <Label Grid.Row="1"
+                           x:Name="SearchResultsLabel"
+                           Text=""
+                           FontSize="14"
+                           TextColor="#64748B"
+                           IsVisible="False"
+                           Margin="15,0,15,10"/>
+
+                    <!-- Row 2: Loading tìm kiếm -->
+                    <VerticalStackLayout Grid.Row="2"
+                                 IsVisible="{Binding ShowSearchLoading}"
+                                 Spacing="10"
+                                 HorizontalOptions="Center"
+                                 Padding="15">
+                        <ActivityIndicator IsRunning="True"
+                                   Color="#1A73E8"/>
+                        <Label Text="Đang tìm kiếm..."
+                       FontSize="14"
+                       TextColor="#64748B"/>
+                    </VerticalStackLayout>
+
+                    <!-- Row 3: Danh sách gói khám -->
+                    <VerticalStackLayout Grid.Row="3"
+                                 x:Name="GoiKhamListContainer"
+                                 Spacing="0"
+                                 Padding="15,0,15,0">
+                        <!-- Nội dung được thêm từ code-behind -->
+                    </VerticalStackLayout>
+
+                    <!-- Row 4: Không có kết quả -->
+                    <VerticalStackLayout Grid.Row="4"
+                                 x:Name="NoResultsContainer"
+                                 IsVisible="False"
+                                 HorizontalOptions="Center"
+                                 Spacing="10"
+                                 Padding="15,50,15,50">
+                        <Image Source="timkiem.png"
+                       WidthRequest="60"
+                       HeightRequest="60"
+                       Opacity="0.5"
+                       HorizontalOptions="Center"/>
+                        <Label Text="Không tìm thấy gói khám phù hợp"
+                       FontSize="16"
+                       TextColor="#64748B"
+                       HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+
+                    <!-- Row 5: Footer -->
+                    <Label Grid.Row="5"
+                   Text="*Chọn gói khám phù hợp với nhu cầu của bạn"
+                   FontSize="12"
+                   TextColor="#64748B"
+                   HorizontalOptions="Center"
+                   Margin="15,20,15,20"/>
+
+                </Grid>
+            </ScrollView>
+        </Grid>
+    </Grid>
+</ContentPage>

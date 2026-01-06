@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <AndroidKeyStore>true</AndroidKeyStore>
+    <AndroidSigningKeyStore>maui-release.keystore</AndroidSigningKeyStore>
+    <AndroidSigningKeyAlias>maui-release</AndroidSigningKeyAlias>
+    <AndroidSigningKeyPass>11012003</AndroidSigningKeyPass>
+    <AndroidSigningStorePass>11012003</AndroidSigningStorePass>
+  </PropertyGroup>
+</Project>

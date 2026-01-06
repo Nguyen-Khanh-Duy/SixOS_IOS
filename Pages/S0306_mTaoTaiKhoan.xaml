@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:SixOSDatKhamAppMobile.Pages"
+             x:Class="SixOSDatKhamAppMobile.Pages.S0306_mTaoTaiKhoan"
+              NavigationPage.HasNavigationBar="False"
+             Title="Tạo tài khoản"
+             BackgroundColor="{StaticResource BackgroundColor}">
+
+    <Grid>
+        <!-- Main content -->
+        <ScrollView>
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                  RowSpacing="0"
+                  Padding="20">
+
+                <!-- Logo và tiêu đề -->
+                <VerticalStackLayout Grid.Row="0"
+                                     Spacing="15"
+                                     HorizontalOptions="Center"
+                                     Margin="0,0,0,20">
+
+                    <!-- Logo + Chữ cạnh nhau -->
+                    <HorizontalStackLayout
+                            Spacing="15"
+                            Padding="0"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+                        <Image Source="logo.jpg"
+                               Aspect="AspectFit"/>
+                        <!-- Phần chữ -->
+                        <VerticalStackLayout Spacing="2"
+                         VerticalOptions="Center">
+
+                            <Label Text="Bệnh viện Ung Bướu"
+                                   TextColor="{StaticResource PrimaryColor}"
+                                   FontSize="20"
+                                   FontAttributes="Bold" />
+
+                            <Label Text="Thành phố Hồ Chí Minh"
+                                   TextColor="{StaticResource PrimaryColor}"
+                                   FontSize="14" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                    <!-- Tiêu đề dưới -->
+                    <Label Text="TẠO TÀI KHOẢN"
+                           TextColor="{StaticResource PrimaryColor}"               
+                           FontFamily="MontserratBold"
+                           FontSize="30"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           Margin="0,0,0,0"/>
+                </VerticalStackLayout>
+
+                <!-- Form đăng ký -->
+                <Border Grid.Row="1"
+                        BackgroundColor="White"
+                        StrokeShape="RoundRectangle 15"
+                        Stroke="#E0E0E0"
+                        StrokeThickness="1"
+                        Padding="25">
+
+                    <VerticalStackLayout Spacing="20">
+
+
+                        <!-- Số CCCD -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Số căn cước công dân/Passport *"
+                                   TextColor="{StaticResource TextColor}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"/>
+
+                            <Border Stroke="#E0E0E0"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="#F5F5F5"
+                                    HeightRequest="50">
+                                <Entry x:Name="CccdEntry"
+                                       Placeholder="Nhập số CCCD/Passport"
+                                       Keyboard="Numeric"
+                                       FontSize="16"
+                                       TextColor="{StaticResource TextColor}"
+                                       PlaceholderColor="#999999"
+                                       MaxLength="12"
+                                       ClearButtonVisibility="WhileEditing"
+                                       Margin="15,0"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Số điện thoại -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Số điện thoại *"
+                                   TextColor="{StaticResource TextColor}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"/>
+
+                            <Border Stroke="#E0E0E0"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="#F5F5F5"
+                                    HeightRequest="50">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <!-- Mã quốc gia -->
+                                    <HorizontalStackLayout Grid.Column="0"
+                                                           Spacing="5"
+                                                           VerticalOptions="Center"
+                                                           Padding="15,0">
+                                        <Label Text="🇻🇳"
+                                               FontSize="18"/>
+                                        <Label Text="+84"
+                                               TextColor="{StaticResource TextColor}"
+                                               FontSize="16"/>
+                                    </HorizontalStackLayout>
+                                    <Entry Grid.Column="1"
+                                           x:Name="PhoneEntry"
+                                           Placeholder="Nhập số điện thoại"
+                                           Keyboard="Telephone"
+                                           FontSize="16"
+                                           TextColor="{StaticResource TextColor}"
+                                           PlaceholderColor="#999999"
+                                           ClearButtonVisibility="WhileEditing"
+                                           Margin="10,0"/>
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Mật khẩu -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Mật khẩu *"
+                                   TextColor="{StaticResource TextColor}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"/>
+
+                            <Border Stroke="#E0E0E0"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="#F5F5F5"
+                                    HeightRequest="50">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Entry Grid.Column="0"
+                                           x:Name="PasswordEntry"
+                                           Placeholder="Ít nhất 6 ký tự"
+                                           IsPassword="True"
+                                           FontSize="16"
+                                           TextColor="{StaticResource TextColor}"
+                                           PlaceholderColor="#999999"
+                                           Margin="15,0"/>
+
+                                    <!-- Nút hiển thị/ẩn mật khẩu -->
+                                    <ImageButton Grid.Column="1"
+                                                 x:Name="TogglePasswordButton"
+                                                 Source="mo.png"
+                                                 WidthRequest="20"
+                                                 HeightRequest="20"
+                                                 Margin="10,10"
+                                                 BackgroundColor="Transparent"
+                                                 Clicked="OnTogglePasswordClicked"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Hint mật khẩu -->
+                            <Label x:Name="PasswordHintLabel"
+                                   Text="Mật khẩu cần ít nhất 6 ký tự"
+                                   TextColor="#666666"
+                                   FontSize="12"
+                                   IsVisible="False"/>
+                        </VerticalStackLayout>
+
+                        <!-- Xác nhận mật khẩu -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Xác nhận mật khẩu *"
+                                   TextColor="{StaticResource TextColor}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"/>
+
+                            <Border Stroke="#E0E0E0"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="#F5F5F5"
+                                    HeightRequest="50">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Entry Grid.Column="0"
+                                           x:Name="ConfirmPasswordEntry"
+                                           Placeholder="Nhập lại mật khẩu"
+                                           IsPassword="True"
+                                           FontSize="16"
+                                           TextColor="{StaticResource TextColor}"
+                                           PlaceholderColor="#999999"
+                                           Margin="15,0"/>
+
+                                    <!-- Nút hiển thị/ẩn mật khẩu -->
+                                    <ImageButton Grid.Column="1"
+                                                 x:Name="ToggleConfirmPasswordButton"
+                                                 Source="mo.png"
+                                                 WidthRequest="20"
+                                                 HeightRequest="20"
+                                                 Margin="10,10"
+                                                 BackgroundColor="Transparent"
+                                                 Clicked="OnToggleConfirmPasswordClicked"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Validation message -->
+                            <Label x:Name="ValidationLabel"
+                                   Text=""
+                                   FontSize="12"
+                                   IsVisible="False"/>
+                        </VerticalStackLayout>
+
+                        <!-- Checkbox điều khoản -->
+                        <HorizontalStackLayout 
+                                               VerticalOptions="Center">
+                            <CheckBox x:Name="TermsCheckBox"
+                                      Color="{StaticResource PrimaryColor}"
+                                      VerticalOptions="Center"/>
+
+                            <Label Text="Tôi đồng ý với "
+                                   TextColor="{StaticResource TextColor}"
+                                   FontSize="13"
+                                   VerticalOptions="Center"/>
+
+                            <Button Text="điều khoản sử dụng"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{StaticResource PrimaryColor}"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    Padding="0"
+                                    Clicked="OnTermsClicked"/>
+
+                        </HorizontalStackLayout>
+
+                        <!-- Nút đăng ký -->
+                        <Button x:Name="RegisterButton"
+                                Text="TẠO TÀI KHOẢN"
+                                BackgroundColor="{StaticResource PrimaryColor}"
+                                TextColor="White"
+                                FontSize="18"
+                                FontAttributes="Bold"
+                                CornerRadius="25"
+                                HeightRequest="55"
+                                Margin="0,0,0,0"
+                                Clicked="OnRegisterClicked"/>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Đã có tài khoản -->
+                <Grid Grid.Row="2"
+                      ColumnDefinitions="*,Auto,*"
+                      ColumnSpacing="10"
+                      VerticalOptions="Center"
+                      Margin="0,20,0,0">
+
+                    <BoxView Grid.Column="0"
+                             HeightRequest="1"
+                             Color="#E0E0E0"
+                             VerticalOptions="Center"/>
+
+                    <HorizontalStackLayout Grid.Column="1"
+                                           Spacing="5"
+                                           VerticalOptions="Center">
+                        <Label Text="Đã có tài khoản ?"
+                               TextColor="#666666"
+                               FontSize="14"/>
+
+                        <Button Text="Đăng nhập ngay"
+                                BackgroundColor="Transparent"
+                                TextColor="{StaticResource PrimaryColor}"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                Padding="0"
+                                Clicked="OnGoToLoginClicked"/>
+                    </HorizontalStackLayout>
+
+                    <BoxView Grid.Column="2"
+                             HeightRequest="1"
+                             Color="#E0E0E0"
+                             VerticalOptions="Center"/>
+
+                </Grid>
+
+                <!-- Thông tin liên hệ -->
+                <VerticalStackLayout Grid.Row="3"
+                                     Spacing="10"
+                                     HorizontalOptions="Center"
+                                     Margin="0,15">
+
+                    <Label Text="Cần hỗ trợ ?"
+                           TextColor="{StaticResource TextColor}"
+                           FontSize="14"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"/>
+
+                    <HorizontalStackLayout Spacing="10"
+                                           HorizontalOptions="Center">
+
+                        <Button Text="📞 028 3841 2637"
+                                BackgroundColor="Transparent"
+                                TextColor="{StaticResource PrimaryColor}"
+                                FontSize="14"
+                                Padding="0"
+                                Clicked="OnCallSupportClicked"/>
+
+                        <Label Text="|"
+                               TextColor="#999999"
+                               FontSize="14"
+                               VerticalOptions="Center"/>
+
+                        <Button Text="✉️ hotro@benhvienungbuou.vn"
+                                BackgroundColor="Transparent"
+                                TextColor="{StaticResource PrimaryColor}"
+                                FontSize="14"
+                                Padding="0"
+                                Clicked="OnEmailSupportClicked"/>
+
+                    </HorizontalStackLayout>
+
+                </VerticalStackLayout>
+
+            </Grid>
+        </ScrollView>
+
+        <!-- OTP Popup Component -->
+        <pages:S0306_mXacThucOTP x:Name="OtpPopup" />
+
+    </Grid>
+</ContentPage>

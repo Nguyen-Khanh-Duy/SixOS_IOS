@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SixOSDatKhamAppMobile.Pages.S0306_mKhamTheoNgayPage"
+              NavigationPage.HasNavigationBar="False"
+             Title="Chọn ngày khám"  
+             BackgroundColor="#F8FAFC">
+
+    <ContentPage.Resources>
+        <Style TargetType="Button">
+            <Setter Property="FontAttributes" Value="Bold"/>
+            <Setter Property="CornerRadius" Value="20"/>
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto, Auto,*">
+
+        <!-- Header -->
+        <Grid Grid.Row="0"
+              Padding="20,15,20,15"
+              BackgroundColor="#007bff"
+              HeightRequest="60">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ImageButton Grid.Column="0"
+                         Source="quaylai.png"
+                         WidthRequest="20"
+                         HeightRequest="20"
+                         VerticalOptions="Center"
+                         Clicked="OnBackButtonClicked"/>
+
+            <Label Grid.Column="1"
+                   Text="CHỌN NGÀY KHÁM"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="#F5F5F5"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"/>
+
+            <BoxView Grid.Column="2"
+                     WidthRequest="20"
+                     IsVisible="False"/>
+        </Grid>
+
+        <!-- ROW 1: QUY TRÌNH ĐẶT KHÁM -->
+        <Grid Grid.Row="1"
+              Padding="20,15,20,10"
+              BackgroundColor="White">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Bước 1: Gói Khám (ĐÃ HOÀN THÀNH) -->
+            <VerticalStackLayout Grid.Column="0"
+                   HorizontalOptions="Center"
+                   Spacing="5">
+                <Frame CornerRadius="20"
+                       Padding="0"
+                       WidthRequest="40"
+                       HeightRequest="40"
+                       HorizontalOptions="Center"
+                       BackgroundColor="#1A73E8"
+                       BorderColor="#1A73E8">
+                    <Label Text="✓"
+                           FontSize="20"
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Gói Khám"
+                       FontSize="12"
+                       TextColor="#1A73E8"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Đường kẻ 1 -->
+            <BoxView Grid.Column="1"
+                     WidthRequest="20"
+                     HeightRequest="2"
+                     BackgroundColor="#1A73E8"
+                     VerticalOptions="Center"/>
+
+            <!-- Bước 2: Chuyên gia (ĐÃ HOÀN THÀNH) -->
+            <VerticalStackLayout Grid.Column="2"
+                   HorizontalOptions="Center"
+                   Spacing="5">
+                <Frame CornerRadius="20"
+                       Padding="0"
+                       WidthRequest="40"
+                       HeightRequest="40"
+                       HorizontalOptions="Center"
+                       BackgroundColor="#1A73E8"
+                       BorderColor="#1A73E8">
+                    <Label Text="✓"
+                           FontSize="20"
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Chuyên gia"
+                       FontSize="12"
+                       TextColor="#1A73E8"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Đường kẻ 2 -->
+            <BoxView Grid.Column="3"
+                     WidthRequest="20"
+                     HeightRequest="2"
+                     BackgroundColor="#1A73E8"
+                     VerticalOptions="Center"/>
+
+            <!-- Bước 3: Lịch khám (ĐANG THỰC HIỆN) -->
+            <VerticalStackLayout Grid.Column="4"
+                   HorizontalOptions="Center"
+                   Spacing="5">
+                <Frame CornerRadius="20"
+                       Padding="0"
+                       WidthRequest="40"
+                       HeightRequest="40"
+                       HorizontalOptions="Center"
+                       BackgroundColor="#1A73E8"
+                       BorderColor="#1A73E8">
+                    <Label Text="3"
+                           FontSize="18"
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Lịch khám"
+                       FontSize="12"
+                       TextColor="#1A73E8"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Đường kẻ 3 -->
+            <BoxView Grid.Column="5"
+                     WidthRequest="20"
+                     HeightRequest="2"
+                     BackgroundColor="#E2E8F0"
+                     VerticalOptions="Center"/>
+
+            <!-- Bước 4: Xác nhận -->
+            <VerticalStackLayout Grid.Column="6"
+                   HorizontalOptions="Center"
+                   Spacing="5">
+                <Frame CornerRadius="20"
+                       Padding="0"
+                       WidthRequest="40"
+                       HeightRequest="40"
+                       HorizontalOptions="Center"
+                       BackgroundColor="White"
+                       BorderColor="#E2E8F0">
+                    <Label Text="4"
+                           FontSize="18"
+                           TextColor="#94A3B8"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Xác nhận"
+                       FontSize="12"
+                       TextColor="#94A3B8"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Nội dung chính -->
+        <Grid Grid.Row="2">
+
+            <!-- Loading overlay -->
+            <AbsoluteLayout IsVisible="{Binding ShowLoadingOverlay}">
+                <BoxView AbsoluteLayout.LayoutFlags="All"
+                         AbsoluteLayout.LayoutBounds="0,0,1,1"
+                         BackgroundColor="White"
+                         Opacity="0.8"/>
+
+                <VerticalStackLayout AbsoluteLayout.LayoutFlags="PositionProportional"
+                                     AbsoluteLayout.LayoutBounds="0.5,0.5,-1,-1"
+                                     Spacing="20"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center">
+
+                    <ActivityIndicator IsRunning="True"
+                                       Color="#1A73E8"
+                                       WidthRequest="50"
+                                       HeightRequest="50"/>
+
+                    <Label Text="Đang tải danh sách ngày khám..."
+                           FontSize="16"
+                           TextColor="#1E293B"
+                           HorizontalOptions="Center"/>
+
+                    <Label Text="Vui lòng chờ trong giây lát..."
+                           FontSize="14"
+                           TextColor="#64748B"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </AbsoluteLayout>
+
+            <ScrollView IsVisible="{Binding ShowContent}">
+                <VerticalStackLayout Spacing="15"
+                                     Padding="20">
+
+                    <!-- THÔNG TIN BỆNH VIỆN -->
+                    <Frame BackgroundColor="#F0F7FF"
+                           Padding="10"
+                           CornerRadius="12"
+                           HasShadow="False"
+                           BorderColor="#1A73E8">
+
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding DoiTacVM.TenDoiTac}"
+                                   FontSize="13"
+                                   FontAttributes="Bold"
+                                   TextColor="#1A73E8"/>
+
+                            <Label Text="{Binding DoiTacVM.DiaChiDoiTac}"
+                                   FontSize="9"
+                                   TextColor="#1A73E8"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- THÔNG TIN THÁNG VÀ NÚT CHUYỂN -->
+                    <Grid ColumnDefinitions="*,Auto,*"
+                          VerticalOptions="Center">
+
+                        <Button Grid.Column="0"
+                                Text="← Tháng trước"
+                                BackgroundColor="Transparent"
+                                TextColor="#1A73E8"
+                                FontSize="14"
+                                HorizontalOptions="Start"
+                                Padding="0"
+                                Clicked="OnPreviousMonthClicked"/>
+
+                        <Label Grid.Column="1"
+                               x:Name="ThangLabel"
+                               Text="THÁNG 01/2025"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="#1A73E8"
+                               VerticalOptions="Center"/>
+
+                        <Button Grid.Column="2"
+                                Text="Tháng sau →"
+                                BackgroundColor="Transparent"
+                                TextColor="#1A73E8"
+                                FontSize="14"
+                                HorizontalOptions="End"
+                                Padding="0"
+                                Clicked="OnNextMonthClicked"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,*,*,*,*,*,*"
+      ColumnSpacing="6"
+         Margin="0,0,0,0" >
+                        <Label Grid.Column="0" Text="T2" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
+                        <Label Grid.Column="1" Text="T3" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
+                        <Label Grid.Column="2" Text="T4" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
+                        <Label Grid.Column="3" Text="T5" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
+                        <Label Grid.Column="4" Text="T6" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
+                        <Label Grid.Column="5" Text="T7" FontSize="16" FontAttributes="Bold" TextColor="#EF4444" HorizontalOptions="Center"/>
+                        <Label Grid.Column="6" Text="CN" FontSize="16" FontAttributes="Bold" TextColor="#EF4444" HorizontalOptions="Center"/>
+                    </Grid>
+
+                    <!-- CÁC NGÀY TRONG THÁNG -->
+                    <Grid x:Name="NgayGrid"
+      ColumnDefinitions="*,*,*,*,*,*,*"
+      ColumnSpacing="6"
+      RowSpacing="6">
+                    </Grid>
+
+                    <!-- CHÚ THÍCH -->
+                    <VerticalStackLayout Spacing="10"
+                                         Margin="20,0,0,0">
+                        <Grid ColumnDefinitions="Auto,*"
+                              ColumnSpacing="15"
+                              VerticalOptions="Center">
+                            <Frame Grid.Column="0"
+                                   BackgroundColor="#E8F0FE"
+                                   Padding="8"
+                                   CornerRadius="8"
+                                   BorderColor="#1A73E8"
+                                   HasShadow="False"
+                                   HeightRequest="36"
+                                   WidthRequest="160">
+                                <HorizontalStackLayout Spacing="5"
+                                                       VerticalOptions="Center">
+                                    <BoxView Color="#1A73E8"
+                                             WidthRequest="12"
+                                             HeightRequest="12"
+                                             CornerRadius="6"
+                                             VerticalOptions="Center"/>
+                                    <Label Text="Đang chọn"
+                                           FontSize="12"
+                                           TextColor="#1A73E8"
+                                           VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Frame>
+
+                            <Frame Grid.Column="1"
+                                   BackgroundColor="White"
+                                   Padding="8"
+                                   CornerRadius="8"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="False"
+                                   HeightRequest="36"
+                                   WidthRequest="160">
+                                <HorizontalStackLayout Spacing="5"
+                                                       VerticalOptions="Center">
+                                    <BoxView Color="#94A3B8"
+                                             WidthRequest="12"
+                                             HeightRequest="12"
+                                             CornerRadius="6"
+                                             VerticalOptions="Center"/>
+                                    <Label Text="Không được chọn"
+                                           FontSize="12"
+                                           TextColor="#1E293B"
+                                           VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Frame>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto,*"
+                              ColumnSpacing="15"
+                              VerticalOptions="Center">
+                            <Frame Grid.Column="0"
+                                   BackgroundColor="White"
+                                   Padding="8"
+                                   CornerRadius="8"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="False"
+                                   HeightRequest="36"
+                                   WidthRequest="160">
+                                <HorizontalStackLayout Spacing="5"
+                                                       VerticalOptions="Center">
+                                    <BoxView Color="#10B981"
+                                             WidthRequest="12"
+                                             HeightRequest="12"
+                                             CornerRadius="6"
+                                             VerticalOptions="Center"/>
+                                    <Label Text="Hôm nay"
+                                           FontSize="12"
+                                           TextColor="#1E293B"
+                                           VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Frame>
+
+                            <Frame Grid.Column="1"
+                                   BackgroundColor="White"
+                                   Padding="8"
+                                   CornerRadius="8"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="False"
+                                   HeightRequest="36"
+                                   WidthRequest="160">
+                                <HorizontalStackLayout Spacing="5"
+                                                       VerticalOptions="Center">
+                                    <BoxView Color="#F5F5F5"
+                                             WidthRequest="12"
+                                             HeightRequest="12"
+                                             CornerRadius="6"
+                                             VerticalOptions="Center"/>
+                                    <Label Text="Ngày có thể chọn"
+                                           FontSize="12"
+                                           TextColor="#1E293B"
+                                           VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Frame>
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <!-- NÚT TIẾP TỤC -->
+                    <Button x:Name="BtnTiepTuc"
+                            Text="TIẾP TỤC"
+                            BackgroundColor="#1A73E8"
+                            TextColor="White"
+                            FontSize="16"
+                            FontAttributes="Bold"
+                            CornerRadius="25"
+                            HeightRequest="50"
+                            Margin="0,0,0,0"
+                            IsVisible="False"
+                            Clicked="OnTiepTucClicked"/>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+    </Grid>
+</ContentPage>

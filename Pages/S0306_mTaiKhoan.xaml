@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             NavigationPage.HasNavigationBar="False"
+             x:Class="SixOSDatKhamAppMobile.Pages.S0306_mTaiKhoan"
+             Title="Tài khoản"
+             BackgroundColor="White"
+             x:Name="mainPage">
+
+    <Grid x:Name="mainGrid" RowDefinitions="*,Auto">
+
+        <!-- Loading Overlay -->
+        <Grid x:Name="loadingOverlay"
+              RowSpan="2"
+              IsVisible="False"
+              BackgroundColor="#80000000" 
+              Opacity="0.7">
+            <ActivityIndicator x:Name="mainLoadingIndicator"
+                               IsRunning="False"
+                               Color="White"
+                               Scale="1.5"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center"/>
+            <Label Text="Đang tải..."
+                   TextColor="White"
+                   FontSize="16"
+                   Margin="0,60,0,0"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+        </Grid>
+
+        <!-- Nội dung chính -->
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="0">
+
+                <!-- Header với thông tin người dùng -->
+                <Frame BackgroundColor="#007bff"
+                       CornerRadius="0"
+                       Padding="20,40,20,30"
+                       Margin="0,0,0,10">
+
+                    <Grid ColumnDefinitions="Auto,*">
+
+                        <!-- Avatar -->
+                        <Frame Grid.Column="0"
+                               BackgroundColor="White"
+                               CornerRadius="40"
+                               WidthRequest="80"
+                               HeightRequest="80"
+                               Padding="2">
+                            <Image Source="tk.jpg"
+                                   Aspect="AspectFill"
+                                  />
+                        </Frame>
+
+                        <!-- Thông tin người dùng -->
+                        <VerticalStackLayout Grid.Column="1"
+                                             Spacing="5"
+                                             Margin="15,0,0,0"
+                                             VerticalOptions="Center">
+                            <Label x:Name="userNameLabel"
+                                   Text="Đang tải..."
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   TextColor="White"/>
+                            <Label Text="Tài khoản cá nhân"
+                                   FontSize="14"
+                                   TextColor="#E3F2FD"/>
+                        </VerticalStackLayout>
+
+                    </Grid>
+                </Frame>
+
+                <!-- Danh sách tùy chọn -->
+                <VerticalStackLayout Spacing="0"
+                                     BackgroundColor="White">
+
+                    <!-- Đổi mật khẩu -->
+                    <Frame BackgroundColor="White"
+                           Padding="20,15,20,15"
+                           HasShadow="False"
+                           BorderColor="#F0F0F0">
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <HorizontalStackLayout Grid.Column="0"
+                                                   Spacing="15"
+                                                   VerticalOptions="Center">
+                                <Image Source="cd.png"
+                                       WidthRequest="24"
+                                       HeightRequest="24"
+                                       VerticalOptions="Center"/>
+                                <Label Text="Đổi mật khẩu"
+                                       FontSize="16"
+                                       TextColor="#333333"
+                                       VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+
+                            <Image Grid.Column="1"
+                                   Source="xuong.png"
+                                   WidthRequest="20"
+                                   HeightRequest="20"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnDoiMatKhauClicked"/>
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                    
+                    <!-- Xem hồ sơ -->
+                    <Frame BackgroundColor="White"
+                           Padding="20,15,20,15"
+                           HasShadow="False"
+                           BorderColor="#F0F0F0">
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <HorizontalStackLayout Grid.Column="0"
+                                                   Spacing="15"
+                                                   VerticalOptions="Center">
+                                <Image Source="hoso.png"
+                                       WidthRequest="24"
+                                       HeightRequest="24"
+                                       VerticalOptions="Center"/>
+                                <Label Text="Xem hồ sơ"
+                                       FontSize="16"
+                                       TextColor="#333333"
+                                       VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+
+                            <Image Grid.Column="1"
+                                   Source="xuong.png"
+                                   WidthRequest="20"
+                                   HeightRequest="20"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnHoSoClicked"/>
+                        </Frame.GestureRecognizers>
+                    </Frame>
+
+                    <!-- Tổng đài CSKH -->
+                    <Frame BackgroundColor="White"
+                           Padding="20,15,20,15"
+                           HasShadow="False"
+                           BorderColor="#F0F0F0">
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <HorizontalStackLayout Grid.Column="0"
+                                                   Spacing="15"
+                                                   VerticalOptions="Center">
+                                <Image Source="sdt.png"
+                                       WidthRequest="24"
+                                       HeightRequest="24"
+                                       VerticalOptions="Center"/>
+                                <HorizontalStackLayout Spacing="6"
+                                                       VerticalOptions="Center">
+                                    <Label Text="Tổng đài CSKH"
+                                           FontSize="16"
+                                           TextColor="#333333"/>
+                                    <Label Text="19002115"
+                                           FontSize="14"
+                                           TextColor="#007bff"
+                                           FontAttributes="Bold"/>
+                                </HorizontalStackLayout>
+
+                            </HorizontalStackLayout>
+
+                            <Image Grid.Column="1"
+                                   Source="xuong.png"
+                                   WidthRequest="20"
+                                   HeightRequest="20"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnTongDaiCSKHClicked"/>
+                        </Frame.GestureRecognizers>
+                    </Frame>
+
+                    <!-- Đăng xuất -->
+                    <Frame BackgroundColor="White"
+                           Padding="20,15,20,15"
+                           Margin="0,20,0,0"
+                           HasShadow="False"
+                           BorderColor="#F0F0F0">
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <HorizontalStackLayout Grid.Column="0"
+                                                   Spacing="15"
+                                                   VerticalOptions="Center">
+                                <Image Source="dx.png"
+                                       WidthRequest="24"
+                                       HeightRequest="24"
+                                       VerticalOptions="Center"/>
+                                <Label Text="Đăng xuất"
+                                       FontSize="16"
+                                       TextColor="#FF0000"
+                                       VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+
+                            <Image Grid.Column="1"
+                                   Source="right_arrow.png"
+                                   WidthRequest="20"
+                                   HeightRequest="20"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnDangXuatClicked"/>
+                        </Frame.GestureRecognizers>
+                    </Frame>
+
+                    <!-- Phiên bản ứng dụng -->
+                    <Label Text="Phiên bản 1.0.0"
+                           FontSize="12"
+                           TextColor="#888888"
+                           HorizontalOptions="Center"
+                           Margin="0,30,0,20"/>
+
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Bottom Navigation -->
+        <Frame Grid.Row="1"
+             BackgroundColor="{StaticResource White}"
+             CornerRadius="0"
+             Padding="0"
+             Margin="0"
+             HasShadow="True"
+             BorderColor="#E0E0E0"
+             >
+            <Grid ColumnDefinitions="*,*,*,*"
+                ColumnSpacing="0"
+                Padding="0">
+
+                <!-- Trang chủ -->
+                <VerticalStackLayout Grid.Column="0"
+                                     Spacing="3"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center"
+                                     Padding="10,8">
+
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTrangChuClicked"/>
+                    </VerticalStackLayout.GestureRecognizers>
+
+                    <Image Source="home.png"
+                           HeightRequest="24"
+                           WidthRequest="24"/>
+
+                    <Label Text="Trang chủ"
+                           FontSize="10"
+                           TextColor="{StaticResource PrimaryColor}"/>
+                </VerticalStackLayout>
+
+                <!-- Lịch hẹn -->
+                <Grid Grid.Column="1"
+                    HorizontalOptions="FillAndExpand"
+                    VerticalOptions="FillAndExpand"
+                    Padding="0"
+                    Margin="0">
+                    <VerticalStackLayout Grid.Column="2"
+                                       Spacing="3"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"
+                                       Padding="10,8"
+                                       BackgroundColor="Transparent">
+                        <Image Source="lichhen.png"
+                                 HeightRequest="24"
+                                 WidthRequest="24"
+                                 HorizontalOptions="Center"/>
+                        <Label Text="Lịch hẹn"
+                                 FontSize="10"
+                                 TextColor="{StaticResource PrimaryColor}"
+                                 HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLichHenClicked"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+
+
+                <!-- Tra cứu -->
+                <VerticalStackLayout Grid.Column="2"
+                                     Spacing="3"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center"
+                                     Padding="10,8">
+
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnPhieuKhamClicked"/>
+                    </VerticalStackLayout.GestureRecognizers>
+
+                    <Image Source="loc1.png"
+                           HeightRequest="24"
+                           WidthRequest="24"/>
+
+                    <Label Text="Tra cứu"
+                           FontSize="10"
+                           TextColor="{StaticResource PrimaryColor}"/>
+                </VerticalStackLayout>
+
+                <!-- Tài khoản -->
+                <Grid Grid.Column="3"
+                      HorizontalOptions="FillAndExpand"
+                      VerticalOptions="FillAndExpand"
+                      Padding="0"
+                      Margin="0">
+                    <VerticalStackLayout Spacing="3"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       Padding="10,8"
+                       BackgroundColor="Transparent">
+                        <Image Source="taikhoan.png"
+                               HeightRequest="24"
+                               WidthRequest="24"
+                               HorizontalOptions="Center"/>
+                        <Label Text="Tài khoản"
+                               FontSize="10"
+                               TextColor="{StaticResource PrimaryColor}"
+                               HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTaiKhoanClicked"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+            </Grid>
+        </Frame>
+
+    </Grid>
+</ContentPage>

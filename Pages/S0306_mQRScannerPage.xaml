@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SixOSDatKhamAppMobile.Pages.S0306_mQRScannerPage"
+             xmlns:cv="clr-namespace:Camera.MAUI;assembly=Camera.MAUI"
+              NavigationPage.HasNavigationBar="False"
+             Title="Quét mã QR CCCD"
+             NavigationPage.HasBackButton="False">
+
+    <Grid>
+        <!-- Camera View chiếm toàn bộ -->
+        <cv:CameraView x:Name="cameraView" 
+                       HorizontalOptions="Fill"
+                       VerticalOptions="Fill"
+                       CamerasLoaded="cameraView_CamerasLoaded" 
+                       BarCodeDetectionEnabled="True" 
+                       BarcodeDetected="cameraView_BarcodeDetected" />
+
+        <!-- Overlay hướng dẫn -->
+        <Grid Margin="20" VerticalOptions="Center" HorizontalOptions="Center">
+
+            <!-- Nền mờ xung quanh -->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="250"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Phần trên -->
+            <BoxView Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Color="#80000000"/>
+
+            <!-- Phần trái -->
+            <BoxView Grid.Row="1" Grid.Column="0" Color="#80000000"/>
+
+            <!-- Phần phải -->
+            <BoxView Grid.Row="1" Grid.Column="2" Color="#80000000"/>
+
+            <!-- Phần dưới -->
+            <BoxView Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Color="#80000000"/>
+
+            <!-- Khung quét QR ở giữa -->
+            <Grid Grid.Row="1" Grid.Column="1" 
+                  HorizontalOptions="Center" 
+                  VerticalOptions="Center">
+
+                <!-- Khung quét QR với border gradient (custom render) -->
+                <Frame BackgroundColor="Transparent" 
+                       BorderColor="White"
+                       CornerRadius="10"
+                       HeightRequest="250" 
+                       WidthRequest="250"
+                       HorizontalOptions="Center" 
+                       VerticalOptions="Center">
+                </Frame>
+
+            </Grid>
+
+            <!-- Animation line -->
+            <BoxView x:Name="scanLine" 
+                     Grid.Row="1" Grid.Column="1"
+                     Color="Red" 
+                     HeightRequest="3"
+                     WidthRequest="230"
+                     HorizontalOptions="Center"
+                     VerticalOptions="Center"/>
+
+            <!-- Hướng dẫn -->
+            <Label Grid.Row="2" Grid.Column="1"
+                   Text="Đưa mã QR vào khung" 
+                   TextColor="White"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Start"
+                   Margin="0,20,0,20"/>
+
+        </Grid>
+
+        <!-- Nút đóng ở góc trên phải -->
+        <Button x:Name="btnClose"
+                Text="✕"
+                FontSize="20"
+                TextColor="White"
+                BackgroundColor="#40000000"
+                CornerRadius="20"
+                HorizontalOptions="End"
+                VerticalOptions="Start"
+                Margin="20"
+                WidthRequest="45"
+                HeightRequest="45"
+                Clicked="OnCloseClicked" />
+
+        <!-- Nút bật/tắt đèn flash -->
+        <Button x:Name="btnFlash"
+                Text="⚡"
+                FontSize="16"
+                TextColor="White"
+                BackgroundColor="#40000000"
+                CornerRadius="22"
+                HorizontalOptions="Start"
+                VerticalOptions="Start"
+                Margin="20"
+                WidthRequest="44"
+                HeightRequest="44"
+                Clicked="OnFlashClicked" />
+
+        <!-- Loading indicator -->
+        <Frame x:Name="loadingFrame"
+               IsVisible="false"
+               BackgroundColor="#80000000"
+               CornerRadius="10"
+               Padding="20"
+               HorizontalOptions="Center"
+               VerticalOptions="Center">
+            <VerticalStackLayout Spacing="10">
+                <ActivityIndicator IsRunning="True" 
+                                   Color="White" 
+                                   HorizontalOptions="Center"/>
+                <Label Text="Đang xử lý..." 
+                       TextColor="White"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+        </Frame>
+
+    </Grid>
+</ContentPage>

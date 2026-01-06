@@ -1,0 +1,94 @@
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SixOSDatKhamAppMobile.S0306_mVideoTraCuu"
+             Title="Video tra cứu"
+          BackgroundColor="Black" >
+
+    <Grid BackgroundColor="Black"
+          RowDefinitions="Auto,*">
+
+        <!-- Header -->
+        <Grid BackgroundColor="#2196F3"
+            Padding="0"
+              ColumnDefinitions="Auto,*,Auto">
+
+            <!-- Nút back -->
+            <ImageButton Grid.Column="0"
+               Source="quaylai.png"
+               WidthRequest="24"
+               HeightRequest="24"
+               VerticalOptions="Center"
+               Clicked="OnCloseClicked"
+               Margin="15,13,0,10"
+               BackgroundColor="Transparent"/>
+
+            <!-- Tiêu đề -->
+            <Label Grid.Column="1"
+                   Text="HƯỚNG DẪN TRA CỨU LỊCH HẸN"
+                   TextColor="White"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   Margin="10,13,0,10"/>
+
+            <!-- Có thể thêm nút khác nếu cần -->
+            <Label Grid.Column="2"
+                   Text=""
+                   WidthRequest="40"/>
+
+        </Grid>
+
+        <!-- Video Container -->
+        <Grid Grid.Row="1"
+              RowDefinitions="*,Auto">
+
+            <!-- Video Player -->
+            <WebView x:Name="VideoPlayer"
+                     Grid.Row="0"
+                     HorizontalOptions="Fill"
+                     VerticalOptions="Fill"
+                         Margin="0,220,0,10"/>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator x:Name="LoadingIndicator"
+                               Grid.Row="0"
+                               IsRunning="True"
+                               IsVisible="False"
+                               Color="White"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+
+            <!-- Error Message -->
+            <Label x:Name="ErrorMessage"
+                   Grid.Row="0"
+                   Text="Không thể tải video"
+                   TextColor="White"
+                   IsVisible="False"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+
+            <!-- Helper Text -->
+            <Grid Grid.Row="1"
+                  Padding="20,10"
+                  BackgroundColor="#1A1A1A">
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="📌 Hướng dẫn nhanh:"
+                           TextColor="LightGray"
+                           FontSize="14"
+                           FontAttributes="Bold"/>
+                    <Label Text="1. Nhấn play để xem video hướng dẫn"
+                           TextColor="LightGray"
+                           FontSize="12"/>
+                    <Label Text="2. Video sẽ hướng dẫn cách tra cứu lịch hẹn"
+                           TextColor="LightGray"
+                           FontSize="12"/>
+                    <Label Text="3. Nếu video không phát, kiểm tra kết nối mạng"
+                           TextColor="LightGray"
+                           FontSize="12"/>
+                </VerticalStackLayout>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SixOSDatKhamAppMobile.Pages.S0306_mKhamTheoChuyenGia"
+             NavigationPage.HasNavigationBar="False"
+             Title="Chọn chuyên gia"
+             BackgroundColor="White">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+        <!-- Header -->
+        <Grid Grid.Row="0"
+              Padding="15"
+              BackgroundColor="#1A73E8"
+              HeightRequest="60"
+              ColumnSpacing="10">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ImageButton Grid.Column="0"
+                         Source="quaylai.png"
+                         WidthRequest="24"
+                         HeightRequest="24"
+                         VerticalOptions="Center"
+                         Clicked="OnBackButtonClicked"/>
+
+            <Label Grid.Column="1"
+                   Text="CHỌN CHUYÊN GIA"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="#E2E8F0"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"/>
+        </Grid>
+
+        <!-- ROW 1: QUY TRÌNH ĐẶT KHÁM -->
+        <Grid Grid.Row="1"
+              Padding="20,15,20,10"
+              BackgroundColor="White">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Bước 1: Gói Khám (ĐÃ HOÀN THÀNH) -->
+            <VerticalStackLayout Grid.Column="0"
+                                 HorizontalOptions="Center"
+                                 Spacing="5">
+                <Frame CornerRadius="20"
+                       Padding="0"
+                       WidthRequest="40"
+                       HeightRequest="40"
+                       HorizontalOptions="Center"
+                       BackgroundColor="#1A73E8"
+                       BorderColor="#1A73E8">
+                    <Label Text="✓"
+                           FontSize="20"
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Gói Khám"
+                       FontSize="12"
+                       TextColor="#1A73E8"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Đường kẻ 1 -->
+            <BoxView Grid.Column="1"
+                     WidthRequest="20"
+                     HeightRequest="2"
+                     BackgroundColor="#1A73E8"
+                     VerticalOptions="Center"/>
+
+            <!-- Bước 2: Chuyên gia (ĐANG THỰC HIỆN) -->
+            <VerticalStackLayout Grid.Column="2"
+                                 HorizontalOptions="Center"
+                                 Spacing="5">
+                <Frame CornerRadius="20"
+                       Padding="0"
+                       WidthRequest="40"
+                       HeightRequest="40"
+                       HorizontalOptions="Center"
+                       BackgroundColor="#1A73E8"
+                       BorderColor="#1A73E8">
+                    <Label Text="2"
+                           FontSize="18"
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Chuyên gia"
+                       FontSize="12"
+                       TextColor="#1A73E8"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Đường kẻ 2 -->
+            <BoxView Grid.Column="3"
+                     WidthRequest="20"
+                     HeightRequest="2"
+                     BackgroundColor="#E2E8F0"
+                     VerticalOptions="Center"/>
+
+            <!-- Bước 3: Lịch khám -->
+            <VerticalStackLayout Grid.Column="4"
+                                 HorizontalOptions="Center"
+                                 Spacing="5">
+                <Frame CornerRadius="20"
+                       Padding="0"
+                       WidthRequest="40"
+                       HeightRequest="40"
+                       HorizontalOptions="Center"
+                       BackgroundColor="White"
+                       BorderColor="#E2E8F0">
+                    <Label Text="3"
+                           FontSize="18"
+                           TextColor="#94A3B8"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Lịch khám"
+                       FontSize="12"
+                       TextColor="#94A3B8"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Đường kẻ 3 -->
+            <BoxView Grid.Column="5"
+                     WidthRequest="20"
+                     HeightRequest="2"
+                     BackgroundColor="#E2E8F0"
+                     VerticalOptions="Center"/>
+
+            <!-- Bước 4: Xác nhận -->
+            <VerticalStackLayout Grid.Column="6"
+                                 HorizontalOptions="Center"
+                                 Spacing="5">
+                <Frame CornerRadius="20"
+                       Padding="0"
+                       WidthRequest="40"
+                       HeightRequest="40"
+                       HorizontalOptions="Center"
+                       BackgroundColor="White"
+                       BorderColor="#E2E8F0">
+                    <Label Text="4"
+                           FontSize="18"
+                           TextColor="#94A3B8"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Frame>
+                <Label Text="Xác nhận"
+                       FontSize="12"
+                       TextColor="#94A3B8"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Thanh tìm kiếm -->
+        <Grid Grid.Row="2"
+              Padding="15,10,15,15">
+
+            <Border Stroke="#E2E8F0"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 25"
+                    BackgroundColor="#F8FAFC"
+                    HeightRequest="45">
+                <Grid ColumnDefinitions="Auto,*"
+                      ColumnSpacing="10"
+                      Padding="15,0">
+                    <Image Source="timkiem.png"
+                           WidthRequest="20"
+                           HeightRequest="20"
+                           VerticalOptions="Center"/>
+
+                    <Entry x:Name="SearchEntry"
+                           Grid.Column="1"
+                           Placeholder="Tìm theo tên chuyên gia..."
+                           FontSize="14"
+                           TextColor="#333333"
+                           PlaceholderColor="#94A3B8"
+                           VerticalOptions="Center"
+                           BackgroundColor="Transparent"
+                           TextChanged="OnSearchTextChanged"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Nội dung chính -->
+        <Grid Grid.Row="3">
+
+            <!-- Loading overlay -->
+            <AbsoluteLayout IsVisible="{Binding ShowLoadingOverlay}">
+                <BoxView AbsoluteLayout.LayoutFlags="All"
+                         AbsoluteLayout.LayoutBounds="0,0,1,1"
+                         BackgroundColor="White"
+                         Opacity="0.8"/>
+
+                <VerticalStackLayout AbsoluteLayout.LayoutFlags="PositionProportional"
+                                     AbsoluteLayout.LayoutBounds="0.5,0.5,-1,-1"
+                                     Spacing="20"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center">
+
+                    <ActivityIndicator IsRunning="True"
+                                       Color="#1A73E8"
+                                       WidthRequest="50"
+                                       HeightRequest="50"/>
+
+                    <Label Text="Đang tải danh sách chuyên gia..."
+                           FontSize="16"
+                           TextColor="#1E293B"
+                           HorizontalOptions="Center"/>
+
+                    <Label Text="Vui lòng chờ trong giây lát..."
+                           FontSize="14"
+                           TextColor="#64748B"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </AbsoluteLayout>
+
+            <!-- Danh sách chuyên gia -->
+            <ScrollView IsVisible="{Binding ShowContent}">
+                <VerticalStackLayout Spacing="15"
+                                     Padding="15,0,15,15">
+
+                    <Label x:Name="SearchResultsLabel"
+                           Text=""
+                           FontSize="14"
+                           TextColor="#64748B"
+                           IsVisible="False"
+                           Margin="0,0,0,10"/>
+
+                    <VerticalStackLayout x:Name="ChuyenGiaListContainer"
+                                         Spacing="15">
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout x:Name="NoResultsContainer"
+                                         IsVisible="False"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         Spacing="10"
+                                         Margin="0,50">
+                        <Image Source="timkiem.png"
+                               WidthRequest="60"
+                               HeightRequest="60"
+                               Opacity="0.5"/>
+                        <Label Text="Không tìm thấy chuyên gia phù hợp"
+                               FontSize="16"
+                               TextColor="#64748B"/>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+
+        <!-- NÚT HÀNH ĐỘNG -->
+        <Grid Grid.Row="4"
+              x:Name="ActionButtonsContainer"
+              ColumnDefinitions="*,*"
+              ColumnSpacing="10"
+              Padding="15,5,15,15"
+              BackgroundColor="White">
+
+            <Border x:Name="SelectTimeSlotButton"
+                    Grid.Column="0" 
+                    Stroke="#1A73E8"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10"
+                    BackgroundColor="#1A73E8"
+                    HeightRequest="50">
+                <Label Text="Chọn khung giờ phù hợp"
+                       FontSize="14"
+                       TextColor="White"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Center"/>
+            </Border>
+
+            <Border x:Name="BookByExpertButton"
+                    Grid.Column="1"
+                    Stroke="#1A73E8"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10"
+                    BackgroundColor="#E5E7EB"
+                    HeightRequest="50">
+                <Label Text="Đặt lịch theo chuyên gia"
+                       FontSize="14"
+                       TextColor="#9CA3AF"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Center"/>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>

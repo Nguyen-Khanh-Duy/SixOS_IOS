@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:SixOSDatKhamAppMobile.Pages"
+             x:Class="SixOSDatKhamAppMobile.Pages.S0306_mLichSuKhamBenh"
+             NavigationPage.HasNavigationBar="False"
+             Title="Lịch sử khám bệnh"
+             BackgroundColor="White">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Header -->
+        <Grid Grid.Row="0"
+              Padding="15"
+              BackgroundColor="#1A73E8"
+              HeightRequest="60"
+              ColumnSpacing="10">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ImageButton Grid.Column="0"
+                         Source="quaylai.png"
+                         WidthRequest="24"
+                         HeightRequest="24"
+                         VerticalOptions="Center"
+                         Clicked="OnBackButtonClicked"/>
+
+            <Label Grid.Column="1"
+                   Text="LỊCH SỬ KHÁM BỆNH"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"/>
+        </Grid>
+
+        <!-- Nội dung chính - Layout 2 cột -->
+        <Grid Grid.Row="1"
+              ColumnDefinitions="0.36*,0.74*"
+              BackgroundColor="#F8FAFC">
+
+            <!-- Cột trái: Danh sách ngày tháng -->
+            <Border Grid.Column="0"
+                    Stroke="#E2E8F0"
+                    BackgroundColor="White">
+                <ScrollView>
+                    <VerticalStackLayout Spacing="0"
+                                         Padding="0">
+
+                        <!-- Header danh sách ngày -->
+                        <Border Stroke="#E2E8F0"
+                                BackgroundColor="#1A73E8"
+                                Padding="15,10">
+                            <Label Text="Đợt khám"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="#E2E8F0"/>
+                        </Border>
+
+                        <!-- Danh sách các ngày - sẽ được render động -->
+                        <VerticalStackLayout x:Name="DateListContainer"
+                                             Spacing="0">
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Border>
+
+            <!-- Cột phải: Danh sách file PDF -->
+            <ScrollView Grid.Column="1"
+                        BackgroundColor="White">
+                <VerticalStackLayout Spacing="0"
+                                     Padding="10">
+
+                    <!-- Danh sách file PDF - sẽ được render động -->
+                    <VerticalStackLayout x:Name="PdfFilesContainer"
+                                         Spacing="0"
+                                         IsVisible="True">
+                    </VerticalStackLayout>
+
+                    <!-- Thông báo khi không có file -->
+                    <VerticalStackLayout x:Name="NoFilesContainer"
+                                         IsVisible="False"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         Spacing="10"
+                                         Margin="0,50"
+                                         Padding="20">
+                        <Image Source="timkiem.png"
+                               WidthRequest="80"
+                               HeightRequest="80"
+                               Opacity="0.5"/>
+                        <Label Text="Không có hồ sơ khám bệnh"
+                               FontSize="16"
+                               TextColor="#64748B"
+                               HorizontalTextAlignment="Center"/>
+                        <Label Text="Không có file PDF cho ngày này"
+                               FontSize="14"
+                               TextColor="#94A3B8"
+                               HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </ScrollView>
+
+        </Grid>
+
+        <!-- Bottom Navigation -->
+        <Frame Grid.Row="2"
+               BackgroundColor="{StaticResource White}"
+               CornerRadius="0"
+               Padding="0"
+               Margin="0"
+               HasShadow="True"
+               BorderColor="#E0E0E0">
+
+            <Grid ColumnDefinitions="*,*,*,*"
+                  ColumnSpacing="0"
+                  Padding="0">
+
+                <VerticalStackLayout Grid.Column="0"
+                                     Spacing="3"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center"
+                                     Padding="10,8">
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTrangChuClicked"/>
+                    </VerticalStackLayout.GestureRecognizers>
+                    <Image Source="home.png"
+                           HeightRequest="24"
+                           WidthRequest="24"/>
+                    <Label Text="Trang chủ"
+                           FontSize="10"
+                           TextColor="{StaticResource PrimaryColor}"/>
+                </VerticalStackLayout>
+
+                <Grid Grid.Column="1">
+                    <VerticalStackLayout Spacing="3"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         Padding="10,8">
+                        <Image Source="lichhen.png"
+                               HeightRequest="24"
+                               WidthRequest="24"/>
+                        <Label Text="Lịch hẹn"
+                               FontSize="10"
+                               TextColor="{StaticResource PrimaryColor}"/>
+                    </VerticalStackLayout>
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLichHenClicked"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+
+                <VerticalStackLayout Grid.Column="2"
+                                     Spacing="3"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center"
+                                     Padding="10,8">
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnPhieuKhamClicked"/>
+                    </VerticalStackLayout.GestureRecognizers>
+                    <Image Source="loc1.png"
+                           HeightRequest="24"
+                           WidthRequest="24"/>
+                    <Label Text="Tra cứu"
+                           FontSize="10"
+                           TextColor="{StaticResource PrimaryColor}"/>
+                </VerticalStackLayout>
+
+                <Grid Grid.Column="3">
+                    <VerticalStackLayout Spacing="3"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         Padding="10,8">
+                        <Image Source="taikhoan.png"
+                               HeightRequest="24"
+                               WidthRequest="24"/>
+                        <Label Text="Tài khoản"
+                               FontSize="10"
+                               TextColor="{StaticResource PrimaryColor}"/>
+                    </VerticalStackLayout>
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTaiKhoanClicked"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+
+            </Grid>
+        </Frame>
+
+        <!-- OTP Verification Popup (Overlay) -->
+        <local:S0306_mXacThucOTP x:Name="OtpPopup" 
+                                 Grid.Row="0" 
+                                 Grid.RowSpan="3"/>
+
+    </Grid>
+</ContentPage>

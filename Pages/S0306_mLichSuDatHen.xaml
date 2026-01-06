@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SixOSDatKhamAppMobile.Pages.S0306_mLichSuDatHen"
+              NavigationPage.HasNavigationBar="False"
+             Title="Lịch sử khám bệnh"
+             BackgroundColor="White">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
+
+        <!-- Header -->
+        <Grid Grid.Row="0"
+              Padding="15"
+              BackgroundColor="#1A73E8"
+              HeightRequest="60">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ImageButton Grid.Column="0"
+                         Source="quaylai.png"
+                         WidthRequest="24"
+                         HeightRequest="24"
+                         VerticalOptions="Center"
+                         Clicked="OnBackButtonClicked"/>
+
+            <Label Grid.Column="1"
+                   Text="LỊCH SỬ ĐẶT HẸN"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="#E2E8F0"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"
+                   Margin="15,0,0,0"/>
+        </Grid>
+
+        <!-- Date Picker Section -->
+        <Border Grid.Row="1"
+                Stroke="#E2E8F0"
+                StrokeThickness="1"
+                BackgroundColor="White"
+                Padding="15,10">
+
+            <Grid ColumnDefinitions="Auto,*"
+                  ColumnSpacing="10">
+
+                <Label Grid.Column="0"
+                       Text="Chọn ngày:"
+                       FontSize="14"
+                       FontAttributes="Bold"
+                       TextColor="#007bff"
+                       VerticalOptions="Center"/>
+
+                <Border Grid.Column="1"
+                        Stroke="#1A73E8"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8"
+                        BackgroundColor="White"
+                        Padding="10,0"
+                        HeightRequest="40">
+
+                    <Grid ColumnDefinitions="*,Auto"
+                          ColumnSpacing="5">
+
+                        <DatePicker Grid.Column="0"
+                                    x:Name="datePicker"
+                                    Date="{Binding SelectedDate, Mode=TwoWay}"
+                                    Format="dd/MM/yyyy"
+                                    TextColor="#333333"
+                                    FontSize="14"
+                                    BackgroundColor="Transparent"
+                                    VerticalOptions="Center"
+                                    DateSelected="OnDateSelected"/>
+
+                        <ImageButton Grid.Column="1"
+                                     Source="theongay.png"
+                                     WidthRequest="20"
+                                     HeightRequest="20"
+                                     BackgroundColor="Transparent"
+                                     VerticalOptions="Center"
+                                     Clicked="OnCalendarButtonClicked"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Appointments List -->
+        <ScrollView Grid.Row="2">
+            <VerticalStackLayout x:Name="appointmentsContainer"
+                                 Padding="15"
+                                 Spacing="15"/>
+        </ScrollView>
+
+        <!-- Empty State -->
+        <VerticalStackLayout Grid.Row="2"
+                             x:Name="emptyStateContainer"
+                             Padding="20"
+                             Spacing="10"
+                             VerticalOptions="CenterAndExpand"
+                             HorizontalOptions="CenterAndExpand"
+                             IsVisible="False">
+            <Label Text="Chưa có lịch hẹn nào"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   TextColor="#64748B"
+                   HorizontalOptions="Center"/>
+            <Label Text="Vui lòng chọn ngày để xem lịch hẹn của bạn"
+                   FontSize="13"
+                   TextColor="#94A3B8"
+                   HorizontalOptions="Center"/>
+        </VerticalStackLayout>
+
+        <!-- Loading State -->
+        <VerticalStackLayout Grid.Row="2"
+                             x:Name="loadingContainer"
+                             Padding="20"
+                             Spacing="10"
+                             VerticalOptions="CenterAndExpand"
+                             HorizontalOptions="CenterAndExpand"
+                             IsVisible="False">
+            <ActivityIndicator x:Name="loadingSpinner"
+                               IsRunning="True"
+                               IsVisible="True"
+                               Color="#1A73E8"/>
+            <Label Text="Đang tải dữ liệu..."
+                   FontSize="14"
+                   TextColor="#64748B"
+                   HorizontalOptions="Center"/>
+        </VerticalStackLayout>
+        <!-- ROW 4: MENU BOTTOM -->
+        <Frame Grid.Row="4"
+               BackgroundColor="{StaticResource White}"
+               CornerRadius="0"
+               Padding="0"
+               Margin="0"
+               HasShadow="True"
+               BorderColor="#E0E0E0">
+
+            <Grid ColumnDefinitions="*,*,*,*"
+                  ColumnSpacing="0"
+                  Padding="0">
+
+                <!-- Trang chủ -->
+                <VerticalStackLayout Grid.Column="0"
+                                     Spacing="3"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center"
+                                     Padding="10,8">
+
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTrangChuClicked"/>
+                    </VerticalStackLayout.GestureRecognizers>
+
+                    <Image Source="home.png"
+                           HeightRequest="24"
+                           WidthRequest="24"/>
+
+                    <Label Text="Trang chủ"
+                           FontSize="10"
+                           TextColor="{StaticResource PrimaryColor}"/>
+                </VerticalStackLayout>
+
+                <!-- Lịch hẹn -->
+                <Grid Grid.Column="1">
+                    <VerticalStackLayout Spacing="3"
+                              HorizontalOptions="Center"
+                              VerticalOptions="Center"
+                              Padding="10,8">
+                        <Image Source="lichhen.png"
+                               HeightRequest="24"
+                               WidthRequest="24"/>
+                        <Label Text="Lịch hẹn"
+                               FontSize="10"
+                               TextColor="{StaticResource PrimaryColor}"/>
+                    </VerticalStackLayout>
+
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLichHenClicked"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+
+                <!-- Tra cứu -->
+                <VerticalStackLayout Grid.Column="2"
+                                     Spacing="3"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center"
+                                     Padding="10,8">
+
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnPhieuKhamClicked"/>
+                    </VerticalStackLayout.GestureRecognizers>
+
+                    <Image Source="loc1.png"
+                           HeightRequest="24"
+                           WidthRequest="24"/>
+
+                    <Label Text="Tra cứu"
+                           FontSize="10"
+                           TextColor="{StaticResource PrimaryColor}"/>
+                </VerticalStackLayout>
+
+                <!-- Tài khoản -->
+                <Grid Grid.Column="3">
+                    <VerticalStackLayout Spacing="3"
+                              HorizontalOptions="Center"
+                              VerticalOptions="Center"
+                              Padding="10,8">
+                        <Image Source="taikhoan.png"
+                    HeightRequest="24"
+                    WidthRequest="24"/>
+                        <Label Text="Tài khoản"
+                    FontSize="10"
+                    TextColor="{StaticResource PrimaryColor}"/>
+                    </VerticalStackLayout>
+
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTaiKhoanClicked"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+
+            </Grid>
+        </Frame>
+    </Grid>
+</ContentPage>
