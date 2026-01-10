@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Layouts;
@@ -602,64 +602,7 @@ namespace SixOSDatKhamAppMobile.Pages
         #endregion
 
         // Xử lý nút quét mã QR
-        private async void OnQuetQRClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                // Kiểm tra quyền camera
-                var status = await Permissions.CheckStatusAsync<Permissions.Camera>();
-
-                if (status != PermissionStatus.Granted)
-                {
-                    // Hiển thị dialog yêu cầu quyền với UX tốt
-                    var result = await DisplayAlert("Cần quyền truy cập camera",
-                        "Ứng dụng cần quyền truy cập camera để quét mã QR trên CCCD.\n\nBạn có cho phép sử dụng camera không?",
-                        "Cho phép", "Từ chối");
-
-                    if (result)
-                    {
-                        status = await Permissions.RequestAsync<Permissions.Camera>();
-
-                        if (status != PermissionStatus.Granted)
-                        {
-                            await DisplayAlert("Thông báo",
-                                "Bạn cần cấp quyền camera trong cài đặt để sử dụng tính năng quét QR.",
-                                "OK");
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        return;
-                    }
-                }
-
-                // Mở trang quét QR
-                var scannerPage = new S0306_mQRScannerPage();
-
-                // Hiển thị loading nhẹ trước khi mở scanner
-                ShowLoading(true);
-                await Task.Delay(100);
-
-                // Mở trang quét QR
-                await Navigation.PushAsync(scannerPage);
-                ShowLoading(false);
-
-                // Đợi kết quả quét
-                var qrData = await scannerPage.WaitForScanResultAsync();
-
-                if (!string.IsNullOrEmpty(qrData))
-                {
-                    await ProcessQRResult(qrData);
-                }
-            }
-            catch (Exception ex)
-            {
-                ShowLoading(false);
-                await DisplayAlert("Lỗi", $"Không thể quét mã QR: {ex.Message}", "OK");
-            }
-        }
-
+ private async void OnQuetQRClicked(object sender, EventArgs e) { try { // Kiểm tra quyền camera var status = await Permissions.CheckStatusAsync<Permissions.Camera>();  if (status != PermissionStatus.Granted) { // Hiển thị dialog yêu cầu quyền với UX tốt var result = await DisplayAlert("Cần quyền truy cập camera", "Ứng dụng cần quyền truy cập camera để quét mã QR trên CCCD.\n\nBạn có cho phép sử dụng camera không?", "Cho phép", "Từ chối");  if (result) { status = await Permissions.RequestAsync<Permissions.Camera>();  if (status != PermissionStatus.Granted) { await DisplayAlert("Thông báo", "Bạn cần cấp quyền camera trong cài đặt để sử dụng tính năng quét QR.", "OK"); return; } } else { return; } }  // Mở trang quét QR var scannerPage = new S0306_mQRScannerPage();  // Hiển thị loading nhẹ trước khi mở scanner ShowLoading(true); await Task.Delay(100);  // Mở trang quét QR await Navigation.PushAsync(scannerPage); ShowLoading(false);  // Đợi kết quả quét var qrData = await scannerPage.WaitForScanResultAsync();  if (!string.IsNullOrEmpty(qrData)) { await ProcessQRResult(qrData); } } catch (Exception ex) { ShowLoading(false); await DisplayAlert("Lỗi", $"Không thể quét mã QR: {ex.Message}", "OK"); } }
         private async Task ProcessQRResult(string qrData)
         {
             try
