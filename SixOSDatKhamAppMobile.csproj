@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <!-- Target frameworks -->
-    <TargetFrameworks>net7.0-ios</TargetFrameworks>
+    <TargetFrameworks>net8.0-ios</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">
-      net7.0-ios;net7.0-windows10.0.19041.0
+      net8.0-ios;net8.0-windows10.0.19041.0
     </TargetFrameworks>
 
     <OutputType>Exe</OutputType>
@@ -25,26 +25,27 @@
   </PropertyGroup>
 
 <!-- iOS chung -->
-<PropertyGroup Condition="'$(TargetFramework)'=='net7.0-ios'">
+<PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
   <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
   <SupportedOSPlatformVersion>16.1</SupportedOSPlatformVersion>
 </PropertyGroup>
 
 <!-- Debug -->
-<PropertyGroup Condition="'$(Configuration)'=='Debug' AND '$(TargetFramework)'=='net7.0-ios'">
+<PropertyGroup Condition="'$(Configuration)'=='Debug' AND '$(TargetFramework)'=='net8.0-ios'">
   <PublishTrimmed>false</PublishTrimmed>
 </PropertyGroup>
 
 <!-- Release + IPA -->
-<PropertyGroup Condition="'$(Configuration)'=='Release' AND '$(TargetFramework)'=='net7.0-ios'">
+<PropertyGroup Condition="'$(Configuration)'=='Release' AND '$(TargetFramework)'=='net8.0-ios'">
   <BuildIpa>true</BuildIpa>
   <PublishTrimmed>true</PublishTrimmed>
   <MtouchLink>SdkOnly</MtouchLink>
+
 </PropertyGroup>
 
 
   <!-- Windows ONLY -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-windows10.0.19041.0'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-windows10.0.19041.0'">
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
@@ -52,7 +53,7 @@
   <ItemGroup>
     <PackageReference Include="Camera.MAUI" Version="1.5.1" />
     <PackageReference Include="ZXing.Net.MAUI" Version="0.23.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
   </ItemGroup>
 
   <!-- MAUI Resources -->
