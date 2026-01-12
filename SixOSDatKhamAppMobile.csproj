@@ -64,19 +64,17 @@
   </PropertyGroup>
 
   <!-- Packages - Cập nhật phiên bản MAUI cho .NET 9 -->
-  <ItemGroup>
-    <!-- Camera -->
-    <PackageReference Include="Camera.MAUI" Version="1.5.1" />
-
-    <!-- ZXing -->
-    <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.6.0" />
-
-    <!-- MAUI core cho .NET 9 -->
-    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Maui.Graphics" Version="9.0.0" />
-  </ItemGroup>
+<ItemGroup>
+  <!-- Camera -->
+  <PackageReference Include="Camera.MAUI" Version="1.5.1" />
+  <!-- ZXing -->
+  <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.6.0" />
+  <!-- MAUI core cho .NET 9 - CẬP NHẬT LÊN PHIÊN BẢN 9.0.40 -->
+  <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.40" />
+  <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.40" />
+  <PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.40" />
+  <PackageReference Include="Microsoft.Maui.Graphics" Version="9.0.40" />
+</ItemGroup>
 
   <!-- MAUI Resources -->
   <ItemGroup>
@@ -239,4 +237,5 @@
   </ItemGroup>
 
 </Project>
+
 
