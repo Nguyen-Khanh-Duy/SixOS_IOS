@@ -1,4 +1,4 @@
-name: Build iOS/Mac Catalyst IPA (.NET 9 MAUI)
+name: Build iOS/Mac Catalyst IPA (.NET 8 MAUI)
 
 on:
   workflow_dispatch:
@@ -13,44 +13,22 @@ jobs:
     - name: Checkout mã nguồn
       uses: actions/checkout@v4
 
-    - name: Cài đặt .NET 9 SDK
+    - name: Cài đặt .NET 8 SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
+        dotnet-version: '8.0.x'
 
-    - name: Hiển thị thông tin hệ thống
-      run: |
-        echo "=== Thông tin hệ thống ==="
-        uname -a
-        sw_vers
-        xcodebuild -version
-        echo "=== Thông tin .NET ==="
-        dotnet --info
-
-    - name: Cài đặt workloads MAUI cho .NET 9
+    - name: Cài đặt workloads MAUI cho .NET 8
       run: |
         echo "=== Cài đặt workloads cần thiết ==="
-        
-        # Cài đặt MAUI workload cho .NET 9
-        echo "1. Cài đặt MAUI workload..."
-        dotnet workload install maui
-        
-        echo "=== Danh sách workloads đã cài đặt ==="
-        dotnet workload list
+        dotnet workload install maui-ios maui-maccatalyst
 
-    - name: Khôi phục dependencies
+    - name: Build cho iOS (.NET 8) - Tạo IPA
       run: |
-        echo "=== Đang restore dependencies ==="
-        dotnet restore --verbosity normal
-
-    - name: Build cho iOS (.NET 9) - Tạo IPA
-      run: |
-        echo "=== Building cho iOS (.NET 9) - Tạo IPA ==="
-        echo "⚠️ Đang sử dụng iOS SDK 25.x để tương thích với Xcode 16.4"
+        echo "=== Building cho iOS (.NET 8) - Tạo IPA ==="
         
-        # Build iOS để tạo IPA với iOS SDK 25.x
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net9.0-ios \
+          -f net8.0-ios \
           -c Release \
           -r ios-arm64 \
           -p:BuildIpa=true \
@@ -58,55 +36,4 @@ jobs:
           -p:EnableCodeSigning=false \
           -p:EnablePackageSigning=false \
           -p:MtouchLink=SdkOnly \
-          -p:MicrosoftIOSVersion=25.0.0 \
-          -p:MicrosoftMacCatalystVersion=25.0.0 \
           --verbosity normal
-        
-        echo "=== Đã build iOS IPA xong ==="
-
-    - name: Build cho Mac Catalyst (.NET 9)
-      run: |
-        echo "=== Building cho Mac Catalyst (.NET 9) ==="
-        echo "⚠️ Đang sử dụng Mac Catalyst SDK 25.x để tương thích với Xcode 16.4"
-        
-        # Build với Mac Catalyst
-        dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net9.0-maccatalyst \
-          -c Release \
-          -r maccatalyst-x64 \
-          -p:MtouchLink=SdkOnly \
-          -p:CreatePackage=true \
-          -p:MicrosoftMacCatalystVersion=25.0.0 \
-          --verbosity normal
-        
-        echo "=== Đã build Mac Catalyst xong ==="
-
-    - name: Tìm và liệt kê file output
-      run: |
-        echo "=== Tìm file .ipa cho iOS ==="
-        find . -name "*.ipa" -type f 2>/dev/null || echo "Không tìm thấy file .ipa"
-        
-        echo "=== Tìm file .app cho Mac Catalyst ==="
-        find . -name "*.app" -type d 2>/dev/null || echo "Không tìm thấy file .app"
-        
-        echo "=== Cấu trúc thư mục bin ==="
-        ls -la bin/Release/ || true
-        find bin/Release -type f -name "*.ipa" -o -name "*.app" 2>/dev/null || true
-
-    - name: Upload file IPA iOS
-      uses: actions/upload-artifact@v4
-      with:
-        name: ios-ipa
-        path: |
-          **/bin/Release/net9.0-ios/ios-arm64/*.ipa
-          **/bin/Release/**/*.ipa
-        if-no-files-found: warn
-
-    - name: Upload file .app Mac Catalyst
-      uses: actions/upload-artifact@v4
-      with:
-        name: mac-catalyst-app
-        path: |
-          **/bin/Release/net9.0-maccatalyst/maccatalyst-x64/*.app
-          **/bin/Release/**/*.app
-        if-no-files-found: warn
