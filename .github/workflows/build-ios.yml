@@ -1,4 +1,4 @@
-name: Build iOS/Mac Catalyst IPA (.NET 8 MAUI)
+name: Build iOS/Mac Catalyst IPA (.NET 9 MAUI)
 
 on:
   workflow_dispatch:
@@ -13,22 +13,45 @@ jobs:
     - name: Checkout mã nguồn
       uses: actions/checkout@v4
 
-    - name: Cài đặt .NET 8 SDK
+    - name: Cài đặt .NET 9 SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '9.0.x'
 
-    - name: Cài đặt workloads MAUI cho .NET 8
+    - name: Hiển thị thông tin hệ thống
+      run: |
+        echo "=== Thông tin hệ thống ==="
+        uname -a
+        sw_vers
+        xcodebuild -version
+        echo "=== Thông tin .NET ==="
+        dotnet --info
+
+    - name: Cài đặt workloads MAUI cho .NET 9 với iOS SDK 17.x
       run: |
         echo "=== Cài đặt workloads cần thiết ==="
-        dotnet workload install maui-ios maui-maccatalyst
-
-    - name: Build cho iOS (.NET 8) - Tạo IPA
-      run: |
-        echo "=== Building cho iOS (.NET 8) - Tạo IPA ==="
         
+        # Cài đặt MAUI workload cho .NET 9
+        echo "1. Cài đặt MAUI workload..."
+        dotnet workload install maui
+        
+        echo "=== Danh sách workloads đã cài đặt ==="
+        dotnet workload list
+
+    - name: Khôi phục dependencies
+      run: |
+        echo "=== Đang restore dependencies ==="
+        # Tắt warning về Xcode version
+        dotnet restore --verbosity normal /p:ValidateXcodeVersion=false
+
+    - name: Build cho iOS (.NET 9) - Tạo IPA
+      run: |
+        echo "=== Building cho iOS (.NET 9) - Tạo IPA ==="
+        echo "⚠️ Đang sử dụng iOS SDK 17.x để tương thích với Xcode 16.4"
+        
+        # Build iOS để tạo IPA với iOS SDK 17.x
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net8.0-ios \
+          -f net9.0-ios \
           -c Release \
           -r ios-arm64 \
           -p:BuildIpa=true \
@@ -36,4 +59,28 @@ jobs:
           -p:EnableCodeSigning=false \
           -p:EnablePackageSigning=false \
           -p:MtouchLink=SdkOnly \
+          -p:ValidateXcodeVersion=false \
+          -p:MicrosoftIOSVersion=17.4.0 \
           --verbosity normal
+        
+        echo "=== Đã build iOS IPA xong ==="
+
+    - name: Build cho Mac Catalyst (.NET 9)
+      run: |
+        echo "=== Building cho Mac Catalyst (.NET 9) ==="
+        echo "⚠️ Đang sử dụng Mac Catalyst SDK 17.x để tương thích với Xcode 16.4"
+        
+        # Build với Mac Catalyst
+        dotnet publish SixOSDatKhamAppMobile.csproj \
+          -f net9.0-maccatalyst \
+          -c Release \
+          -r maccatalyst-x64 \
+          -p:MtouchLink=SdkOnly \
+          -p:CreatePackage=true \
+          -p:ValidateXcodeVersion=false \
+          -p:MicrosoftMacCatalystVersion=17.4.0 \
+          --verbosity normal
+        
+        echo "=== Đã build Mac Catalyst xong ==="
+
+    # ... phần còn lại giữ nguyên
