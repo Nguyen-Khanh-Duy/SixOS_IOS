@@ -14,17 +14,12 @@
 
     <!-- MAUI 7.x -->
     <MauiVersion>7.0.99</MauiVersion>
-    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
-  
+   
      <NoWarn>$(NoWarn);NETSDK1202;NETSDK1138;NU1603;NU1605;NU1608</NoWarn>
   
   <!-- Tắt tính năng EOL checking -->
   <CheckEolTargetFramework>false</CheckEolTargetFramework>
   <CheckEolWorkload>false</CheckEolWorkload>
-  
-  <!-- Tắt linker -->
-  <PublishTrimmed>false</PublishTrimmed>
-  <MtouchLink>None</MtouchLink>
   </PropertyGroup>
 <!-- Chung -->
 <PropertyGroup>
@@ -217,6 +212,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
