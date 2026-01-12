@@ -1,13 +1,9 @@
-name: Build iOS IPA
+name: Build iOS with Code Signing
 
 on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
-    paths:
-      - '**/*.cs'
-      - '**/*.xaml'
-      - '**/*.csproj'
 
 jobs:
   build-ios:
@@ -17,25 +13,42 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup .NET 8
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Install MAUI workloads
       run: |
-        # Cài .NET 8 SDK
-        curl -L https://dot.net/v1/dotnet-install.sh | bash -s -- --version 8.0.401 --install-dir /usr/local/share/dotnet
-        echo "/usr/local/share/dotnet" >> $GITHUB_PATH
+        dotnet workload install maui
+        dotnet workload install maui-ios
+
+    - name: Create keychain and import certificates
+      env:
+        SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
+        SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+        PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
+      run: |
+        # Tạo keychain
+        security create-keychain -p "" build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p "" build.keychain
         
-        # Cài workloads MAUI
-        /usr/local/share/dotnet/dotnet workload install maui
-        /usr/local/share/dotnet/dotnet workload install maui-ios
+        # Import certificate
+        echo "$SIGNING_CERTIFICATE" | base64 --decode > certificate.p12
+        security import certificate.p12 -k build.keychain -P "$SIGNING_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+        
+        # Import provisioning profile
+        echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+        
+        # Cấu hình keychain
+        security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
 
-    - name: Verify setup
-      run: |
-        dotnet --info
-        dotnet workload list
-
-    - name: Restore packages
-      run: dotnet restore SixOSDatKhamAppMobile.csproj
-
-    - name: Build IPA
+    - name: Build with code signing
+      env:
+        APPLE_TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f:net8.0-ios \
@@ -44,18 +57,15 @@ jobs:
           -p:BuildIpa=true \
           -p:ArchiveOnBuild=true \
           -p:CodesignKey="iPhone Distribution" \
-          -p:CodesignProvision="Automatic:Provisioning" \
+          -p:CodesignProvision="profile.mobileprovision" \
+          -p:CodesignEntitlements="Entitlements.plist" \
+          -p:DevelopmentTeam="$APPLE_TEAM_ID" \
           -p:MtouchLink=SdkOnly \
-          -p:SkipSimulatorArchitectures=true \
-          -p:TreatWarningsAsErrors=false \
-          --verbosity:diagnostic \
-          -o:./publish
+          -o:./publish \
+          --verbosity:normal
 
-    - name: Upload IPA artifact
+    - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
-        name: SixOS-iOS-IPA
-        path: |
-          ./publish/*.ipa
-          ./publish/*.app
-        retention-days: 7
+        name: Signed-IPA
+        path: ./publish/*.ipa
