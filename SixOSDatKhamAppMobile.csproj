@@ -66,8 +66,7 @@
   <!-- Packages -->
    <ItemGroup>
         <!-- Sửa phiên bản ZXing.Net.Maui thành 1.x -->
-        <PackageReference Include="ZXing.Net.Maui" Version="1.0.0" />
-        
+        <PackageReference Include="ZXing.Net.Maui" Version="2.1.0" />
         <!-- Cập nhật tất cả MAUI packages thành phiên bản phù hợp -->
         <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.3" />
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.3" />
@@ -235,6 +234,7 @@
 
 
 </Project>
+
 
 
 
