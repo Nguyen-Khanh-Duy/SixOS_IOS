@@ -1,4 +1,4 @@
-name: Build iOS IPA (.NET 8 MAUI)
+name: Build iOS/Mac Catalyst IPA (.NET 8 MAUI)
 
 on:
   workflow_dispatch:
@@ -18,59 +18,98 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Hiển thị thông tin dotnet (debug)
-      run: dotnet --info
-
-    - name: Cài đặt và cập nhật workloads MAUI
+    - name: Hiển thị thông tin hệ thống
       run: |
-        # Kiểm tra workloads hiện có
-        echo "=== Danh sách workloads hiện tại ==="
-        dotnet workload list
-        
-        # Cập nhật workload manifests
-        echo "=== Đang cập nhật workload manifests ==="
+        echo "=== Thông tin hệ thống ==="
+        uname -a
+        sw_vers
+        echo "=== Thông tin .NET ==="
+        dotnet --info
+
+    - name: Cài đặt workloads MAUI
+      run: |
+        echo "=== Cập nhật workload manifests ==="
         dotnet workload update
         
-        # Cài đặt MAUI workload (bao gồm iOS, Android)
-        echo "=== Đang cài đặt MAUI workload ==="
-        dotnet workload install maui
+        echo "=== Cài đặt MAUI workload ==="
+        dotnet workload install maui --include-ios --include-maccatalyst
         
-        # Kiểm tra lại
-        echo "=== Danh sách workloads sau khi cài đặt ==="
+        echo "=== Danh sách workloads đã cài đặt ==="
         dotnet workload list
 
     - name: Khôi phục dependencies
-      run: dotnet restore
-
-    - name: Build IPA (chưa ký)
       run: |
-        echo "=== Đang build project iOS ==="
-        echo "Tìm file .csproj..."
-        find . -name "*.csproj" -type f
+        echo "=== Đang restore dependencies ==="
+        dotnet restore --verbosity normal
+
+    - name: Build cho Mac Catalyst (chạy được trên macOS)
+      run: |
+        echo "=== Building cho Mac Catalyst ==="
         
-        # Build với target framework đúng cho MAUI iOS
-        dotnet publish \
+        # Build với Mac Catalyst
+        dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net8.0-maccatalyst \
           -c Release \
           -p:BuildIpa=true \
           -p:ArchiveOnBuild=true \
+          -p:EnableCodeSigning=false \
+          -p:EnablePackageSigning=false \
           -p:MtouchLink=SdkOnly \
-          --verbosity detailed
+          --verbosity normal
+        
+        echo "=== Đã build xong ==="
 
-    - name: Tìm và upload file IPA
+    - name: Build cho iOS (dành cho thiết bị thật)
+      continue-on-error: true  # Cho phép tiếp tục nếu build iOS thất bại
       run: |
-        echo "=== Tìm file IPA ==="
-        find . -name "*.ipa" -type f 2>/dev/null || true
-        echo "=== Nội dung thư mục ==="
-        ls -la bin/Release/ 2>/dev/null || true
-        ls -la bin/Release/net8.0-maccatalyst/ 2>/dev/null || true
+        echo "=== Building cho iOS ==="
+        
+        # Build với iOS (cần provisioning profile để chạy thật)
+        dotnet publish SixOSDatKhamAppMobile.csproj \
+          -f net8.0-ios \
+          -c Release \
+          -p:BuildIpa=true \
+          -p:ArchiveOnBuild=true \
+          -p:EnableCodeSigning=false \
+          -p:EnablePackageSigning=false \
+          -p:MtouchLink=SdkOnly \
+          --verbosity normal
+        
+        echo "=== Đã build iOS xong ==="
 
-    - name: Upload file IPA
-      if: success()
+    - name: Tìm và liệt kê file output
+      run: |
+        echo "=== Tìm file .ipa ==="
+        find . -name "*.ipa" -type f 2>/dev/null | head -20 || echo "Không tìm thấy file .ipa"
+        
+        echo "=== Tìm file .app ==="
+        find . -name "*.app" -type d 2>/dev/null | head -20 || echo "Không tìm thấy file .app"
+        
+        echo "=== Cấu trúc thư mục bin ==="
+        ls -la bin/ || echo "Không có thư mục bin"
+        ls -la bin/Release/ 2>/dev/null || echo "Không có thư mục Release"
+        ls -la bin/Release/net8.0-maccatalyst/ 2>/dev/null || echo "Không có thư mục maccatalyst"
+
+    - name: Upload file IPA (Mac Catalyst)
+      uses: actions/upload-artifact@v4
+      with:
+        name: mac-catalyst-ipa
+        path: |
+          **/bin/Release/net8.0-maccatalyst/**/*.ipa
+        if-no-files-found: warn
+
+    - name: Upload file IPA (iOS)
       uses: actions/upload-artifact@v4
       with:
         name: ios-ipa
         path: |
-          **/bin/Release/**/*.ipa
-          **/*.ipa
+          **/bin/Release/net8.0-ios/**/*.ipa
+        if-no-files-found: warn
+
+    - name: Upload file .app (ứng dụng macOS)
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-app
+        path: |
+          **/bin/Release/net8.0-maccatalyst/**/*.app
         if-no-files-found: warn
