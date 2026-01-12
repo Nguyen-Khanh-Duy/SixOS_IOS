@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-   <!-- Target frameworks đúng cho .NET 9 MAUI -->
+    <!-- Target frameworks đúng cho .NET 9 MAUI -->
     <TargetFrameworks>net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">
-      .0-windows10.0.19041.0
+      net9.0-windows10.0.19041.0
     </TargetFrameworks>
 
     <OutputType>Exe</OutputType>
@@ -23,8 +23,12 @@
 
     <WindowsPackageType>None</WindowsPackageType>
 
-  <!-- Dùng phiên bản MAUI mới nhất cho .NET 9 -->
+    <!-- Dùng phiên bản MAUI mới nhất cho .NET 9 -->
     <MauiVersion>9.0.0</MauiVersion>
+    
+    <!-- THÊM VÀO: Chỉ định runtime version tương thích với Xcode 16.4 -->
+    <MacCatalystVersion>16.4</MacCatalystVersion>
+    <RuntimeFrameworkVersion>16.4.100</RuntimeFrameworkVersion>
     
     <!-- iOS/Mac Catalyst specific settings -->
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.0</SupportedOSPlatformVersion>
@@ -34,23 +38,34 @@
     <NoWarn>$(NoWarn);NETSDK1202</NoWarn>
   </PropertyGroup>
 
-<!-- iOS chung -->
-<PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
-  <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
-  <SupportedOSPlatformVersion>16.1</SupportedOSPlatformVersion>
-</PropertyGroup>
+  <!-- iOS chung -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
+    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+    <SupportedOSPlatformVersion>16.1</SupportedOSPlatformVersion>
+  </PropertyGroup>
 
-<!-- Debug -->
-<PropertyGroup Condition="'$(Configuration)'=='Debug' AND '$(TargetFramework)'=='net9.0-ios'">
-  <PublishTrimmed>false</PublishTrimmed>
-</PropertyGroup>
+  <!-- Mac Catalyst specific settings - THÊM PROPERTY GROUP NÀY -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-maccatalyst'">
+    <RuntimeIdentifier>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifier>
+    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
+    <!-- Sử dụng runtime phiên bản tương thích với Xcode 16.4 -->
+    <MacCatalystVersion>16.4</MacCatalystVersion>
+    <!-- Force specific runtime version -->
+    <RuntimeFrameworkVersion>16.4.100</RuntimeFrameworkVersion>
+    <MtouchLink>SdkOnly</MtouchLink>
+  </PropertyGroup>
 
-<!-- Release + IPA -->
-<PropertyGroup Condition="'$(Configuration)'=='Release' AND '$(TargetFramework)'=='net9.0-ios'">
-  <BuildIpa>true</BuildIpa>
-  <PublishTrimmed>true</PublishTrimmed>
-  <MtouchLink>SdkOnly</MtouchLink>
-</PropertyGroup>
+  <!-- Debug -->
+  <PropertyGroup Condition="'$(Configuration)'=='Debug' AND '$(TargetFramework)'=='net9.0-ios'">
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
+  <!-- Release + IPA -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release' AND '$(TargetFramework)'=='net9.0-ios'">
+    <BuildIpa>true</BuildIpa>
+    <PublishTrimmed>true</PublishTrimmed>
+    <MtouchLink>SdkOnly</MtouchLink>
+  </PropertyGroup>
 
   <!-- Windows ONLY -->
   <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-windows10.0.19041.0'">
@@ -69,7 +84,12 @@
     
     <!-- Camera.MAUI - check phiên bản mới nhất -->
     <PackageReference Include="Camera.MAUI" Version="1.5.1" />
+    
+    <!-- THÊM VÀO: Chỉ định chính xác phiên bản MacCatalyst runtime -->
+    <PackageReference Include="Microsoft.MacCatalyst.Runtime.maccatalyst-x64" Version="16.4.100" Condition="'$(TargetFramework)'=='net9.0-maccatalyst'" />
+    <PackageReference Include="Microsoft.MacCatalyst.Runtime.maccatalyst-arm64" Version="16.4.100" Condition="'$(TargetFramework)'=='net9.0-maccatalyst'" />
   </ItemGroup>
+
   <!-- MAUI Resources -->
   <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\appicon.svg"
@@ -229,6 +249,7 @@
 
 
 </Project>
+
 
 
 
