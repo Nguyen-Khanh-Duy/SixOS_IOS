@@ -26,14 +26,11 @@
     <!-- Dùng phiên bản MAUI mới nhất cho .NET 9 -->
     <MauiVersion>9.0.0</MauiVersion>
     
-    <!-- XÓA CÁC DÒNG NÀY:
-    <MacCatalystVersion>16.4</MacCatalystVersion>
-    <RuntimeFrameworkVersion>16.4.100</RuntimeFrameworkVersion>
-    -->
-    
-    <!-- iOS/Mac Catalyst specific settings -->
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.0</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">14.0</SupportedOSPlatformVersion>
+    <!-- THÊM CÁC PROPERTY NÀY ĐỂ CHỈ ĐỊNH SDK VERSION -->
+    <!-- Sử dụng SDK version tương thích với Xcode 16.4 -->
+    <MacCatalystSdkVersion>16.4</MacCatalystSdkVersion>
+    <IosSdkVersion>16.4</IosSdkVersion>
+    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
     
     <!-- Bỏ qua warning về EOL workloads -->
     <NoWarn>$(NoWarn);NETSDK1202</NoWarn>
@@ -42,14 +39,12 @@
 <!-- iOS chung -->
 <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
   <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
-  <SupportedOSPlatformVersion>16.1</SupportedOSPlatformVersion>
+  <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
 </PropertyGroup>
 
-<!-- Mac Catalyst specific settings - SỬA LẠI -->
+<!-- Mac Catalyst specific settings -->
 <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-maccatalyst'">
-  <!-- Chỉ định 1 RuntimeIdentifier thôi, hoặc build riêng từng cái -->
   <RuntimeIdentifier>maccatalyst-x64</RuntimeIdentifier>
-  <!-- Hoặc nếu muốn arm64: <RuntimeIdentifier>maccatalyst-arm64</RuntimeIdentifier> -->
   <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
   <MtouchLink>SdkOnly</MtouchLink>
 </PropertyGroup>
@@ -246,6 +241,7 @@
 
 
 </Project>
+
 
 
 
