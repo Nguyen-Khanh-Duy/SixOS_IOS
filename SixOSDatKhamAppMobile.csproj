@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net8.0-ios;net8.0-maccatalyst</TargetFrameworks>
+    <!-- CHỈ DÙNG iOS, không cần maccatalyst -->
+    <TargetFrameworks>net8.0-ios</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>SixOSDatKhamAppMobile</RootNamespace>
     <UseMaui>true</UseMaui>
@@ -8,46 +9,41 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <ApplicationTitle>SixOSDatKhamAppMobile</ApplicationTitle>
-    <ApplicationId>com.nguyenkhanhduy.sixosdatkham</ApplicationId>
+    <!-- Thông tin app -->
+    <ApplicationTitle>SixOSDatKham</ApplicationTitle>
+    <ApplicationId>com.company.sixosdatkham</ApplicationId>
+    <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
 
-    <NoWarn>$(NoWarn);NETSDK1202;NETSDK1138;NU1603;NU1605;NU1608</NoWarn>
-    <CheckEolTargetFramework>false</CheckEolTargetFramework>
-  </PropertyGroup>
-
-  <!-- iOS riêng -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
+    <!-- Cấu hình iOS -->
+    <TargetPlatformVersion>15.0</TargetPlatformVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
     <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
-    <TargetPlatformVersion>14.2</TargetPlatformVersion>
-    <SupportedOSPlatformVersion>14.2</SupportedOSPlatformVersion>
+    
+    <!-- Cấu hình publish -->
     <PublishTrimmed>true</PublishTrimmed>
     <MtouchLink>SdkOnly</MtouchLink>
+    <BuildIpa>true</BuildIpa>
+    <ArchiveOnBuild>true</ArchiveOnBuild>
     <CodesignKey>iPhone Distribution</CodesignKey>
     <CodesignProvision>Automatic:Provisioning</CodesignProvision>
-    <ArchiveOnBuild>true</ArchiveOnBuild>
-  </PropertyGroup>
 
-  <!-- MacCatalyst riêng -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-maccatalyst'">
-    <TargetPlatformVersion>13.3</TargetPlatformVersion>
-    <SupportedOSPlatformVersion>13.3</SupportedOSPlatformVersion>
+    <!-- Tắt warnings -->
+    <NoWarn>$(NoWarn);NETSDK1135;NETSDK1140;NETSDK1202</NoWarn>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <CheckEolWorkload>false</CheckEolWorkload>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Camera - sử dụng phiên bản tương thích với .NET 8 -->
-    <PackageReference Include="Camera.MAUI" Version="1.4.7" />
-    <!-- Hoặc thử 1.5.1 nếu có -->
-    <!-- <PackageReference Include="Camera.MAUI" Version="1.5.1" /> -->
+    <!-- Camera -->
+    <PackageReference Include="Camera.MAUI" Version="1.5.1" />
     
-    <!-- MAUI 8.x với phiên bản cụ thể -->
+    <!-- MAUI 8.x -->
     <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.14" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.14" />
     <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.14" />
     <PackageReference Include="Microsoft.Maui.Graphics" Version="8.0.14" />
-    
-    <!-- Các package MAUI bổ sung -->
     <PackageReference Include="Microsoft.Maui.Core" Version="8.0.14" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
   </ItemGroup>
 
   <!-- MAUI Resources (giữ nguyên) -->
@@ -211,6 +207,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
