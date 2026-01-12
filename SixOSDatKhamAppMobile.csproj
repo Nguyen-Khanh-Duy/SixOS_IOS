@@ -64,20 +64,17 @@
   </PropertyGroup>
 
   <!-- Packages -->
-  <ItemGroup>
-    <!-- MAUI packages cho .NET 7 -->
-    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
-    
-    <!-- ZXing.Net.Maui - phiên bản cho .NET 7 hoặc dùng bản mới hơn -->
-    <PackageReference Include="ZXing.Net.Maui" Version="2.0.0" />
-    <!-- Hoặc nếu 2.0.0 không có, thử 1.0.0 nhưng cần check compatibility -->
-    <!-- <PackageReference Include="ZXing.Net.Maui" Version="1.0.0" /> -->
-    
-    <!-- Camera.MAUI -->
-    <PackageReference Include="Camera.MAUI" Version="1.5.1" />
-  </ItemGroup>
+   <ItemGroup>
+        <!-- Sửa phiên bản ZXing.Net.Maui thành 1.x -->
+        <PackageReference Include="ZXing.Net.Maui" Version="1.0.0" />
+        
+        <!-- Cập nhật tất cả MAUI packages thành phiên bản phù hợp -->
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.3" />
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.3" />
+        
+        <!-- Các package khác -->
+        <PackageReference Include="Camera.MAUI" Version="1.5.1" />
+    </ItemGroup>
 
   <!-- MAUI Resources -->
   <ItemGroup>
@@ -238,6 +235,7 @@
 
 
 </Project>
+
 
 
 
