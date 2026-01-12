@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+ 
+  <!-- CHUNG CHO TẤT CẢ TARGETFRAMEWORKS -->
   <PropertyGroup>
-    <!-- DÙNG .NET 7 - tương thích với Xcode 16.4 -->
     <TargetFrameworks>net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
-    
     <OutputType>Exe</OutputType>
     <RootNamespace>SixOSDatKhamAppMobile</RootNamespace>
     <UseMaui>true</UseMaui>
@@ -12,30 +12,29 @@
     <ApplicationTitle>SixOSDatKhamAppMobile</ApplicationTitle>
     <ApplicationId>com.nguyenkhanhduy.sixosdatkham</ApplicationId>
 
-    <!-- MAUI 7.x -->
     <MauiVersion>7.0.99</MauiVersion>
-   
-     <NoWarn>$(NoWarn);NETSDK1202;NETSDK1138;NU1603;NU1605;NU1608</NoWarn>
-  
-  <!-- Tắt tính năng EOL checking -->
-  <CheckEolTargetFramework>false</CheckEolTargetFramework>
-  <CheckEolWorkload>false</CheckEolWorkload>
-  </PropertyGroup>
-<!-- Chung -->
-<PropertyGroup>
-  <TargetFrameworks>net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
-  <UseMaui>true</UseMaui>
-  <SingleProject>true</SingleProject>
-  <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
-</PropertyGroup>
 
-<!-- RIÊNG iOS -->
-<PropertyGroup Condition="'$(TargetFramework)'=='net7.0-ios'">
-  <TargetPlatformVersion>16.4</TargetPlatformVersion>
-  <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
-  <PublishTrimmed>true</PublishTrimmed>
-  <MtouchLink>SdkOnly</MtouchLink>
-</PropertyGroup>
+    <NoWarn>$(NoWarn);NETSDK1202;NETSDK1138;NU1603;NU1605;NU1608</NoWarn>
+
+    <!-- Tắt tính năng EOL checking -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <CheckEolWorkload>false</CheckEolWorkload>
+  </PropertyGroup>
+
+  <!-- iOS riêng -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-ios'">
+    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+    <TargetPlatformVersion>16.4</TargetPlatformVersion>
+    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
+    <PublishTrimmed>true</PublishTrimmed>
+    <MtouchLink>SdkOnly</MtouchLink>
+  </PropertyGroup>
+
+  <!-- MacCatalyst riêng -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-maccatalyst'">
+    <TargetPlatformVersion>16.4</TargetPlatformVersion>
+    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
+  </PropertyGroup>
 
   <ItemGroup>
     <!-- Camera -->
@@ -212,6 +211,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
