@@ -1,4 +1,4 @@
-name: Build iOS/Mac Catalyst IPA (.NET 8 MAUI)
+name: Build iOS/Mac Catalyst IPA (.NET 9 MAUI)
 
 on:
   workflow_dispatch:
@@ -13,10 +13,10 @@ jobs:
     - name: Checkout mã nguồn
       uses: actions/checkout@v4
 
-    - name: Cài đặt .NET 8 SDK (cố định phiên bản)
+    - name: Cài đặt .NET 9 SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.401'  # Sử dụng .NET 8 thay vì .NET 10
+        dotnet-version: '9.0.x'
 
     - name: Hiển thị thông tin hệ thống
       run: |
@@ -26,41 +26,29 @@ jobs:
         echo "=== Thông tin .NET ==="
         dotnet --info
 
-    - name: Cài đặt workloads MAUI cho .NET 8
+    - name: Cài đặt workloads MAUI cho .NET 9
       run: |
         echo "=== Cài đặt workloads cần thiết ==="
         
-        # Cài đặt từng workload một
-        echo "1. Cài đặt iOS workload..."
-        dotnet workload install ios
-        
-        echo "2. Cài đặt Mac Catalyst workload..."
-        dotnet workload install maccatalyst
-        
-        echo "3. Cài đặt Android workload (nếu cần)..."
-        dotnet workload install android
+        # Cài đặt MAUI workload (bao gồm iOS/Mac Catalyst)
+        echo "1. Cài đặt MAUI workload..."
+        dotnet workload install maui
         
         echo "=== Danh sách workloads đã cài đặt ==="
         dotnet workload list
 
-    - name: Cài đặc MAUI workloads từ previous SDK (nếu cần)
-      continue-on-error: true
+    - name: Khôi phục dependencies với ignore errors
       run: |
-        echo "=== Cài đặt MAUI workload từ previous SDK ==="
-        dotnet workload install maui --from-previous-sdk
+        echo "=== Đang restore dependencies với NoWarn ==="
+        dotnet restore --verbosity normal /p:NoWarn=NETSDK1202
 
-    - name: Khôi phục dependencies
+    - name: Build cho Mac Catalyst (.NET 9)
       run: |
-        echo "=== Đang restore dependencies ==="
-        dotnet restore --verbosity normal
-
-    - name: Build cho Mac Catalyst
-      run: |
-        echo "=== Building cho Mac Catalyst (.NET 8) ==="
+        echo "=== Building cho Mac Catalyst (.NET 9) ==="
         
         # Build với Mac Catalyst
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net8.0-maccatalyst \
+          -f net9.0-maccatalyst \
           -c Release \
           -p:BuildIpa=true \
           -p:ArchiveOnBuild=true \
@@ -68,6 +56,7 @@ jobs:
           -p:EnablePackageSigning=false \
           -p:MtouchLink=SdkOnly \
           -p:CreatePackage=true \
+          -p:NoWarn=NETSDK1202 \
           --verbosity normal
         
         echo "=== Đã build xong ==="
@@ -81,22 +70,13 @@ jobs:
         find . -name "*.app" -type d 2>/dev/null || echo "Không tìm thấy file .app"
         
         echo "=== Cấu trúc thư mục bin ==="
-        find . -name "bin" -type d 2>/dev/null | xargs -I {} ls -la {} 2>/dev/null || true
+        find . -path "./bin/Release/*" -type d 2>/dev/null | head -20 || true
 
-    - name: Upload file IPA (Mac Catalyst)
+    - name: Upload file IPA
       uses: actions/upload-artifact@v4
       with:
         name: mac-catalyst-ipa
         path: |
-          **/bin/Release/net8.0-maccatalyst/**/*.ipa
+          **/bin/Release/net9.0-maccatalyst/**/*.ipa
           **/bin/Release/**/*.ipa
-        if-no-files-found: warn
-
-    - name: Upload file .app (ứng dụng macOS)
-      uses: actions/upload-artifact@v4
-      with:
-        name: macos-app
-        path: |
-          **/bin/Release/net8.0-maccatalyst/**/*.app
-          **/bin/Release/**/*.app
         if-no-files-found: warn
