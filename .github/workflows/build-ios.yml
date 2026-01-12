@@ -46,8 +46,9 @@ jobs:
     - name: Build cho iOS (.NET 9) - Tạo IPA
       run: |
         echo "=== Building cho iOS (.NET 9) - Tạo IPA ==="
+        echo "⚠️ Đang sử dụng iOS SDK 25.x để tương thích với Xcode 16.4"
         
-        # Build iOS để tạo IPA
+        # Build iOS để tạo IPA với iOS SDK 25.x
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Release \
@@ -57,6 +58,8 @@ jobs:
           -p:EnableCodeSigning=false \
           -p:EnablePackageSigning=false \
           -p:MtouchLink=SdkOnly \
+          -p:MicrosoftIOSVersion=25.0.0 \
+          -p:MicrosoftMacCatalystVersion=25.0.0 \
           --verbosity normal
         
         echo "=== Đã build iOS IPA xong ==="
@@ -64,6 +67,7 @@ jobs:
     - name: Build cho Mac Catalyst (.NET 9)
       run: |
         echo "=== Building cho Mac Catalyst (.NET 9) ==="
+        echo "⚠️ Đang sử dụng Mac Catalyst SDK 25.x để tương thích với Xcode 16.4"
         
         # Build với Mac Catalyst
         dotnet publish SixOSDatKhamAppMobile.csproj \
@@ -72,6 +76,7 @@ jobs:
           -r maccatalyst-x64 \
           -p:MtouchLink=SdkOnly \
           -p:CreatePackage=true \
+          -p:MicrosoftMacCatalystVersion=25.0.0 \
           --verbosity normal
         
         echo "=== Đã build Mac Catalyst xong ==="
