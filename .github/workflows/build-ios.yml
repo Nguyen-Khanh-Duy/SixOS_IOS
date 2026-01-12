@@ -13,52 +13,45 @@ jobs:
     - name: Checkout mã nguồn
       uses: actions/checkout@v4
 
-    - name: Tải và cài đặt .NET 7 SDK
+    - name: Cài đặt .NET 7 SDK bằng script chính thức
       run: |
-        echo "=== Cài đặt .NET 7.0.417 (phiên bản cuối cùng) ==="
+        echo "=== Cài đặt .NET 7.0.417 ==="
         
-        # Tải .NET 7 SDK từ archive chính thức
-        # Danh sách đầy đủ: https://dotnet.microsoft.com/download/dotnet/7.0
-        curl -L -o dotnet-sdk-7.0.417-osx-x64.tar.gz \
-          "https://download.visualstudio.microsoft.com/download/pr/ef5c3d7e-32e6-4b2e-b3e6-4c8a1c2727e8/2d98e6a5e81654a6a2899f15d7b4f66b/dotnet-sdk-7.0.417-osx-x64.tar.gz"
+        # 1. Tải script cài đặt chính thức
+        curl -fsSL https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -o dotnet-install.sh
+        chmod +x dotnet-install.sh
         
-        # Tạo thư mục và giải nén
-        mkdir -p /usr/local/share/dotnet
-        tar zxf dotnet-sdk-7.0.417-osx-x64.tar.gz -C /usr/local/share/dotnet
+        # 2. Cài .NET 7.0.417
+        ./dotnet-install.sh --channel 7.0 --version 7.0.417 --install-dir /usr/local/share/dotnet
         
-        # Tạo symbolic links
-        ln -sf /usr/local/share/dotnet/dotnet /usr/local/bin/dotnet
+        # 3. Cài .NET 8 để có workloads (cần thiết cho MAUI)
+        ./dotnet-install.sh --channel 8.0 --version 8.0.0 --install-dir /usr/local/share/dotnet
         
-        echo "=== Phiên bản .NET hiện tại ==="
+        # 4. Kiểm tra
+        echo "=== Phiên bản .NET ==="
         /usr/local/share/dotnet/dotnet --info
         
-        # Set environment variables
+        # 5. Set environment
         echo "DOTNET_ROOT=/usr/local/share/dotnet" >> $GITHUB_ENV
         echo "PATH=/usr/local/share/dotnet:$PATH" >> $GITHUB_ENV
         
-    - name: Cài đặt workloads MAUI cho .NET 7
+    - name: Cài đặt workloads MAUI
       run: |
         echo "=== Cài đặt workloads ==="
         export DOTNET_ROOT=/usr/local/share/dotnet
         export PATH=/usr/local/share/dotnet:$PATH
         
-        # Cài đặt workloads
+        # Cài workloads bằng .NET 8
         dotnet workload install maui-ios maui-maccatalyst
         
-        echo "=== Danh sách workloads ==="
-        dotnet workload list
-        
-    - name: Build
+    - name: Build với .NET 7
       run: |
         echo "=== Building với .NET 7 ==="
         export DOTNET_ROOT=/usr/local/share/dotnet
         export PATH=/usr/local/share/dotnet:$PATH
         
-        # Clean trước
-        dotnet clean
-        
-        # Build với .NET 7
-        dotnet publish SixOSDatKhamAppMobile.csproj \
+        # Sử dụng dotnet từ /usr/local/share/dotnet
+        /usr/local/share/dotnet/dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net7.0-ios \
           -c Release \
           -r ios-arm64 \
@@ -66,10 +59,3 @@ jobs:
           -p:PublishTrimmed=false \
           -p:MtouchLink=None \
           --verbosity normal
-          
-    - name: Kiểm tra file output
-      run: |
-        echo "=== Tìm file IPA ==="
-        find . -name "*.ipa" -type f 2>/dev/null || echo "Không tìm thấy file IPA"
-        echo "=== Nội dung thư mục bin ==="
-        ls -la bin/Release/net7.0-ios/ios-arm64/publish/ 2>/dev/null || true
