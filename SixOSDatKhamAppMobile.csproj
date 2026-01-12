@@ -64,17 +64,21 @@
   </PropertyGroup>
 
   <!-- Packages -->
-   <ItemGroup>
-        <!-- Sửa phiên bản ZXing.Net.Maui thành 1.x -->
-       <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.6.1" />
-
-        <!-- Cập nhật tất cả MAUI packages thành phiên bản phù hợp -->
-        <PackageReference Include="Microsoft.Maui.Controls" Version="7.0.3" />
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="7.0.3" />
-        
-        <!-- Các package khác -->
-        <PackageReference Include="Camera.MAUI" Version="1.5.1" />
-    </ItemGroup>
+<ItemGroup>
+    <!-- Downgrade ZXing.Net.Maui về phiên bản hỗ trợ .NET 7.0 -->
+    <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.6.1" />
+    
+    <!-- MAUI packages phiên bản 8.x vẫn tương thích với .NET 7.0 -->
+    <!-- Nếu muốn dùng phiên bản 7.x, có thể sửa như sau: -->
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.3" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.3" />
+    <PackageReference Include="Microsoft.Maui.Core" Version="8.0.3" />
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.3" />
+    <PackageReference Include="Microsoft.Maui.Graphics" Version="8.0.3" />
+    
+    <!-- Camera.MAUI -->
+    <PackageReference Include="Camera.MAUI" Version="1.5.1" />
+</ItemGroup>
 
   <!-- MAUI Resources -->
   <ItemGroup>
@@ -235,6 +239,7 @@
 
 
 </Project>
+
 
 
 
