@@ -1,4 +1,4 @@
-name: Build iOS với .NET 7 MAUI
+name: Build iOS với .NET 8 MAUI
 
 on:
   workflow_dispatch:
@@ -13,35 +13,29 @@ jobs:
     - name: Checkout mã nguồn
       uses: actions/checkout@v4
 
-    - name: Setup .NET 7.0.x
+    - name: Setup .NET 8.x
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '7.0.x'
+        dotnet-version: '8.0.x'
 
-    - name: Cài đặt workloads MAUI cho .NET 7
+    - name: Cài đặt workloads MAUI cho .NET 8
       run: |
-        dotnet workload install maui-ios --skip-sign-check
-        dotnet workload install maui-maccatalyst --skip-sign-check
+        dotnet workload install maui-ios
+        dotnet workload install maui-maccatalyst
         dotnet workload restore
-
-    - name: Kiểm tra .NET và workloads
-      run: |
-        dotnet --info
-        dotnet workload list
 
     - name: Restore packages
       run: dotnet restore SixOSDatKhamAppMobile.csproj
 
-    - name: Build thử nghiệm
-      run: dotnet build SixOSDatKhamAppMobile.csproj -f net7.0-ios -c Debug
-
-    - name: Publish IPA iOS
+    - name: Build IPA iOS
       run: |
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net7.0-ios \
+          -f net8.0-ios \
           -c Release \
           -r ios-arm64 \
           -p:BuildIpa=true \
           -p:PublishTrimmed=true \
           -p:MtouchLink=SdkOnly \
+          -p:TargetPlatformVersion=14.2 \
+          -p:SupportedOSPlatformVersion=14.2 \
           --verbosity detailed
