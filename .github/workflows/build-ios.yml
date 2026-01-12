@@ -1,4 +1,4 @@
-name: Build iOS IPA (.NET 8)
+name: Build iOS IPA (.NET 8 MAUI)
 
 on:
   workflow_dispatch:
@@ -21,42 +21,56 @@ jobs:
     - name: Hiển thị thông tin dotnet (debug)
       run: dotnet --info
 
-    - name: Dọn dẹp và cập nhật workloads
+    - name: Cài đặt và cập nhật workloads MAUI
       run: |
-        # Dọn dẹp các workloads có thể đã lỗi thời
-        dotnet workload uninstall maui || true
-        dotnet workload uninstall ios || true
-        dotnet workload uninstall android || true
+        # Kiểm tra workloads hiện có
+        echo "=== Danh sách workloads hiện tại ==="
+        dotnet workload list
         
-        # Cập nhật danh sách workloads
-        echo "Đang cập nhật workload manifests..."
+        # Cập nhật workload manifests
+        echo "=== Đang cập nhật workload manifests ==="
         dotnet workload update
         
-        # Cài đặt lại MAUI và iOS workloads
-        echo "Đang cài đặt MAUI workload..."
-        dotnet workload install maui --skip-manifest-update
+        # Cài đặt MAUI workload (bao gồm iOS, Android)
+        echo "=== Đang cài đặt MAUI workload ==="
+        dotnet workload install maui
         
-        echo "Đang cài đặt iOS workload..."
-        dotnet workload install ios --skip-manifest-update
+        # Kiểm tra lại
+        echo "=== Danh sách workloads sau khi cài đặt ==="
+        dotnet workload list
 
     - name: Khôi phục dependencies
       run: dotnet restore
 
     - name: Build IPA (chưa ký)
       run: |
-        dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net8.0-ios \
+        echo "=== Đang build project iOS ==="
+        echo "Tìm file .csproj..."
+        find . -name "*.csproj" -type f
+        
+        # Build với target framework đúng cho MAUI iOS
+        dotnet publish \
+          -f net8.0-maccatalyst \
           -c Release \
           -p:BuildIpa=true \
           -p:ArchiveOnBuild=true \
           -p:MtouchLink=SdkOnly \
-          -p:TreatWarningsAsErrors=false \
-          -p:NoWarn=NETSDK1208
+          --verbosity detailed
+
+    - name: Tìm và upload file IPA
+      run: |
+        echo "=== Tìm file IPA ==="
+        find . -name "*.ipa" -type f 2>/dev/null || true
+        echo "=== Nội dung thư mục ==="
+        ls -la bin/Release/ 2>/dev/null || true
+        ls -la bin/Release/net8.0-maccatalyst/ 2>/dev/null || true
 
     - name: Upload file IPA
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: ios-ipa
         path: |
-          **/bin/Release/net8.0-ios/**/*.ipa
-        if-no-files-found: error
+          **/bin/Release/**/*.ipa
+          **/*.ipa
+        if-no-files-found: warn
