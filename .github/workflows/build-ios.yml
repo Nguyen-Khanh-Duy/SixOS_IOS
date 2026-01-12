@@ -9,27 +9,38 @@ jobs:
   build-ios:
     runs-on: macos-latest
 
+    env:
+      DOTNET_ROOT: /Users/runner/.dotnet
+
     steps:
     - name: Checkout mã nguồn
       uses: actions/checkout@v4
 
-    - name: Cài đặt .NET 7 SDK
+    - name: Cài đặt .NET 7 SDK cụ thể
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '7.0.x'
+        dotnet-version: '7.0.417'
+        include-prerelease: false
 
     - name: Kiểm tra .NET
-      run: dotnet --info
+      run: dotnet --list-sdks
 
     - name: Cài workloads MAUI
       run: |
-        dotnet workload install maui-ios maui-maccatalyst
+        export DOTNET_ROOT=/Users/runner/.dotnet
+        export PATH=$DOTNET_ROOT:$PATH
+        
+        # Install workloads cho .NET 7
+        dotnet workload install maui-ios maui-maccatalyst --skip-manifest-update
 
-    - name: Restore
+    - name: Restore packages
       run: dotnet restore SixOSDatKhamAppMobile.csproj
 
     - name: Build IPA iOS
       run: |
+        export DOTNET_ROOT=/Users/runner/.dotnet
+        export PATH=$DOTNET_ROOT:$PATH
+
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net7.0-ios \
           -c Release \
