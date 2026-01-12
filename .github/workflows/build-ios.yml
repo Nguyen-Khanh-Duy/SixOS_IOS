@@ -10,35 +10,53 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - name: Checkout source
+    - name: Checkout mã nguồn
       uses: actions/checkout@v4
 
-    - name: Setup .NET 8 SDK
+    - name: Cài đặt .NET 8 SDK
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
-    - name: Show dotnet info (debug)
+    - name: Hiển thị thông tin dotnet (debug)
       run: dotnet --info
 
-    - name: Install iOS workload
+    - name: Dọn dẹp và cập nhật workloads
       run: |
+        # Dọn dẹp các workloads có thể đã lỗi thời
+        dotnet workload uninstall maui || true
+        dotnet workload uninstall ios || true
+        dotnet workload uninstall android || true
+        
+        # Cập nhật danh sách workloads
+        echo "Đang cập nhật workload manifests..."
+        dotnet workload update
+        
+        # Cài đặt lại MAUI và iOS workloads
+        echo "Đang cài đặt MAUI workload..."
+        dotnet workload install maui --skip-manifest-update
+        
+        echo "Đang cài đặt iOS workload..."
         dotnet workload install ios --skip-manifest-update
 
-    - name: Restore
+    - name: Khôi phục dependencies
       run: dotnet restore
 
-    - name: Build IPA (unsigned)
+    - name: Build IPA (chưa ký)
       run: |
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net8.0-ios \
           -c Release \
           -p:BuildIpa=true \
-          -p:MtouchLink=SdkOnly
+          -p:ArchiveOnBuild=true \
+          -p:MtouchLink=SdkOnly \
+          -p:TreatWarningsAsErrors=false \
+          -p:NoWarn=NETSDK1208
 
-    - name: Upload IPA artifact
+    - name: Upload file IPA
       uses: actions/upload-artifact@v4
       with:
         name: ios-ipa
         path: |
-          **/*.ipa
+          **/bin/Release/net8.0-ios/**/*.ipa
+        if-no-files-found: error
