@@ -66,7 +66,7 @@
   <!-- Packages -->
 <ItemGroup>
     <!-- Downgrade ZXing.Net.Maui về phiên bản hỗ trợ .NET 7.0 -->
-    <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.6.1" />
+    <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.6.0" />
     
     <!-- MAUI packages phiên bản 8.x vẫn tương thích với .NET 7.0 -->
     <!-- Nếu muốn dùng phiên bản 7.x, có thể sửa như sau: -->
@@ -239,6 +239,7 @@
 
 
 </Project>
+
 
 
 
