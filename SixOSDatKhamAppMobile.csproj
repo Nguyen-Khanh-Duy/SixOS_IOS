@@ -1,7 +1,92 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- ĐỔI THÀNH .NET 7 - ZXing.Net.Maui hỗ trợ .NET 7 -->
+    <!-- NÂNG CẤP LÊN .NET 9 -->
+    <TargetFrameworks>net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">
+      net9.0-windows10.0.19041.0
+    </TargetFrameworks>
+
+    <OutputType>Exe</OutputType>
+    <RootNamespace>SixOSDatKhamAppMobile</RootNamespace>
+
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- App Info -->
+    <ApplicationTitle>SixOSDatKhamAppMobile</ApplicationTitle>
+    <ApplicationId>com.nguyenkhanhduy.sixosdatkham</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+
+    <WindowsPackageType>None</WindowsPackageType>
+
+    <!-- Cập nhật phiên bản MAUI tương thích .NET 9 -->
+    <MauiVersion>9.0.0</MauiVersion>
+    
+    <!-- SDK version tương thích -->
+    <SupportedOSPlatformVersion>18.0</SupportedOSPlatformVersion>
+    
+    <!-- Bỏ qua warning -->
+    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
+  </PropertyGroup>
+
+  <!-- iOS chung -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
+    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+    <SupportedOSPlatformVersion>18.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <!-- Mac Catalyst specific settings -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-maccatalyst'">
+    <RuntimeIdentifier>maccatalyst-x64</RuntimeIdentifier>
+    <SupportedOSPlatformVersion>18.0</SupportedOSPlatformVersion>
+    <MtouchLink>SdkOnly</MtouchLink>
+  </PropertyGroup>
+
+  <!-- Debug -->
+  <PropertyGroup Condition="'$(Configuration)'=='Debug' AND '$(TargetFramework)'=='net9.0-ios'">
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
+  <!-- Release + IPA -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release' AND '$(TargetFramework)'=='net9.0-ios'">
+    <BuildIpa>true</BuildIpa>
+    <PublishTrimmed>true</PublishTrimmed>
+    <MtouchLink>SdkOnly</MtouchLink>
+  </PropertyGroup>
+
+  <!-- Windows ONLY -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-windows10.0.19041.0'">
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <!-- Packages - Cập nhật phiên bản MAUI cho .NET 9 -->
+  <ItemGroup>
+    <!-- Camera -->
+    <PackageReference Include="Camera.MAUI" Version="1.5.1" />
+
+    <!-- ZXing -->
+    <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.6.0" />
+
+    <!-- MAUI core cho .NET 9 -->
+    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Maui.Graphics" Version="9.0.0" />
+  </ItemGroup>
+
+  <!-- Rest của file giữ nguyên -->
+  <!-- ... -->
+</Project>
+Giải pháp 2: Nếu muốn giữ .NET 7 (sử dụng phiên bản ZXing cũ)
+xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- GIỮ .NET 7 -->
     <TargetFrameworks>net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">
       net7.0-windows10.0.19041.0
@@ -30,54 +115,23 @@
     <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
     
     <!-- Bỏ qua warning -->
-    <NoWarn>$(NoWarn);NETSDK1202</NoWarn>
+    <NoWarn>$(NoWarn);NETSDK1138;NU1603;NU1605</NoWarn>
   </PropertyGroup>
 
-  <!-- iOS chung -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-ios'">
-    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
-    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
-  </PropertyGroup>
+  <!-- Packages - Sửa phiên bản ZXing -->
+  <ItemGroup>
+    <!-- Camera -->
+    <PackageReference Include="Camera.MAUI" Version="1.5.1" />
 
-  <!-- Mac Catalyst specific settings -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-maccatalyst'">
-    <RuntimeIdentifier>maccatalyst-x64</RuntimeIdentifier>
-    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
-    <MtouchLink>SdkOnly</MtouchLink>
-  </PropertyGroup>
+    <!-- ZXing - DÙNG PHIÊN BẢN CŨ HỖ TRỢ .NET 7 -->
+    <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.5.0" />
 
-  <!-- Debug -->
-  <PropertyGroup Condition="'$(Configuration)'=='Debug' AND '$(TargetFramework)'=='net7.0-ios'">
-    <PublishTrimmed>false</PublishTrimmed>
-  </PropertyGroup>
-
-  <!-- Release + IPA -->
-  <PropertyGroup Condition="'$(Configuration)'=='Release' AND '$(TargetFramework)'=='net7.0-ios'">
-    <BuildIpa>true</BuildIpa>
-    <PublishTrimmed>true</PublishTrimmed>
-    <MtouchLink>SdkOnly</MtouchLink>
-  </PropertyGroup>
-
-  <!-- Windows ONLY -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-windows10.0.19041.0'">
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-  </PropertyGroup>
-
-  <!-- Packages -->
-<ItemGroup>
-  <!-- Camera -->
-  <PackageReference Include="Camera.MAUI" Version="1.5.1" />
-
-  <!-- ZXing -->
-  <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.6.0" />
-
-  <!-- MAUI core -->
-  <PackageReference Include="Microsoft.Maui.Controls" Version="7.0.100" />
-  <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="7.0.100" />
-  <PackageReference Include="Microsoft.Maui.Essentials" Version="7.0.100" />
-  <PackageReference Include="Microsoft.Maui.Graphics" Version="7.0.100" />
-</ItemGroup>
-
+    <!-- MAUI core cho .NET 7 - ĐỒNG BỘ PHIÊN BẢN -->
+    <PackageReference Include="Microsoft.Maui.Controls" Version="7.0.99" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="7.0.99" />
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="7.0.99" />
+    <PackageReference Include="Microsoft.Maui.Graphics" Version="7.0.99" />
+  </ItemGroup>
 
   <!-- MAUI Resources -->
   <ItemGroup>
@@ -238,6 +292,7 @@
 
 
 </Project>
+
 
 
 
