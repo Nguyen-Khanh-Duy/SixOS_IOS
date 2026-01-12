@@ -13,49 +13,28 @@ jobs:
     - name: Checkout mã nguồn
       uses: actions/checkout@v4
 
-    - name: Cài đặt .NET 7 SDK bằng script chính thức
+    - name: Cài đặt .NET 7 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '7.0.x'
+
+    - name: Kiểm tra .NET
+      run: dotnet --info
+
+    - name: Cài workloads MAUI
       run: |
-        echo "=== Cài đặt .NET 7.0.417 ==="
-        
-        # 1. Tải script cài đặt chính thức
-        curl -fsSL https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -o dotnet-install.sh
-        chmod +x dotnet-install.sh
-        
-        # 2. Cài .NET 7.0.417
-        ./dotnet-install.sh --channel 7.0 --version 7.0.417 --install-dir /usr/local/share/dotnet
-        
-        # 3. Cài .NET 8 để có workloads (cần thiết cho MAUI)
-        ./dotnet-install.sh --channel 8.0 --version 8.0.0 --install-dir /usr/local/share/dotnet
-        
-        # 4. Kiểm tra
-        echo "=== Phiên bản .NET ==="
-        /usr/local/share/dotnet/dotnet --info
-        
-        # 5. Set environment
-        echo "DOTNET_ROOT=/usr/local/share/dotnet" >> $GITHUB_ENV
-        echo "PATH=/usr/local/share/dotnet:$PATH" >> $GITHUB_ENV
-        
-    - name: Cài đặt workloads MAUI
-      run: |
-        echo "=== Cài đặt workloads ==="
-        export DOTNET_ROOT=/usr/local/share/dotnet
-        export PATH=/usr/local/share/dotnet:$PATH
-        
-        # Cài workloads bằng .NET 8
         dotnet workload install maui-ios maui-maccatalyst
-        
-    - name: Build với .NET 7
+
+    - name: Restore
+      run: dotnet restore SixOSDatKhamAppMobile.csproj
+
+    - name: Build IPA iOS
       run: |
-        echo "=== Building với .NET 7 ==="
-        export DOTNET_ROOT=/usr/local/share/dotnet
-        export PATH=/usr/local/share/dotnet:$PATH
-        
-        # Sử dụng dotnet từ /usr/local/share/dotnet
-        /usr/local/share/dotnet/dotnet publish SixOSDatKhamAppMobile.csproj \
+        dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net7.0-ios \
           -c Release \
           -r ios-arm64 \
           -p:BuildIpa=true \
-          -p:PublishTrimmed=false \
-          -p:MtouchLink=None \
+          -p:PublishTrimmed=true \
+          -p:MtouchLink=SdkOnly \
           --verbosity normal
