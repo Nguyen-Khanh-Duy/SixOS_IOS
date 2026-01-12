@@ -15,10 +15,7 @@
     <!-- MAUI 7.x -->
     <MauiVersion>7.0.99</MauiVersion>
     <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
-    
-    <!-- TẮT LINKER để tránh lỗi -->
-    <PublishTrimmed>false</PublishTrimmed>
-
+  
      <NoWarn>$(NoWarn);NETSDK1202;NETSDK1138;NU1603;NU1605;NU1608</NoWarn>
   
   <!-- Tắt tính năng EOL checking -->
@@ -205,6 +202,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
