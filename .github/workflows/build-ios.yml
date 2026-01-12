@@ -37,10 +37,10 @@ jobs:
         echo "=== Danh sách workloads đã cài đặt ==="
         dotnet workload list
 
-    - name: Khôi phục dependencies với ignore errors
+    - name: Khôi phục dependencies
       run: |
-        echo "=== Đang restore dependencies với NoWarn ==="
-        dotnet restore --verbosity normal /p:NoWarn=NETSDK1202
+        echo "=== Đang restore dependencies ==="
+        dotnet restore --verbosity normal
 
     - name: Build cho Mac Catalyst (.NET 9)
       run: |
@@ -56,7 +56,6 @@ jobs:
           -p:EnablePackageSigning=false \
           -p:MtouchLink=SdkOnly \
           -p:CreatePackage=true \
-          -p:NoWarn=NETSDK1202 \
           --verbosity normal
         
         echo "=== Đã build xong ==="
@@ -79,4 +78,13 @@ jobs:
         path: |
           **/bin/Release/net9.0-maccatalyst/**/*.ipa
           **/bin/Release/**/*.ipa
+        if-no-files-found: warn
+
+    - name: Upload file .app
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-app
+        path: |
+          **/bin/Release/net9.0-maccatalyst/**/*.app
+          **/bin/Release/**/*.app
         if-no-files-found: warn
