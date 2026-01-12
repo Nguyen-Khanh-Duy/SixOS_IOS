@@ -24,7 +24,6 @@
     <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
 
-
 <!-- iOS chung -->
 <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-ios'">
   <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
@@ -42,7 +41,6 @@
   <PublishTrimmed>true</PublishTrimmed>
   <MtouchLink>SdkOnly</MtouchLink>
 </PropertyGroup>
-
 
 
   <!-- Windows ONLY -->
