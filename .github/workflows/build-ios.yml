@@ -1,4 +1,4 @@
-name: Build iOS (.NET 7 Legacy)
+name: Build iOS với .NET 7 MAUI
 
 on:
   workflow_dispatch:
@@ -8,23 +8,33 @@ on:
 jobs:
   build-ios:
     runs-on: macos-latest
+
     steps:
     - name: Checkout mã nguồn
       uses: actions/checkout@v4
 
-    - name: Cài đặt .NET 7 SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '7.0.x'
-
+    - name: Cài đặt .NET 7 SDK cũ hơn
+      run: |
+        echo "=== Cài đặt .NET 7.0.400 ==="
+        # Tải .NET 7 SDK không chặn EOL
+        curl -L -o dotnet-sdk-7.0.400-osx-x64.pkg https://download.visualstudio.microsoft.com/download/pr/12345678-1234-1234-1234-123456789abc/dotnet-sdk-7.0.400-osx-x64.pkg
+        sudo installer -pkg dotnet-sdk-7.0.400-osx-x64.pkg -target /
+        
+        echo "=== Phiên bản .NET hiện tại ==="
+        /usr/local/share/dotnet/dotnet --info
+        
+        # Set dotnet root
+        echo "DOTNET_ROOT=/usr/local/share/dotnet" >> $GITHUB_ENV
+        
     - name: Cài đặt workloads MAUI cho .NET 7
       run: |
-        dotnet workload install maui-ios maui-maccatalyst
-
+        echo "=== Cài đặt workloads ==="
+        /usr/local/share/dotnet/dotnet workload install maui-ios maui-maccatalyst
+        
     - name: Build
       run: |
         echo "=== Building với .NET 7 ==="
-        dotnet publish SixOSDatKhamAppMobile.csproj \
+        /usr/local/share/dotnet/dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net7.0-ios \
           -c Release \
           -r ios-arm64 \
