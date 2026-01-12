@@ -23,10 +23,12 @@
 
     <WindowsPackageType>None</WindowsPackageType>
 
- <!-- iOS/Mac Catalyst specific settings -->
+   <!-- CHỈ định phiên bản .NET MAUI cho .NET 8 -->
+    <MauiVersion>8.0.88</MauiVersion>
+    
+    <!-- iOS/Mac Catalyst specific settings -->
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">13.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.0</SupportedOSPlatformVersion>
-  </PropertyGroup>
   </PropertyGroup>
 
 <!-- iOS chung -->
@@ -222,5 +224,6 @@
 
 
 </Project>
+
 
 
