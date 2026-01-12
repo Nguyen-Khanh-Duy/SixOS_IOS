@@ -13,6 +13,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Debug Secrets
+      run: |
+        echo "SIGNING_CERTIFICATE length: ${#SIGNING_CERTIFICATE}"
+        echo "SIGNING_CERTIFICATE_PASSWORD: ${SIGNING_CERTIFICATE_PASSWORD:+SET}"
+        echo "PROVISIONING_PROFILE length: ${#PROVISIONING_PROFILE}"
+      env:
+        SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
+        SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+        PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -29,27 +39,71 @@ jobs:
         SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
         PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
       run: |
+        # Kiểm tra biến môi trường
+        if [ -z "$SIGNING_CERTIFICATE" ]; then
+          echo "❌ ERROR: SIGNING_CERTIFICATE is empty!"
+          echo "Please set SIGNING_CERTIFICATE secret in GitHub Settings > Secrets and Variables > Actions"
+          exit 1
+        fi
+        
+        if [ -z "$SIGNING_CERTIFICATE_PASSWORD" ]; then
+          echo "❌ ERROR: SIGNING_CERTIFICATE_PASSWORD is empty!"
+          exit 1
+        fi
+        
+        if [ -z "$PROVISIONING_PROFILE" ]; then
+          echo "❌ ERROR: PROVISIONING_PROFILE is empty!"
+          exit 1
+        fi
+        
+        echo "✅ All secrets are available"
+        
         # Tạo keychain
         security create-keychain -p "" build.keychain
         security default-keychain -s build.keychain
         security unlock-keychain -p "" build.keychain
         
-        # Import certificate với flag -A
+        # Import certificate
+        echo "Creating certificate.p12 from base64..."
         echo "$SIGNING_CERTIFICATE" | base64 -D > certificate.p12
+        
+        echo "Checking certificate.p12..."
+        ls -la certificate.p12
+        file certificate.p12 || true
+        
+        echo "Importing certificate..."
         security import certificate.p12 \
           -k build.keychain \
           -P "$SIGNING_CERTIFICATE_PASSWORD" \
           -T /usr/bin/codesign \
+          -T /usr/bin/productsign \
           -A
         
         # Kiểm tra certificate đã import
+        echo "🔍 Listing identities in keychain:"
         security find-identity -v -p codesigning build.keychain
         
         # Import provisioning profile
+        echo "Creating profile.mobileprovision from base64..."
         echo "$PROVISIONING_PROFILE" | base64 -D > profile.mobileprovision
-        UUID=$(grep -a -A1 UUID profile.mobileprovision | grep -o "[-A-Z0-9]\{36\}")
+        
+        # Extract UUID từ profile
+        UUID=$(grep -a -A1 UUID profile.mobileprovision | grep -o "[-A-Z0-9]\{36\}" || echo "")
+        if [ -z "$UUID" ]; then
+          # Fallback: dùng openssl để extract UUID
+          UUID=$(openssl smime -inform der -verify -noverify -in profile.mobileprovision 2>/dev/null | grep -a "UUID" | head -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
+        fi
+        
+        echo "Profile UUID: $UUID"
+        
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-        cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
+        if [ -n "$UUID" ]; then
+          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
+          echo "Copied to: ~/Library/MobileDevice/Provisioning Profiles/$UUID.mobileprovision"
+        else
+          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "Copied without UUID renaming"
+        fi
         
         # Cấu hình keychain
         security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
@@ -58,21 +112,29 @@ jobs:
       env:
         APPLE_TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
+        echo "Team ID: $APPLE_TEAM_ID"
+        
+        # List tất cả provisioning profiles
+        echo "🔍 Available provisioning profiles:"
+        ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+        
+        # Build
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f:net8.0-ios \
           -c:Release \
           -p:RuntimeIdentifier=ios-arm64 \
           -p:BuildIpa=true \
           -p:ArchiveOnBuild=true \
-          -p:CodesignKey="iPhone Distribution" \
-          -p:CodesignProvision="profile.mobileprovision" \
-          -p:CodesignEntitlements="Entitlements.plist" \
           -p:DevelopmentTeam="$APPLE_TEAM_ID" \
+          -p:ProvisioningProfile="iOS Team Provisioning Profile: *" \
+          -p:CodesignKey="iPhone Distribution" \
+          -p:CodesignEntitlements="Entitlements.plist" \
           -p:MtouchLink=SdkOnly \
           -o:./publish \
           --verbosity:detailed
 
     - name: Upload IPA
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: Signed-IPA
