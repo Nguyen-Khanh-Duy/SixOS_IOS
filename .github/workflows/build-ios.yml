@@ -1,4 +1,4 @@
-name: Build iOS/Mac Catalyst IPA (.NET 7 MAUI)
+name: Build iOS/Mac Catalyst IPA (.NET 9 MAUI)
 
 on:
   workflow_dispatch:
@@ -13,10 +13,10 @@ jobs:
     - name: Checkout mã nguồn
       uses: actions/checkout@v4
 
-    - name: Cài đặt .NET 7 SDK
+    - name: Cài đặt .NET 9 SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '7.0.x'
+        dotnet-version: '9.0.x'
 
     - name: Hiển thị thông tin hệ thống
       run: |
@@ -27,13 +27,13 @@ jobs:
         echo "=== Thông tin .NET ==="
         dotnet --info
 
-    - name: Cài đặt workloads MAUI cho .NET 7
+    - name: Cài đặt workloads MAUI cho .NET 9
       run: |
         echo "=== Cài đặt workloads cần thiết ==="
         
-        # Cài đặt MAUI workload cho .NET 7
+        # Cài đặt MAUI workload cho .NET 9
         echo "1. Cài đặt MAUI workload..."
-        dotnet workload install maui-ios maui-maccatalyst
+        dotnet workload install maui
         
         echo "=== Danh sách workloads đã cài đặt ==="
         dotnet workload list
@@ -43,13 +43,13 @@ jobs:
         echo "=== Đang restore dependencies ==="
         dotnet restore --verbosity normal
 
-    - name: Build cho iOS (.NET 7) - Tạo IPA
+    - name: Build cho iOS (.NET 9) - Tạo IPA
       run: |
-        echo "=== Building cho iOS (.NET 7) - Tạo IPA ==="
+        echo "=== Building cho iOS (.NET 9) - Tạo IPA ==="
         
         # Build iOS để tạo IPA
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net7.0-ios \
+          -f net9.0-ios \
           -c Release \
           -r ios-arm64 \
           -p:BuildIpa=true \
@@ -61,13 +61,13 @@ jobs:
         
         echo "=== Đã build iOS IPA xong ==="
 
-    - name: Build cho Mac Catalyst (.NET 7)
+    - name: Build cho Mac Catalyst (.NET 9)
       run: |
-        echo "=== Building cho Mac Catalyst (.NET 7) ==="
+        echo "=== Building cho Mac Catalyst (.NET 9) ==="
         
         # Build với Mac Catalyst
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net7.0-maccatalyst \
+          -f net9.0-maccatalyst \
           -c Release \
           -r maccatalyst-x64 \
           -p:MtouchLink=SdkOnly \
@@ -93,7 +93,7 @@ jobs:
       with:
         name: ios-ipa
         path: |
-          **/bin/Release/net7.0-ios/ios-arm64/*.ipa
+          **/bin/Release/net9.0-ios/ios-arm64/*.ipa
           **/bin/Release/**/*.ipa
         if-no-files-found: warn
 
@@ -102,6 +102,6 @@ jobs:
       with:
         name: mac-catalyst-app
         path: |
-          **/bin/Release/net7.0-maccatalyst/maccatalyst-x64/*.app
+          **/bin/Release/net9.0-maccatalyst/maccatalyst-x64/*.app
           **/bin/Release/**/*.app
         if-no-files-found: warn
