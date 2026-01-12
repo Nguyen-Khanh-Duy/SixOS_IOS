@@ -35,7 +35,7 @@
   </PropertyGroup>
 
 <!-- iOS chung -->
-<PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
+<PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
   <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
   <SupportedOSPlatformVersion>16.1</SupportedOSPlatformVersion>
 </PropertyGroup>
@@ -65,10 +65,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
     
     <!-- Sử dụng phiên bản ZXing.Net.Maui hỗ trợ .NET 9 -->
-    <PackageReference Include="ZXing.Net.Maui" Version="2.0.0" />
+    <PackageReference Include="ZXing.Net.Maui" Version="0.23." />
     
     <!-- Camera.MAUI - check phiên bản mới nhất -->
-    <PackageReference Include="Camera.MAUI" Version="3.0.0" />
+    <PackageReference Include="Camera.MAUI" Version="1.5.1" />
   </ItemGroup>
   <!-- MAUI Resources -->
   <ItemGroup>
@@ -229,6 +229,7 @@
 
 
 </Project>
+
 
 
 
