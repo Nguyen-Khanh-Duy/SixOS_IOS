@@ -27,3 +27,4 @@ packages/
 # .NET Core tooling
 *.db
 *.jfm
+.DS_Store
