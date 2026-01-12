@@ -1,31 +1,33 @@
-name: Build iOS với .NET 8 MAUI
+name: Build iOS IPA
 
 on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
+    paths:
+      - '**/*.cs'
+      - '**/*.xaml'
+      - '**/*.csproj'
 
 jobs:
   build-ios:
     runs-on: macos-latest
-
+    
     steps:
-    - name: Checkout mã nguồn
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup .NET 8 SDK cụ thể
-      uses: actions/setup-dotnet@v4
-      with:
-        # Dùng .NET SDK 8.0.x thay vì 10.x
-        dotnet-version: '8.0.401'
-
-    - name: Cài đặt workloads MAUI cho .NET 8
+    - name: Setup .NET 8
       run: |
-        dotnet workload install maui-ios
-        dotnet workload install maui-maccatalyst
-        dotnet workload restore
+        # Cài .NET 8 SDK
+        curl -L https://dot.net/v1/dotnet-install.sh | bash -s -- --version 8.0.401 --install-dir /usr/local/share/dotnet
+        echo "/usr/local/share/dotnet" >> $GITHUB_PATH
+        
+        # Cài workloads MAUI
+        /usr/local/share/dotnet/dotnet workload install maui
+        /usr/local/share/dotnet/dotnet workload install maui-ios
 
-    - name: Kiểm tra version
+    - name: Verify setup
       run: |
         dotnet --info
         dotnet workload list
@@ -33,19 +35,27 @@ jobs:
     - name: Restore packages
       run: dotnet restore SixOSDatKhamAppMobile.csproj
 
-    - name: Build thử nghiệm
-      run: dotnet build SixOSDatKhamAppMobile.csproj -f net8.0-ios -c Debug
-
-    - name: Publish IPA iOS (không dùng TargetPlatformVersion)
+    - name: Build IPA
       run: |
-        # XÓA các tham số TargetPlatformVersion
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net8.0-ios \
-          -c Release \
-          -r ios-arm64 \
+          -f:net8.0-ios \
+          -c:Release \
+          -p:RuntimeIdentifier=ios-arm64 \
           -p:BuildIpa=true \
-          -p:PublishTrimmed=true \
-          -p:MtouchLink=SdkOnly \
+          -p:ArchiveOnBuild=true \
           -p:CodesignKey="iPhone Distribution" \
           -p:CodesignProvision="Automatic:Provisioning" \
-          --verbosity detailed
+          -p:MtouchLink=SdkOnly \
+          -p:SkipSimulatorArchitectures=true \
+          -p:TreatWarningsAsErrors=false \
+          --verbosity:diagnostic \
+          -o:./publish
+
+    - name: Upload IPA artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: SixOS-iOS-IPA
+        path: |
+          ./publish/*.ipa
+          ./publish/*.app
+        retention-days: 7
