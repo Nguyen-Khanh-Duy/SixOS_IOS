@@ -1,88 +1,38 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- GIỮ .NET 9 -->
-    <TargetFrameworks>net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">
-      net9.0-windows10.0.19041.0
-    </TargetFrameworks>
-
+    <!-- DÙNG .NET 7 - tương thích với Xcode 16.4 -->
+    <TargetFrameworks>net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
+    
     <OutputType>Exe</OutputType>
     <RootNamespace>SixOSDatKhamAppMobile</RootNamespace>
-
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
 
-    <!-- App Info -->
     <ApplicationTitle>SixOSDatKhamAppMobile</ApplicationTitle>
     <ApplicationId>com.nguyenkhanhduy.sixosdatkham</ApplicationId>
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
 
-    <WindowsPackageType>None</WindowsPackageType>
-
-    <!-- Dùng MAUI phiên bản ổn định -->
-    <MauiVersion>9.0.40</MauiVersion>
+    <!-- MAUI 7.x -->
+    <MauiVersion>7.0.99</MauiVersion>
+    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
     
-    <!-- SDK version -->
-    <SupportedOSPlatformVersion>18.0</SupportedOSPlatformVersion>
-    
-    <!-- Bỏ qua warning về Xcode version -->
-    <NoWarn>$(NoWarn);NETSDK1202;NETSDK1138</NoWarn>
-    
-    <!-- BUỘC SỬ DỤNG iOS SDK 17.x để tương thích Xcode 16.4 -->
-    <MicrosoftIOSVersion>17.4.0</MicrosoftIOSVersion>
-    <MicrosoftMacCatalystVersion>17.4.0</MicrosoftMacCatalystVersion>
-  </PropertyGroup>
-
-  <!-- iOS chung -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
-    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
-    <SupportedOSPlatformVersion>17.4</SupportedOSPlatformVersion>
-  </PropertyGroup>
-
-  <!-- Mac Catalyst specific settings -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-maccatalyst'">
-    <RuntimeIdentifier>maccatalyst-x64</RuntimeIdentifier>
-    <SupportedOSPlatformVersion>17.4</SupportedOSPlatformVersion>
-    <MtouchLink>SdkOnly</MtouchLink>
-  </PropertyGroup>
-
-  <!-- Debug -->
-  <PropertyGroup Condition="'$(Configuration)'=='Debug' AND '$(TargetFramework)'=='net9.0-ios'">
+    <!-- TẮT LINKER để tránh lỗi -->
     <PublishTrimmed>false</PublishTrimmed>
+    <MtouchLink>None</MtouchLink>
   </PropertyGroup>
 
-  <!-- Release + IPA -->
-  <PropertyGroup Condition="'$(Configuration)'=='Release' AND '$(TargetFramework)'=='net9.0-ios'">
-    <BuildIpa>true</BuildIpa>
-    <PublishTrimmed>true</PublishTrimmed>
-    <MtouchLink>SdkOnly</MtouchLink>
-  </PropertyGroup>
-
-  <!-- Windows ONLY -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-windows10.0.19041.0'">
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-  </PropertyGroup>
-
-  <!-- Packages -->
   <ItemGroup>
     <!-- Camera -->
-    <PackageReference Include="Camera.MAUI" Version="1.5.1" />
-
-    <!-- ZXing - DÙNG PHIÊN BẢN CŨ HƠN HỖ TRỢ MAUI 8.x -->
-    <!-- Thử các phiên bản theo thứ tự: -->
-    <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.4.0" />
-    <!-- Nếu 0.4.0 không được, thử: Version="0.3.0-preview.1" -->
-    <!-- Hoặc thử không dùng ZXing tạm thời -->
-
-    <!-- MAUI core cho .NET 9 -->
-    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.40" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.40" />
-    <PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.40" />
-    <PackageReference Include="Microsoft.Maui.Graphics" Version="9.0.40" />
+    <PackageReference Include="Camera.MAUI" Version="1.4.4" /> <!-- phiên bản cũ hơn -->
+    
+    <!-- ZXing - TẠM THỜI BỎ -->
+    <!-- <PackageReference Include="ZXing.Net.Maui.Controls" Version="..." /> -->
+    
+    <!-- MAUI 7.x -->
+    <PackageReference Include="Microsoft.Maui.Controls" Version="7.0.99" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="7.0.99" />
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="7.0.99" />
+    <PackageReference Include="Microsoft.Maui.Graphics" Version="7.0.99" />
   </ItemGroup>
 
   <!-- MAUI Resources -->
@@ -246,6 +196,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
