@@ -18,9 +18,12 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
+    - name: Show dotnet info (debug)
+      run: dotnet --info
+
     - name: Install iOS workload
       run: |
-        dotnet workload install ios
+        dotnet workload install ios --skip-manifest-update
 
     - name: Restore
       run: dotnet restore
