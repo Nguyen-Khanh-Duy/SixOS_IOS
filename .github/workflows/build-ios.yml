@@ -13,30 +13,34 @@ jobs:
     - name: Checkout mã nguồn
       uses: actions/checkout@v4
 
-    - name: Cài đặt .NET 7 SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '7.0.x'
+    - name: Cài đặt .NET 7 SDK và workloads
+      run: |
+        # Cài .NET 7 SDK
+        curl -L https://dot.net/v1/dotnet-install.sh | bash -s -- --version 7.0.403
+        
+        # Thêm vào PATH
+        echo "export DOTNET_ROOT=$HOME/.dotnet" >> $GITHUB_ENV
+        echo "export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH" >> $GITHUB_ENV
+        
+        # Cài workloads MAUI
+        $HOME/.dotnet/dotnet workload install maui-ios maui-maccatalyst
+        $HOME/.dotnet/dotnet workload restore
 
     - name: Kiểm tra .NET
       run: dotnet --info
 
-    - name: Cài workloads MAUI
-      run: |
-        dotnet workload install maui-ios maui-maccatalyst
-
-    - name: Restore
-      run: dotnet restore SixOSDatKhamAppMobile.csproj
-
     - name: Build IPA iOS
       run: |
-       dotnet publish SixOSDatKhamAppMobile.csproj \
+        dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net7.0-ios \
           -c Release \
           -r ios-arm64 \
           -p:BuildIpa=true \
           -p:PublishTrimmed=true \
           -p:MtouchLink=SdkOnly \
-          -p:TargetPlatformVersion=16.4 \
-          -p:SupportedOSPlatformVersion=16.4 \
-          --verbosity normal
+          -p:TargetPlatformVersion=14.0 \
+          -p:SupportedOSPlatformVersion=14.0 \
+          -p:CodesignKey="iPhone Distribution" \
+          -p:CodesignProvision="Automatic:Provisioning" \
+          -p:ArchiveOnBuild=true \
+          --verbosity detailed
