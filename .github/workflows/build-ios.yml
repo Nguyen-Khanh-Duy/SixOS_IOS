@@ -34,17 +34,25 @@ jobs:
         security default-keychain -s build.keychain
         security unlock-keychain -p "" build.keychain
         
-        # Import certificate
-        echo "$SIGNING_CERTIFICATE" | base64 --decode > certificate.p12
-        security import certificate.p12 -k build.keychain -P "$SIGNING_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+        # Import certificate với flag -A
+        echo "$SIGNING_CERTIFICATE" | base64 -D > certificate.p12
+        security import certificate.p12 \
+          -k build.keychain \
+          -P "$SIGNING_CERTIFICATE_PASSWORD" \
+          -T /usr/bin/codesign \
+          -A
+        
+        # Kiểm tra certificate đã import
+        security find-identity -v -p codesigning build.keychain
         
         # Import provisioning profile
-        echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
+        echo "$PROVISIONING_PROFILE" | base64 -D > profile.mobileprovision
+        UUID=$(grep -a -A1 UUID profile.mobileprovision | grep -o "[-A-Z0-9]\{36\}")
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-        cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+        cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
         
         # Cấu hình keychain
-        security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
 
     - name: Build with code signing
       env:
@@ -62,7 +70,7 @@ jobs:
           -p:DevelopmentTeam="$APPLE_TEAM_ID" \
           -p:MtouchLink=SdkOnly \
           -o:./publish \
-          --verbosity:normal
+          --verbosity:detailed
 
     - name: Upload IPA
       uses: actions/upload-artifact@v4
