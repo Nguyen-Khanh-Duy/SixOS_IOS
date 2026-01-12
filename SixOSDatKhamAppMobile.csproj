@@ -1,9 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
- 
-  <!-- CHUNG CHO TẤT CẢ TARGETFRAMEWORKS -->
   <PropertyGroup>
-    <TargetFrameworks>net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
+    <!-- THAY ĐỔI TỪ net7.0-ios THÀNH net8.0-ios -->
+    <TargetFrameworks>net8.0-ios;net8.0-maccatalyst</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>SixOSDatKhamAppMobile</RootNamespace>
     <UseMaui>true</UseMaui>
@@ -12,43 +10,40 @@
     <ApplicationTitle>SixOSDatKhamAppMobile</ApplicationTitle>
     <ApplicationId>com.nguyenkhanhduy.sixosdatkham</ApplicationId>
 
-    <MauiVersion>7.0.99</MauiVersion>
+    <!-- Xóa hoặc cập nhật MAUI version -->
+    <!-- <MauiVersion>7.0.99</MauiVersion> -->
 
     <NoWarn>$(NoWarn);NETSDK1202;NETSDK1138;NU1603;NU1605;NU1608</NoWarn>
-
-    <!-- Tắt tính năng EOL checking -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
-    <CheckEolWorkload>false</CheckEolWorkload>
   </PropertyGroup>
 
-  <!-- iOS riêng -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-ios'">
+  <!-- iOS riêng cho .NET 8 -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
     <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
-    <TargetPlatformVersion>16.4</TargetPlatformVersion>
-    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
+    <!-- .NET 8 hỗ trợ iOS 14.2+ -->
+    <TargetPlatformVersion>14.2</TargetPlatformVersion>
+    <SupportedOSPlatformVersion>14.2</SupportedOSPlatformVersion>
     <PublishTrimmed>true</PublishTrimmed>
     <MtouchLink>SdkOnly</MtouchLink>
   </PropertyGroup>
 
-  <!-- MacCatalyst riêng -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-maccatalyst'">
-    <TargetPlatformVersion>16.4</TargetPlatformVersion>
-    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
+  <!-- MacCatalyst riêng cho .NET 8 -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-maccatalyst'">
+    <TargetPlatformVersion>13.3</TargetPlatformVersion>
+    <SupportedOSPlatformVersion>13.3</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Camera -->
-    <PackageReference Include="Camera.MAUI" Version="1.4.4" /> <!-- phiên bản cũ hơn -->
+    <PackageReference Include="Camera.MAUI" Version="2.0.0" />
     
-    <!-- ZXing - TẠM THỜI BỎ -->
-    <!-- <PackageReference Include="ZXing.Net.Maui.Controls" Version="..." /> -->
-    
-    <!-- MAUI 7.x -->
-    <PackageReference Include="Microsoft.Maui.Controls" Version="7.0.99" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="7.0.99" />
-    <PackageReference Include="Microsoft.Maui.Essentials" Version="7.0.99" />
-    <PackageReference Include="Microsoft.Maui.Graphics" Version="7.0.99" />
+    <!-- MAUI 8.x -->
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.*" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.*" />
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.*" />
+    <PackageReference Include="Microsoft.Maui.Graphics" Version="8.0.*" />
   </ItemGroup>
+
 
   <!-- MAUI Resources -->
   <ItemGroup>
@@ -211,6 +206,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
