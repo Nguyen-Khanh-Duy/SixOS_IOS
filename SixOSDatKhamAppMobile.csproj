@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
+<PropertyGroup>
     <!-- Target frameworks đúng cho .NET 9 MAUI -->
     <TargetFrameworks>net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">
@@ -26,9 +26,10 @@
     <!-- Dùng phiên bản MAUI mới nhất cho .NET 9 -->
     <MauiVersion>9.0.0</MauiVersion>
     
-    <!-- THÊM VÀO: Chỉ định runtime version tương thích với Xcode 16.4 -->
+    <!-- XÓA CÁC DÒNG NÀY:
     <MacCatalystVersion>16.4</MacCatalystVersion>
     <RuntimeFrameworkVersion>16.4.100</RuntimeFrameworkVersion>
+    -->
     
     <!-- iOS/Mac Catalyst specific settings -->
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.0</SupportedOSPlatformVersion>
@@ -36,7 +37,7 @@
     
     <!-- Bỏ qua warning về EOL workloads -->
     <NoWarn>$(NoWarn);NETSDK1202</NoWarn>
-  </PropertyGroup>
+</PropertyGroup>
 
 <!-- iOS chung -->
 <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
@@ -46,16 +47,11 @@
 
 <!-- Mac Catalyst specific settings - SỬA LẠI -->
 <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-maccatalyst'">
-  <!-- Sử dụng RuntimeIdentifiers (số nhiều) thay vì RuntimeIdentifier -->
-  <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
+  <!-- Chỉ định 1 RuntimeIdentifier thôi, hoặc build riêng từng cái -->
+  <RuntimeIdentifier>maccatalyst-x64</RuntimeIdentifier>
+  <!-- Hoặc nếu muốn arm64: <RuntimeIdentifier>maccatalyst-arm64</RuntimeIdentifier> -->
   <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
-  <MacCatalystVersion>16.4</MacCatalystVersion>
-  <RuntimeFrameworkVersion>16.4.100</RuntimeFrameworkVersion>
   <MtouchLink>SdkOnly</MtouchLink>
-  
-  <!-- THÊM VÀO: Cấu hình OutputPath để tránh lỗi HasTrailingSlash -->
-  <AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
-  <OutputPath>bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\</OutputPath>
 </PropertyGroup>
 
   <!-- Debug -->
@@ -75,23 +71,21 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
-  <!-- Packages -->
-  <ItemGroup>
-    <!-- MAUI packages -->
-    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
-    
-    <!-- Sử dụng phiên bản ZXing.Net.Maui hỗ trợ .NET 9 -->
-    <PackageReference Include="ZXing.Net.Maui" Version="0.23.0" />
-    
-    <!-- Camera.MAUI - check phiên bản mới nhất -->
-    <PackageReference Include="Camera.MAUI" Version="1.5.1" />
-    
-    <!-- THÊM VÀO: Chỉ định chính xác phiên bản MacCatalyst runtime -->
-    <PackageReference Include="Microsoft.MacCatalyst.Runtime.maccatalyst-x64" Version="16.4.100" Condition="'$(TargetFramework)'=='net9.0-maccatalyst'" />
-    <PackageReference Include="Microsoft.MacCatalyst.Runtime.maccatalyst-arm64" Version="16.4.100" Condition="'$(TargetFramework)'=='net9.0-maccatalyst'" />
-  </ItemGroup>
+ <!-- Packages -->
+<ItemGroup>
+  <!-- MAUI packages -->
+  <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+  <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
+  <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+  
+  <!-- Sử dụng phiên bản ZXing.Net.Maui đã được resolve (1.0.0) -->
+  <PackageReference Include="ZXing.Net.Maui" Version="1.0.0" />
+  
+  <!-- Camera.MAUI - check phiên bản mới nhất -->
+  <PackageReference Include="Camera.MAUI" Version="1.5.1" />
+  
+  <!-- XÓA CÁC DÒNG NÀY - KHÔNG CẦN THÊM RUNTIME PACKAGES THỦ CÔNG -->
+</ItemGroup>
 
   <!-- MAUI Resources -->
   <ItemGroup>
@@ -252,6 +246,7 @@
 
 
 </Project>
+
 
 
 
