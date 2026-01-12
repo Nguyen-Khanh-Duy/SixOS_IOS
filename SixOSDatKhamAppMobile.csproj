@@ -1,91 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- NÂNG CẤP LÊN .NET 9 -->
-    <TargetFrameworks>net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">
-      net9.0-windows10.0.19041.0
-    </TargetFrameworks>
-
-    <OutputType>Exe</OutputType>
-    <RootNamespace>SixOSDatKhamAppMobile</RootNamespace>
-
-    <UseMaui>true</UseMaui>
-    <SingleProject>true</SingleProject>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-
-    <!-- App Info -->
-    <ApplicationTitle>SixOSDatKhamAppMobile</ApplicationTitle>
-    <ApplicationId>com.nguyenkhanhduy.sixosdatkham</ApplicationId>
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
-
-    <WindowsPackageType>None</WindowsPackageType>
-
-    <!-- Cập nhật phiên bản MAUI tương thích .NET 9 -->
-    <MauiVersion>9.0.0</MauiVersion>
-    
-    <!-- SDK version tương thích -->
-    <SupportedOSPlatformVersion>18.0</SupportedOSPlatformVersion>
-    
-    <!-- Bỏ qua warning -->
-    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
-  </PropertyGroup>
-
-  <!-- iOS chung -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
-    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
-    <SupportedOSPlatformVersion>18.0</SupportedOSPlatformVersion>
-  </PropertyGroup>
-
-  <!-- Mac Catalyst specific settings -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-maccatalyst'">
-    <RuntimeIdentifier>maccatalyst-x64</RuntimeIdentifier>
-    <SupportedOSPlatformVersion>18.0</SupportedOSPlatformVersion>
-    <MtouchLink>SdkOnly</MtouchLink>
-  </PropertyGroup>
-
-  <!-- Debug -->
-  <PropertyGroup Condition="'$(Configuration)'=='Debug' AND '$(TargetFramework)'=='net9.0-ios'">
-    <PublishTrimmed>false</PublishTrimmed>
-  </PropertyGroup>
-
-  <!-- Release + IPA -->
-  <PropertyGroup Condition="'$(Configuration)'=='Release' AND '$(TargetFramework)'=='net9.0-ios'">
-    <BuildIpa>true</BuildIpa>
-    <PublishTrimmed>true</PublishTrimmed>
-    <MtouchLink>SdkOnly</MtouchLink>
-  </PropertyGroup>
-
-  <!-- Windows ONLY -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-windows10.0.19041.0'">
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-  </PropertyGroup>
-
-  <!-- Packages - Cập nhật phiên bản MAUI cho .NET 9 -->
-  <ItemGroup>
-    <!-- Camera -->
-    <PackageReference Include="Camera.MAUI" Version="1.5.1" />
-
-    <!-- ZXing -->
-    <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.6.0" />
-
-    <!-- MAUI core cho .NET 9 -->
-    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Maui.Graphics" Version="9.0.0" />
-  </ItemGroup>
-
-  <!-- Rest của file giữ nguyên -->
-  <!-- ... -->
-</Project>
-Giải pháp 2: Nếu muốn giữ .NET 7 (sử dụng phiên bản ZXing cũ)
-xml
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
     <!-- GIỮ .NET 7 -->
     <TargetFrameworks>net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">
@@ -118,6 +33,36 @@ xml
     <NoWarn>$(NoWarn);NETSDK1138;NU1603;NU1605</NoWarn>
   </PropertyGroup>
 
+  <!-- iOS chung -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-ios'">
+    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <!-- Mac Catalyst specific settings -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-maccatalyst'">
+    <RuntimeIdentifier>maccatalyst-x64</RuntimeIdentifier>
+    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
+    <MtouchLink>SdkOnly</MtouchLink>
+  </PropertyGroup>
+
+  <!-- Debug -->
+  <PropertyGroup Condition="'$(Configuration)'=='Debug' AND '$(TargetFramework)'=='net7.0-ios'">
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
+  <!-- Release + IPA -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release' AND '$(TargetFramework)'=='net7.0-ios'">
+    <BuildIpa>true</BuildIpa>
+    <PublishTrimmed>true</PublishTrimmed>
+    <MtouchLink>SdkOnly</MtouchLink>
+  </PropertyGroup>
+
+  <!-- Windows ONLY -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-windows10.0.19041.0'">
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
   <!-- Packages - Sửa phiên bản ZXing -->
   <ItemGroup>
     <!-- Camera -->
@@ -145,170 +90,152 @@ xml
                LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
-<ItemGroup>
-      <Content Remove="wwwroot\dist\img\anhnen.jpg" />
-      <Content Remove="wwwroot\dist\img\avatar.jpg" />
-      <Content Remove="wwwroot\dist\img\cccd.png" />
-      <Content Remove="wwwroot\dist\img\cd.png" />
-      <Content Remove="wwwroot\dist\img\ck.png" />
-      <Content Remove="wwwroot\dist\img\coso.png" />
-      <Content Remove="wwwroot\dist\img\coso1.png" />
-      <Content Remove="wwwroot\dist\img\check_circle.png" />
-      <Content Remove="wwwroot\dist\img\close.png" />
-      <Content Remove="wwwroot\dist\img\diachi.png" />
-      <Content Remove="wwwroot\dist\img\dichvu.jpg" />
-      <Content Remove="wwwroot\dist\img\dong.png" />
-<Content Remove="wwwroot\dist\img\dx.png" />
-      <Content Remove="wwwroot\dist\img\flash_off.png" />
-      <Content Remove="wwwroot\dist\img\flash_on.png" />
-      <Content Remove="wwwroot\dist\img\gallery.png" />
-      <Content Remove="wwwroot\dist\img\dong1.png" />
-      <Content Remove="wwwroot\dist\img\dongho.png" />
-      <Content Remove="wwwroot\dist\img\goikham.png" />
-      <Content Remove="wwwroot\dist\img\gt.png" />
-      <Content Remove="wwwroot\dist\img\hoadon.png" />
-      <Content Remove="wwwroot\dist\img\home.png" />
-      <Content Remove="wwwroot\dist\img\hoso.png" />
-      <Content Remove="wwwroot\dist\img\hoso1.png" />
-      <Content Remove="wwwroot\dist\img\ic_arrow_right.png" />
-      <Content Remove="wwwroot\dist\img\ketqua.png" />
-      <Content Remove="wwwroot\dist\img\lich1.png" />
-      <Content Remove="wwwroot\dist\img\lichhen.png" />
-      <Content Remove="wwwroot\dist\img\lichsu.png" />
-      <Content Remove="wwwroot\dist\img\loc.png" />
-      <Content Remove="wwwroot\dist\img\loc1.png" />
-      <Content Remove="wwwroot\dist\img\loc2.png" />
-      <Content Remove="wwwroot\dist\img\loc4.png" />
-      <Content Remove="wwwroot\dist\img\logo.jpg" />
-      <Content Remove="wwwroot\dist\img\mau.png" />
-      <Content Remove="wwwroot\dist\img\mo.png" />
-      <Content Remove="wwwroot\dist\img\ngaysinh.png" />
-      <Content Remove="wwwroot\dist\img\noisoi.png" />
-      <Content Remove="wwwroot\dist\img\phieukham.png" />
-      <Content Remove="wwwroot\dist\img\phone.png" />
-      <Content Remove="wwwroot\dist\img\phone1.png" />
-      <Content Remove="wwwroot\dist\img\qr.png" />
-      <Content Remove="wwwroot\dist\img\qr_cccd.png" />
-      <Content Remove="wwwroot\dist\img\quangcao.jpg" />
-      <Content Remove="wwwroot\dist\img\quaylai.png" />
-      <Content Remove="wwwroot\dist\img\sdt.png" />
-      <Content Remove="wwwroot\dist\img\taikhoan.png" />
-      <Content Remove="wwwroot\dist\img\them.png" />
-      <Content Remove="wwwroot\dist\img\theongay.png" />
-      <Content Remove="wwwroot\dist\img\theoyecau.png" />
-      <Content Remove="wwwroot\dist\img\thongbao.png" />
-      <Content Remove="wwwroot\dist\img\thu.png" />
-      <Content Remove="wwwroot\dist\img\timkiem.png" />
-      <Content Remove="wwwroot\dist\img\tk.png" />
-      <Content Remove="wwwroot\dist\img\tk01.png" />
-      <Content Remove="wwwroot\dist\img\tongquat.png" />
-      <Content Remove="wwwroot\dist\img\tt.png" />
-      <Content Remove="wwwroot\dist\img\tt1.png" />
-      <Content Remove="wwwroot\dist\img\ungbuou.png" />
-      <Content Remove="wwwroot\dist\img\xuong.png" />
-      <Content Remove="wwwroot\dist\img\xuong1.png" />
-    </ItemGroup>
+  <ItemGroup>
+    <Content Remove="wwwroot\dist\img\anhnen.jpg" />
+    <Content Remove="wwwroot\dist\img\avatar.jpg" />
+    <Content Remove="wwwroot\dist\img\cccd.png" />
+    <Content Remove="wwwroot\dist\img\cd.png" />
+    <Content Remove="wwwroot\dist\img\ck.png" />
+    <Content Remove="wwwroot\dist\img\coso.png" />
+    <Content Remove="wwwroot\dist\img\coso1.png" />
+    <Content Remove="wwwroot\dist\img\check_circle.png" />
+    <Content Remove="wwwroot\dist\img\close.png" />
+    <Content Remove="wwwroot\dist\img\diachi.png" />
+    <Content Remove="wwwroot\dist\img\dichvu.jpg" />
+    <Content Remove="wwwroot\dist\img\dong.png" />
+    <Content Remove="wwwroot\dist\img\dx.png" />
+    <Content Remove="wwwroot\dist\img\flash_off.png" />
+    <Content Remove="wwwroot\dist\img\flash_on.png" />
+    <Content Remove="wwwroot\dist\img\gallery.png" />
+    <Content Remove="wwwroot\dist\img\dong1.png" />
+    <Content Remove="wwwroot\dist\img\dongho.png" />
+    <Content Remove="wwwroot\dist\img\goikham.png" />
+    <Content Remove="wwwroot\dist\img\gt.png" />
+    <Content Remove="wwwroot\dist\img\hoadon.png" />
+    <Content Remove="wwwroot\dist\img\home.png" />
+    <Content Remove="wwwroot\dist\img\hoso.png" />
+    <Content Remove="wwwroot\dist\img\hoso1.png" />
+    <Content Remove="wwwroot\dist\img\ic_arrow_right.png" />
+    <Content Remove="wwwroot\dist\img\ketqua.png" />
+    <Content Remove="wwwroot\dist\img\lich1.png" />
+    <Content Remove="wwwroot\dist\img\lichhen.png" />
+    <Content Remove="wwwroot\dist\img\lichsu.png" />
+    <Content Remove="wwwroot\dist\img\loc.png" />
+    <Content Remove="wwwroot\dist\img\loc1.png" />
+    <Content Remove="wwwroot\dist\img\loc2.png" />
+    <Content Remove="wwwroot\dist\img\loc4.png" />
+    <Content Remove="wwwroot\dist\img\logo.jpg" />
+    <Content Remove="wwwroot\dist\img\mau.png" />
+    <Content Remove="wwwroot\dist\img\mo.png" />
+    <Content Remove="wwwroot\dist\img\ngaysinh.png" />
+    <Content Remove="wwwroot\dist\img\noisoi.png" />
+    <Content Remove="wwwroot\dist\img\phieukham.png" />
+    <Content Remove="wwwroot\dist\img\phone.png" />
+    <Content Remove="wwwroot\dist\img\phone1.png" />
+    <Content Remove="wwwroot\dist\img\qr.png" />
+    <Content Remove="wwwroot\dist\img\qr_cccd.png" />
+    <Content Remove="wwwroot\dist\img\quangcao.jpg" />
+    <Content Remove="wwwroot\dist\img\quaylai.png" />
+    <Content Remove="wwwroot\dist\img\sdt.png" />
+    <Content Remove="wwwroot\dist\img\taikhoan.png" />
+    <Content Remove="wwwroot\dist\img\them.png" />
+    <Content Remove="wwwroot\dist\img\theongay.png" />
+    <Content Remove="wwwroot\dist\img\theoyecau.png" />
+    <Content Remove="wwwroot\dist\img\thongbao.png" />
+    <Content Remove="wwwroot\dist\img\thu.png" />
+    <Content Remove="wwwroot\dist\img\timkiem.png" />
+    <Content Remove="wwwroot\dist\img\tk.png" />
+    <Content Remove="wwwroot\dist\img\tk01.png" />
+    <Content Remove="wwwroot\dist\img\tongquat.png" />
+    <Content Remove="wwwroot\dist\img\tt.png" />
+    <Content Remove="wwwroot\dist\img\tt1.png" />
+    <Content Remove="wwwroot\dist\img\ungbuou.png" />
+    <Content Remove="wwwroot\dist\img\xuong.png" />
+    <Content Remove="wwwroot\dist\img\xuong1.png" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <MauiImage Remove="Resources\Images\logo.jpg" />
-    </ItemGroup>
+  <ItemGroup>
+    <MauiImage Remove="Resources\Images\logo.jpg" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <Content Include="Resources\Images\logo.jpg">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
-</ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\Images\logo.jpg">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
 
-    <ItemGroup>
-      <MauiImage Include="wwwroot\dist\img\cd.png" />
-      <MauiImage Include="wwwroot\dist\img\ck.png" />
-      <MauiImage Include="wwwroot\dist\img\coso1.png" />
-    </ItemGroup>
-    <ItemGroup>
- 
-      <MauiXaml Update="Pages\S0306_mChonCoSoKham.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mDangNhap.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mDanhSachChuyenGia.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mDatLaiMatKhau.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mDoiMatKhau.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mHoSoBenhNhan.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mKhamTheoChuyenGia.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mKhamTheoGio.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mKhamTheoGoi.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mKhamTheoNgay.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mNhapThongTinCaNhan.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mQRScannerPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mQuenMatKhau.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mTaiKhoan.xaml">
-        <Generator>MSBuild:Compile</Generator></MauiXaml>
-      <MauiXaml Update="Pages\S0306_mTaoTaiKhoan.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mTrangChu.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mVideoPlayerPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mVideoTraCuu.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mXacNhan.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Pages\S0306_mXacThucOTP.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-    </ItemGroup><ItemGroup>
-      <Folder Include="ViewModels\" />
-    </ItemGroup>
+  <ItemGroup>
+    <MauiImage Include="wwwroot\dist\img\cd.png" />
+    <MauiImage Include="wwwroot\dist\img\ck.png" />
+    <MauiImage Include="wwwroot\dist\img\coso1.png" />
+  </ItemGroup>
 
+  <ItemGroup>
+    <MauiXaml Update="Pages\S0306_mChonCoSoKham.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mDangNhap.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mDanhSachChuyenGia.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mDatLaiMatKhau.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mDoiMatKhau.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mHoSoBenhNhan.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mKhamTheoChuyenGia.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mKhamTheoGio.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mKhamTheoGoi.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mKhamTheoNgay.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mNhapThongTinCaNhan.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mQRScannerPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mQuenMatKhau.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mTaiKhoan.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mTaoTaiKhoan.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mTrangChu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mVideoPlayerPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mVideoTraCuu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mXacNhan.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\S0306_mXacThucOTP.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ViewModels\" />
+  </ItemGroup>
 
 </Project>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
