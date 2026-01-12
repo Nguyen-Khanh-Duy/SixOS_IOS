@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- ĐỔI THÀNH .NET 8 - Tương thích với Xcode 16.4 -->
-    <TargetFrameworks>net8.0-ios;net8.0-maccatalyst</TargetFrameworks>
+    <!-- ĐỔI THÀNH .NET 7 - ZXing.Net.Maui hỗ trợ .NET 7 -->
+    <TargetFrameworks>net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">
-      net8.0-windows10.0.19041.0
+      net7.0-windows10.0.19041.0
     </TargetFrameworks>
 
     <OutputType>Exe</OutputType>
@@ -23,8 +23,8 @@
 
     <WindowsPackageType>None</WindowsPackageType>
 
-    <!-- Dùng phiên bản MAUI cho .NET 8 -->
-    <MauiVersion>8.0.84</MauiVersion>
+    <!-- Dùng phiên bản MAUI cho .NET 7 -->
+    <MauiVersion>7.0.99</MauiVersion>
     
     <!-- SDK version tương thích -->
     <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
@@ -34,44 +34,46 @@
   </PropertyGroup>
 
   <!-- iOS chung -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-ios'">
     <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
     <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <!-- Mac Catalyst specific settings -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-maccatalyst'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-maccatalyst'">
     <RuntimeIdentifier>maccatalyst-x64</RuntimeIdentifier>
     <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
     <MtouchLink>SdkOnly</MtouchLink>
   </PropertyGroup>
 
   <!-- Debug -->
-  <PropertyGroup Condition="'$(Configuration)'=='Debug' AND '$(TargetFramework)'=='net8.0-ios'">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug' AND '$(TargetFramework)'=='net7.0-ios'">
     <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 
   <!-- Release + IPA -->
-  <PropertyGroup Condition="'$(Configuration)'=='Release' AND '$(TargetFramework)'=='net8.0-ios'">
+  <PropertyGroup Condition="'$(Configuration)'=='Release' AND '$(TargetFramework)'=='net7.0-ios'">
     <BuildIpa>true</BuildIpa>
     <PublishTrimmed>true</PublishTrimmed>
     <MtouchLink>SdkOnly</MtouchLink>
   </PropertyGroup>
 
   <!-- Windows ONLY -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-windows10.0.19041.0'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0-windows10.0.19041.0'">
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
   <!-- Packages -->
   <ItemGroup>
-    <!-- MAUI packages -->
+    <!-- MAUI packages cho .NET 7 -->
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
     
-    <!-- ZXing.Net.Maui - phiên bản cho .NET 8 -->
-    <PackageReference Include="ZXing.Net.Maui" Version="1.0.0" />
+    <!-- ZXing.Net.Maui - phiên bản cho .NET 7 hoặc dùng bản mới hơn -->
+    <PackageReference Include="ZXing.Net.Maui" Version="2.0.0" />
+    <!-- Hoặc nếu 2.0.0 không có, thử 1.0.0 nhưng cần check compatibility -->
+    <!-- <PackageReference Include="ZXing.Net.Maui" Version="1.0.0" /> -->
     
     <!-- Camera.MAUI -->
     <PackageReference Include="Camera.MAUI" Version="1.5.1" />
@@ -236,6 +238,7 @@
 
 
 </Project>
+
 
 
 
