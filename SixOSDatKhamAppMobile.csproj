@@ -26,6 +26,21 @@
   <PublishTrimmed>false</PublishTrimmed>
   <MtouchLink>None</MtouchLink>
   </PropertyGroup>
+<!-- Chung -->
+<PropertyGroup>
+  <TargetFrameworks>net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
+  <UseMaui>true</UseMaui>
+  <SingleProject>true</SingleProject>
+  <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
+</PropertyGroup>
+
+<!-- RIÊNG iOS -->
+<PropertyGroup Condition="'$(TargetFramework)'=='net7.0-ios'">
+  <TargetPlatformVersion>16.4</TargetPlatformVersion>
+  <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
+  <PublishTrimmed>true</PublishTrimmed>
+  <MtouchLink>SdkOnly</MtouchLink>
+</PropertyGroup>
 
   <ItemGroup>
     <!-- Camera -->
@@ -202,6 +217,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
