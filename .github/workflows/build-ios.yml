@@ -13,10 +13,11 @@ jobs:
     - name: Checkout mã nguồn
       uses: actions/checkout@v4
 
-    - name: Setup .NET 8.x
+    - name: Setup .NET 8 SDK cụ thể
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        # Dùng .NET SDK 8.0.x thay vì 10.x
+        dotnet-version: '8.0.401'
 
     - name: Cài đặt workloads MAUI cho .NET 8
       run: |
@@ -24,11 +25,20 @@ jobs:
         dotnet workload install maui-maccatalyst
         dotnet workload restore
 
+    - name: Kiểm tra version
+      run: |
+        dotnet --info
+        dotnet workload list
+
     - name: Restore packages
       run: dotnet restore SixOSDatKhamAppMobile.csproj
 
-    - name: Build IPA iOS
+    - name: Build thử nghiệm
+      run: dotnet build SixOSDatKhamAppMobile.csproj -f net8.0-ios -c Debug
+
+    - name: Publish IPA iOS (không dùng TargetPlatformVersion)
       run: |
+        # XÓA các tham số TargetPlatformVersion
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net8.0-ios \
           -c Release \
@@ -36,6 +46,6 @@ jobs:
           -p:BuildIpa=true \
           -p:PublishTrimmed=true \
           -p:MtouchLink=SdkOnly \
-          -p:TargetPlatformVersion=14.2 \
-          -p:SupportedOSPlatformVersion=14.2 \
+          -p:CodesignKey="iPhone Distribution" \
+          -p:CodesignProvision="Automatic:Provisioning" \
           --verbosity detailed
