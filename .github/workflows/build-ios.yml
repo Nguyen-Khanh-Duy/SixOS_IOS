@@ -30,11 +30,13 @@ jobs:
 
     - name: Build IPA iOS
       run: |
-        dotnet publish SixOSDatKhamAppMobile.csproj \
+       dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net7.0-ios \
           -c Release \
           -r ios-arm64 \
           -p:BuildIpa=true \
           -p:PublishTrimmed=true \
           -p:MtouchLink=SdkOnly \
-          --verbosity normal 
+          -p:TargetPlatformVersion=16.4 \
+          -p:SupportedOSPlatformVersion=16.4 \
+          --verbosity normal
