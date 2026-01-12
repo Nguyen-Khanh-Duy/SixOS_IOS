@@ -38,22 +38,25 @@
     <NoWarn>$(NoWarn);NETSDK1202</NoWarn>
   </PropertyGroup>
 
-  <!-- iOS chung -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
-    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
-    <SupportedOSPlatformVersion>16.1</SupportedOSPlatformVersion>
-  </PropertyGroup>
+<!-- iOS chung -->
+<PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
+  <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+  <SupportedOSPlatformVersion>16.1</SupportedOSPlatformVersion>
+</PropertyGroup>
 
-  <!-- Mac Catalyst specific settings - THÊM PROPERTY GROUP NÀY -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-maccatalyst'">
-    <RuntimeIdentifier>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifier>
-    <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
-    <!-- Sử dụng runtime phiên bản tương thích với Xcode 16.4 -->
-    <MacCatalystVersion>16.4</MacCatalystVersion>
-    <!-- Force specific runtime version -->
-    <RuntimeFrameworkVersion>16.4.100</RuntimeFrameworkVersion>
-    <MtouchLink>SdkOnly</MtouchLink>
-  </PropertyGroup>
+<!-- Mac Catalyst specific settings - SỬA LẠI -->
+<PropertyGroup Condition="'$(TargetFramework)'=='net9.0-maccatalyst'">
+  <!-- Sử dụng RuntimeIdentifiers (số nhiều) thay vì RuntimeIdentifier -->
+  <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
+  <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
+  <MacCatalystVersion>16.4</MacCatalystVersion>
+  <RuntimeFrameworkVersion>16.4.100</RuntimeFrameworkVersion>
+  <MtouchLink>SdkOnly</MtouchLink>
+  
+  <!-- THÊM VÀO: Cấu hình OutputPath để tránh lỗi HasTrailingSlash -->
+  <AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
+  <OutputPath>bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\</OutputPath>
+</PropertyGroup>
 
   <!-- Debug -->
   <PropertyGroup Condition="'$(Configuration)'=='Debug' AND '$(TargetFramework)'=='net9.0-ios'">
@@ -249,6 +252,7 @@
 
 
 </Project>
+
 
 
 
