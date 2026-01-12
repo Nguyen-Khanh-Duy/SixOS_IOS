@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-ios:
-    runs-on: macos-13  # Sử dụng macOS cũ hơn
+    runs-on: macos-12  # Sử dụng macOS cũ hơn
 
     steps:
     - name: Checkout mã nguồn
