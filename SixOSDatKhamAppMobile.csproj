@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- CHỈ DÙNG iOS, không cần maccatalyst -->
-    <TargetFrameworks>net8.0-ios</TargetFrameworks>
+  <!-- iOS ONLY -->
+    <TargetFramework>net8.0-ios</TargetFramework>
     <TargetPlatformVersion>15.0</TargetPlatformVersion>
     <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
 
     <OutputType>Exe</OutputType>
     <RootNamespace>SixOSDatKhamAppMobile</RootNamespace>
@@ -210,6 +211,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
