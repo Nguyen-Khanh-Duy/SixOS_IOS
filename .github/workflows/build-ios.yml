@@ -21,10 +21,22 @@ jobs:
         SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
         SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
         PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
+        TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
         echo "SIGNING_CERTIFICATE length: ${#SIGNING_CERTIFICATE}"
         echo "SIGNING_CERTIFICATE_PASSWORD: ${SIGNING_CERTIFICATE_PASSWORD:+SET}"
         echo "PROVISIONING_PROFILE length: ${#PROVISIONING_PROFILE}"
+        echo "TEAM_ID: $TEAM_ID"
+        
+        if [ -z "$SIGNING_CERTIFICATE" ]; then
+          echo "❌ SIGNING_CERTIFICATE is empty!"
+        fi
+        if [ -z "$PROVISIONING_PROFILE" ]; then
+          echo "❌ PROVISIONING_PROFILE is empty!"
+        fi
+        if [ -z "$TEAM_ID" ]; then
+          echo "❌ TEAM_ID is empty!"
+        fi
 
     # ===============================
     # SETUP DOTNET
@@ -49,9 +61,9 @@ jobs:
         PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
       run: |
         set -e
-
-        echo "✅ All secrets are available"
-
+        
+        echo "✅ Creating keychain..."
+        
         # Create keychain
         security create-keychain -p "" build.keychain
         security default-keychain -s build.keychain
@@ -60,6 +72,7 @@ jobs:
         # ===============================
         # IMPORT CERTIFICATE
         # ===============================
+        echo "Importing certificate..."
         echo "$SIGNING_CERTIFICATE" | base64 --decode > certificate.p12
 
         security import certificate.p12 \
@@ -73,21 +86,27 @@ jobs:
           -s -k "" build.keychain
 
         echo "🔍 Available signing identities:"
-        security find-identity -v -p codesigning build.keychain
+        security find-identity -v -p codesigning build.keychain || true
 
         # ===============================
         # IMPORT PROVISIONING PROFILE
         # ===============================
+        echo "Importing provisioning profile..."
         echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
 
-        echo "🔍 Extracting UUID (SAFE WAY)"
-        UUID=$(
-          security cms -D -i profile.mobileprovision \
-          | plutil -extract UUID raw -
-        )
-
+        # Extract UUID from provisioning profile
+        echo "Extracting UUID..."
+        UUID=$(security cms -D -i profile.mobileprovision 2>/dev/null | grep -a1 UUID | tail -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
+        
+        if [ -z "$UUID" ]; then
+          echo "⚠️ Trying alternative method to extract UUID..."
+          UUID=$(grep -a "UUID" profile.mobileprovision | head -1 | sed 's/.*UUID = \(.*\);/\1/')
+        fi
+        
         if [ -z "$UUID" ]; then
           echo "❌ Failed to extract provisioning profile UUID"
+          echo "Profile content (first 200 chars):"
+          head -c 200 profile.mobileprovision | xxd
           exit 1
         fi
 
@@ -95,7 +114,7 @@ jobs:
 
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision \
-          ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
+          ~/Library/MobileDevice/Provisioning\ Profiles/"$UUID.mobileprovision"
 
         echo "✅ Installed provisioning profiles:"
         ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
@@ -108,25 +127,52 @@ jobs:
         APPLE_TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
         echo "Team ID: $APPLE_TEAM_ID"
-
+        echo "Current directory: $(pwd)"
+        echo "Listing files:"
+        ls -la
+        
+        # Build command - viết trên một dòng hoặc multi-line đúng cách
         dotnet publish SixOSDatKhamAppMobile.csproj \
-         -f net8.0-ios \
-         -c Release \
-         -p:RuntimeIdentifier=ios-arm64 \
-         -p:TargetPlatformVersion=17.0.0 \      # Cập nhật lên iOS 17+
-         -p:SupportedOSPlatformVersion=17.0.0 \ # Cập nhật lên iOS 17+
-         -p:BuildIpa=true \
-         -p:ArchiveOnBuild=true \
-         -p:DevelopmentTeam="$APPLE_TEAM_ID" \
-         -p:CodesignKey="Apple Development" \
-         -p:MtouchLink=SdkOnly \
-         -o ./publish
+          -f net8.0-ios \
+          -c Release \
+          -p:RuntimeIdentifier=ios-arm64 \
+          -p:TargetPlatformVersion=17.0.0 \
+          -p:SupportedOSPlatformVersion=17.0.0 \
+          -p:BuildIpa=true \
+          -p:ArchiveOnBuild=true \
+          -p:DevelopmentTeam="$APPLE_TEAM_ID" \
+          -p:CodesignKey="Apple Development" \
+          -p:MtouchLink=SdkOnly \
+          -o ./publish
+        
+        echo "✅ Build completed. Checking output..."
+        if [ -d "./publish" ]; then
+          echo "Publish directory contents:"
+          ls -la ./publish/
+        else
+          echo "❌ Publish directory not created!"
+        fi
 
     # ===============================
     # UPLOAD IPA
     # ===============================
     - name: Upload IPA
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: Signed-IPA
         path: ./publish/*.ipa
+        retention-days: 7
+
+    # ===============================
+    # CLEANUP (OPTIONAL)
+    # ===============================
+    - name: Cleanup keychain
+      if: always()
+      run: |
+        echo "Cleaning up keychain..."
+        security delete-keychain build.keychain || true
+        
+        # List installed profiles for debugging
+        echo "Remaining provisioning profiles:"
+        ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || true
