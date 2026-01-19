@@ -109,18 +109,18 @@ jobs:
       run: |
         echo "Team ID: $APPLE_TEAM_ID"
 
-         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net8.0-ios \
-          -c Release \
-          -p:RuntimeIdentifier=ios-arm64 \
-          -p:TargetPlatformVersion=15.0 \
-          -p:SupportedOSPlatformVersion=15.0 \
-          -p:BuildIpa=true \
-          -p:ArchiveOnBuild=true \
-          -p:DevelopmentTeam="$APPLE_TEAM_ID" \
-          -p:CodesignKey="Apple Development" \
-          -p:MtouchLink=SdkOnly \
-          -o ./publish
+        dotnet publish SixOSDatKhamAppMobile.csproj \
+         -f net8.0-ios \
+         -c Release \
+         -p:RuntimeIdentifier=ios-arm64 \
+         -p:TargetPlatformVersion=15.0.0 \
+         -p:SupportedOSPlatformVersion=15.0.0 \
+         -p:BuildIpa=true \
+         -p:ArchiveOnBuild=true \
+         -p:DevelopmentTeam="$APPLE_TEAM_ID" \
+         -p:CodesignKey="Apple Development" \
+         -p:MtouchLink=SdkOnly \
+         -o ./publish
 
 
     # ===============================
