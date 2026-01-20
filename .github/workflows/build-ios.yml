@@ -19,7 +19,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'  # THAY ĐỔI TỪ 8.0.x THÀNH 9.0.x
+        dotnet-version: '9.0.x'
 
     - name: Install MAUI workloads
       run: |
@@ -27,7 +27,7 @@ jobs:
         dotnet workload install maui-ios
 
     # ===============================
-    # DEBUG SECRETS (sau Setup .NET)
+    # DEBUG SECRETS
     # ===============================
     - name: Debug Secrets
       env:
@@ -128,28 +128,27 @@ jobs:
       run: |
         echo "Team ID: $APPLE_TEAM_ID"
         echo "Current directory: $(pwd)"
-        echo "Listing files:"
-        ls -la
         
-        # Build command với .NET 9.0
-        dotnet publish SixOSDatKhamAppMobile.csproj \
-         -f net9.0-ios \  # THAY ĐỔI TỪ net8.0-ios THÀNH net9.0-ios
-         -c Release \
-         -p:RuntimeIdentifier=ios-arm64 \
-         -p:BuildIpa=true \
-         -p:ArchiveOnBuild=true \
-         -p:DevelopmentTeam="$APPLE_TEAM_ID" \
-         -p:CodesignKey="Apple Development" \
-         -p:MtouchLink=SdkOnly \
-         -o ./publish
-
+        # Clean trước khi build
+        dotnet clean
+        
+        # Restore packages
+        dotnet restore SixOSDatKhamAppMobile.csproj
+        
+        # Build command - viết trên một dòng để tránh lỗi MSB1008
+        dotnet publish SixOSDatKhamAppMobile.csproj -f net9.0-ios -c Release -p:RuntimeIdentifier=ios-arm64 -p:BuildIpa=true -p:ArchiveOnBuild=true -p:DevelopmentTeam="$APPLE_TEAM_ID" -p:CodesignKey="Apple Development" -p:MtouchLink=SdkOnly -o ./publish
         
         echo "✅ Build completed. Checking output..."
         if [ -d "./publish" ]; then
           echo "Publish directory contents:"
           ls -la ./publish/
+          
+          # Tìm file IPA
+          echo "Looking for IPA files:"
+          find ./publish -name "*.ipa" -type f
         else
           echo "❌ Publish directory not created!"
+          exit 1
         fi
 
     # ===============================
@@ -160,18 +159,16 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Signed-IPA
-        path: ./publish/*.ipa
+        path: |
+          ./publish/*.ipa
+          ./publish/*.ipa/**/*.ipa
         retention-days: 7
 
     # ===============================
-    # CLEANUP (OPTIONAL)
+    # CLEANUP
     # ===============================
     - name: Cleanup keychain
       if: always()
       run: |
         echo "Cleaning up keychain..."
-        security delete-keychain build.keychain || true
-        
-        # List installed profiles for debugging
-        echo "Remaining provisioning profiles:"
-        ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || true
+        security delete-keychain build.keychain 2>/dev/null || true
