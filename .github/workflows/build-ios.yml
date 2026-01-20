@@ -1,4 +1,4 @@
-name: Build iOS IPA 
+name: Build iOS
 
 on:
   workflow_dispatch:
@@ -6,39 +6,38 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-ios-ipa:
+  build-ios:
     runs-on: macos-latest
 
     steps:
     # ===============================
     # CHECKOUT
     # ===============================
-    - name: Checkout code
+    - name: Checkout
       uses: actions/checkout@v4
 
     # ===============================
-    # SETUP .NET 9 SDK
+    # SETUP .NET 9 (KHÓA VERSION)
     # ===============================
     - name: Setup .NET 9
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
+        dotnet-version: '9.0.200'
 
     # ===============================
-    # INSTALL MAUI iOS WORKLOAD
+    # INSTALL MAUI IOS
     # ===============================
     - name: Install MAUI iOS workload
       run: |
         dotnet workload install maui-ios
 
     # ===============================
-    # SETUP CODE SIGNING
+    # SETUP CODE SIGNING (DEV)
     # ===============================
-    - name: Setup Apple Code Signing
+    - name: Setup Code Signing (Development)
       env:
         SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
         SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
-        PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
         set -e
@@ -47,8 +46,8 @@ jobs:
         security default-keychain -s build.keychain
         security unlock-keychain -p "" build.keychain
 
-        echo "$SIGNING_CERTIFICATE" | base64 --decode > certificate.p12
-        security import certificate.p12 \
+        echo "$SIGNING_CERTIFICATE" | base64 --decode > dev.p12
+        security import dev.p12 \
           -k build.keychain \
           -P "$SIGNING_CERTIFICATE_PASSWORD" \
           -T /usr/bin/codesign \
@@ -58,44 +57,36 @@ jobs:
           -S apple-tool:,apple:,codesign: \
           -s -k "" build.keychain
 
-        echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
-        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-        cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
-
         security find-identity -v -p codesigning build.keychain
 
     # ===============================
-    # BUILD IPA (TARGET net8.0-ios)
+    # BUILD NET9 IOS
     # ===============================
-    - name: Build iOS IPA
-      env:
-        TEAM_ID: ${{ secrets.TEAM_ID }}
+    - name: Build net9.0-ios
       run: |
         set -e
 
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net8.0-ios \
+          -f net9.0-ios \
           -c Release \
           -p:RuntimeIdentifier=ios-arm64 \
-          -p:ArchiveOnBuild=true \
           -p:BuildIpa=true \
-          -p:DevelopmentTeam="$TEAM_ID" \
-          -p:CodesignKey="Apple Distribution" \
-          -p:IpaPackageDir="$(pwd)/ipa-output" \
+          -p:ArchiveOnBuild=true \
+          -p:CheckEolWorkloads=false \
           --verbosity normal
 
-        echo "✅ IPA created:"
-        ls -lh ipa-output/*.ipa
+        echo "Build completed"
 
     # ===============================
-    # UPLOAD IPA
+    # UPLOAD OUTPUT
     # ===============================
-    - name: Upload IPA Artifact
+    - name: Upload build output
       uses: actions/upload-artifact@v4
       with:
-        name: iOS-IPA
-        path: ipa-output/*.ipa
-        if-no-files-found: error
+        name: net9-ios-output
+        path: |
+          bin/
+          obj/
         retention-days: 7
 
     # ===============================
