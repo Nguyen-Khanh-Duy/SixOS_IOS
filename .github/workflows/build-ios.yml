@@ -129,14 +129,26 @@ jobs:
         echo "Team ID: $APPLE_TEAM_ID"
         echo "Current directory: $(pwd)"
         
-        # Clean trước khi build
-        dotnet clean
+        # Clean thủ công thay vì dùng dotnet clean để tránh lỗi
+        echo "Cleaning bin and obj directories..."
+        rm -rf bin obj || true
         
         # Restore packages
+        echo "Restoring packages..."
         dotnet restore SixOSDatKhamAppMobile.csproj
         
-        # Build command - viết trên một dòng để tránh lỗi MSB1008
-        dotnet publish SixOSDatKhamAppMobile.csproj -f net9.0-ios -c Release -p:RuntimeIdentifier=ios-arm64 -p:BuildIpa=true -p:ArchiveOnBuild=true -p:DevelopmentTeam="$APPLE_TEAM_ID" -p:CodesignKey="Apple Development" -p:MtouchLink=SdkOnly -o ./publish
+        # Build command
+        echo "Building app..."
+        dotnet publish SixOSDatKhamAppMobile.csproj \
+          -f net9.0-ios \
+          -c Release \
+          -p:RuntimeIdentifier=ios-arm64 \
+          -p:BuildIpa=true \
+          -p:ArchiveOnBuild=true \
+          -p:DevelopmentTeam="$APPLE_TEAM_ID" \
+          -p:CodesignKey="Apple Development" \
+          -p:MtouchLink=SdkOnly \
+          -o ./publish
         
         echo "✅ Build completed. Checking output..."
         if [ -d "./publish" ]; then
@@ -145,7 +157,13 @@ jobs:
           
           # Tìm file IPA
           echo "Looking for IPA files:"
-          find ./publish -name "*.ipa" -type f
+          find ./publish -name "*.ipa" -type f || echo "No IPA files found, checking for other outputs..."
+          
+          # Nếu không tìm thấy IPA, kiểm tra thư mục con
+          if ! find ./publish -name "*.ipa" | grep -q .; then
+            echo "Checking subdirectories for IPA..."
+            find . -name "*.ipa" -type f
+          fi
         else
           echo "❌ Publish directory not created!"
           exit 1
@@ -159,9 +177,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Signed-IPA
-        path: |
-          ./publish/*.ipa
-          ./publish/*.ipa/**/*.ipa
+        path: ./publish/**/*.ipa
+        if-no-files-found: warn
         retention-days: 7
 
     # ===============================
