@@ -14,7 +14,7 @@ jobs:
       uses: actions/checkout@v4
 
     # ===============================
-    # SETUP DOTNET 9.0
+    # SETUP DOTNET 9.0 + MAUI
     # ===============================
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -25,6 +25,7 @@ jobs:
       run: |
         dotnet workload install maui
         dotnet workload install maui-ios
+        dotnet workload update maui
 
     # ===============================
     # KEYCHAIN + CERT + PROFILE
@@ -38,8 +39,6 @@ jobs:
         set -e
         
         echo "✅ Creating keychain..."
-        
-        # Create keychain
         security create-keychain -p "" build.keychain
         security default-keychain -s build.keychain
         security unlock-keychain -p "" build.keychain
@@ -64,11 +63,13 @@ jobs:
         echo "Importing provisioning profile..."
         echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
         
-        # Extract UUID from provisioning profile
-        UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' /dev/stdin <<< $(security cms -D -i profile.mobileprovision 2>/dev/null) 2>/dev/null || echo "")
+        # Try to extract UUID
+        UUID=""
+        if command -v /usr/libexec/PlistBuddy &> /dev/null; then
+          UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' /dev/stdin <<< $(security cms -D -i profile.mobileprovision 2>/dev/null) 2>/dev/null || echo "")
+        fi
         
         if [ -z "$UUID" ]; then
-          echo "⚠️ Could not extract UUID, using timestamp"
           UUID="ios-profile-$(date +%s)"
         fi
         
@@ -76,14 +77,11 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision \
           ~/Library/MobileDevice/Provisioning\ Profiles/"$UUID.mobileprovision"
-        
-        echo "✅ Installed provisioning profiles:"
-        ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
 
     # ===============================
-    # BUILD IOS APP
+    # BUILD IOS - PHƯƠNG PHÁP 1: MSBuild
     # ===============================
-    - name: Build iOS App
+    - name: Build iOS with MSBuild
       env:
         APPLE_TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
@@ -91,128 +89,162 @@ jobs:
         echo "Current directory: $(pwd)"
         
         # Clean
-        rm -rf bin obj publish ipa-output || true
-        
-        # Restore packages
-        echo "Restoring packages..."
-        dotnet restore SixOSDatKhamAppMobile.csproj
+        rm -rf bin obj publish || true
         
         # Tạo thư mục output
         mkdir -p ipa-output
         
-        # QUAN TRỌNG: Build với các tham số đúng
-        echo "Building iOS app with IPA..."
-        dotnet build SixOSDatKhamAppMobile.csproj \
-          -f net9.0-ios \
-          -c Release \
-          -p:Platform=iPhone \
-          -p:RuntimeIdentifier=ios-arm64 \
-          -p:BuildIpa=true \
-          -p:ArchiveOnBuild=false \
-          -p:DevelopmentTeam="$APPLE_TEAM_ID" \
-          -p:CodesignKey="Apple Development" \
-          -p:MtouchLink=SdkOnly \
-          -p:IpaPackageDir="$(pwd)/ipa-output" \
-          -p:CreatePackage=true \
-          -p:EnableCodeSigning=true \
-          -p:TreatWarningsAsErrors=false \
-          --verbosity diagnostic
+        # QUAN TRỌNG: Dùng msbuild trực tiếp
+        echo "Building with MSBuild..."
         
-        echo "✅ Build completed. Checking for IPA..."
+        # Trước tiên, restore đầy đủ
+        dotnet restore SixOSDatKhamAppMobile.csproj
         
-        # Kiểm tra file IPA
-        if ls ipa-output/*.ipa 1>/dev/null 2>&1; then
-          echo "🎉 IPA file found!"
-          ls -la ipa-output/*.ipa
-          
-          # Hiển thị thông tin về IPA
-          echo "IPA Info:"
-          unzip -l ipa-output/*.ipa | grep Payload | head -5
-        else
-          echo "❌ No IPA file found in ipa-output directory"
-          echo "Contents of ipa-output:"
-          ls -la ipa-output/ || true
-          
-          # Tìm kiếm ở các vị trí khác
-          echo "Searching for IPA files in entire project..."
-          find . -name "*.ipa" -type f 2>/dev/null || echo "No IPA files found anywhere"
-          
-          # Kiểm tra thư mục bin
-          echo "Checking bin directory structure..."
-          find ./bin -type f -name "*.app" -o -name "*.ipa" 2>/dev/null | head -20
-        fi
+        # Build với MSBuild
+        msbuild SixOSDatKhamAppMobile.csproj \
+          /t:Restore,Build \
+          /p:Configuration=Release \
+          /p:Platform=iPhone \
+          /p:TargetFramework=net9.0-ios \
+          /p:RuntimeIdentifier=ios-arm64 \
+          /p:BuildIpa=true \
+          /p:ArchiveOnBuild=false \
+          /p:DevelopmentTeam="$APPLE_TEAM_ID" \
+          /p:CodesignKey="Apple Development" \
+          /p:ServerAddress=127.0.0.1 \
+          /p:ServerUser=runner \
+          /p:IpaPackageDir="$(pwd)/ipa-output" \
+          /p:CreatePackage=true \
+          /p:EnableCodeSigning=true \
+          /p:TreatWarningsAsErrors=false \
+          /p:MtouchLink=SdkOnly \
+          /verbosity:detailed
+        
+        echo "✅ MSBuild completed."
+        
+        # Kiểm tra output
+        echo "=== Checking for IPA ==="
+        find . -name "*.ipa" -type f 2>/dev/null || echo "No IPA files found"
+        
+        echo "=== Checking bin directory ==="
+        find ./bin -type f \( -name "*.ipa" -o -name "*.app" \) 2>/dev/null || echo "No IPA or APP files in bin"
 
     # ===============================
-    # NẾU CÁCH 1 KHÔNG HOẠT ĐỘNG, THỬ CÁCH 2
+    # PHƯƠNG PHÁP 2: Nếu phương pháp 1 không hoạt động
     # ===============================
-    - name: Alternative Build Method
+    - name: Try Dotnet Publish Method
       if: failure()
       env:
         APPLE_TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
-        echo "Trying alternative build method..."
+        echo "Trying dotnet publish method..."
         
         # Clean
-        rm -rf bin obj || true
+        rm -rf bin obj publish-ios || true
         
-        # Phương pháp 2: Build riêng biệt
-        echo "Step 1: Build project"
-        dotnet build SixOSDatKhamAppMobile.csproj \
-          -f net9.0-ios \
-          -c Release \
-          -p:Platform=iPhone \
-          -p:RuntimeIdentifier=ios-arm64
-        
-        echo "Step 2: Publish with IPA"
+        # Dùng dotnet publish
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Release \
           -p:Platform=iPhone \
           -p:RuntimeIdentifier=ios-arm64 \
           -p:BuildIpa=true \
-          -p:IpaPackageDir="$(pwd)/ipa-output-2" \
+          -p:IpaPackageDir="$(pwd)/publish-ios" \
           -p:DevelopmentTeam="$APPLE_TEAM_ID" \
           -p:CodesignKey="Apple Development" \
-          -o ./publish-ios
+          -p:MtouchLink=SdkOnly \
+          -p:EnableCodeSigning=true \
+          -p:CreatePackage=true \
+          -p:ServerAddress=127.0.0.1 \
+          -p:ServerUser=runner \
+          -o ./publish-ios \
+          --verbosity detailed
         
-        echo "Checking output..."
-        find . -name "*.ipa" -type f 2>/dev/null || echo "No IPA files found"
+        echo "Checking publish output..."
+        find ./publish-ios -name "*.ipa" -type f 2>/dev/null || echo "No IPA in publish-ios"
 
     # ===============================
-    # UPLOAD ARTIFACTS
+    # PHƯƠNG PHÁP 3: Build riêng app rồi tạo IPA
     # ===============================
-    - name: Upload Build Artifacts
-      if: success() || failure()
-      uses: actions/upload-artifact@v4
-      with:
-        name: iOS-Build-Artifacts
-        path: |
-          ./ipa-output/
-          ./ipa-output-2/
-          ./publish/
-          ./publish-ios/
-          ./bin/Release/net9.0-ios/
-        if-no-files-found: warn
-        retention-days: 30
+    - name: Manual IPA Creation
+      if: failure()
+      env:
+        APPLE_TEAM_ID: ${{ secrets.TEAM_ID }}
+      run: |
+        echo "Trying manual IPA creation..."
+        
+        # Build app trước
+        dotnet build SixOSDatKhamAppMobile.csproj \
+          -f net9.0-ios \
+          -c Release \
+          -p:Platform=iPhone \
+          -p:RuntimeIdentifier=ios-arm64 \
+          -p:DevelopmentTeam="$APPLE_TEAM_ID" \
+          -p:CodesignKey="Apple Development" \
+          -p:MtouchLink=SdkOnly
+        
+        # Tìm file .app
+        APP_PATH=$(find ./bin -name "*.app" -type d | head -1)
+        
+        if [ -n "$APP_PATH" ]; then
+          echo "Found app at: $APP_PATH"
+          
+          # Tạo thư mục Payload
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          
+          # Tạo IPA
+          zip -r app.ipa Payload
+          
+          echo "Created IPA manually"
+          ls -la app.ipa
+        else
+          echo "No .app file found"
+          echo "Searching for build outputs..."
+          find ./bin -type f -name "*.dll" -o -name "*.exe" | head -20
+        fi
 
     # ===============================
-    # DEBUG INFO
+    # KIỂM TRA PROJECT STRUCTURE
     # ===============================
-    - name: Collect Debug Information
+    - name: Check Project Configuration
       if: always()
       run: |
-        echo "=== DEBUG INFORMATION ==="
-        echo "Project file content:"
-        head -50 SixOSDatKhamAppMobile.csproj || true
+        echo "=== PROJECT CONFIGURATION ==="
         
-        echo "Directory structure:"
-        find . -type f -name "*.csproj" -o -name "*.sln" | head -20
+        # Kiểm tra csproj
+        echo "CSProj content (first 100 lines):"
+        head -100 SixOSDatKhamAppMobile.csproj
         
-        echo ".NET SDK info:"
-        dotnet --info
+        echo ""
+        echo "=== Check for iOS specific settings ==="
+        grep -i "ios\|iphone\|apple\|provisioning\|signing" SixOSDatKhamAppMobile.csproj || true
         
-        echo "MAUI workloads:"
-        dotnet workload list
+        echo ""
+        echo "=== Check target frameworks ==="
+        grep -i "targetframework" SixOSDatKhamAppMobile.csproj || true
+        
+        echo ""
+        echo "=== Check for app bundle settings ==="
+        grep -i "bundle\|applicationid\|appname" SixOSDatKhamAppMobile.csproj || true
+
+    # ===============================
+    # UPLOAD ANY BUILD OUTPUTS
+    # ===============================
+    - name: Upload All Build Outputs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: iOS-Build-Debug
+        path: |
+          ./*.ipa
+          ./bin/
+          ./obj/
+          ./publish*/
+          ./ipa*/
+          ./Payload/
+        if-no-files-found: warn
+        retention-days: 30
 
     # ===============================
     # CLEANUP
