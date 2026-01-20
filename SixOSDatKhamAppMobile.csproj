@@ -6,8 +6,10 @@
   <!-- iOS version PHẢI có patch -->
   <TargetPlatformVersion>16.4</TargetPlatformVersion>
   <SupportedOSPlatformVersion>16.4</SupportedOSPlatformVersion>
+
   <CheckEolTargetFramework>false</CheckEolTargetFramework>
   <CheckEolWorkload>false</CheckEolWorkload>
+  <DisableMauiEolWorkloadCheck>true</DisableMauiEolWorkloadCheck>
 
   <UseMaui>true</UseMaui>
   <SingleProject>true</SingleProject>
@@ -198,6 +200,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
