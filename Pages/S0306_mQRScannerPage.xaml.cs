@@ -2,8 +2,8 @@
 using Camera.MAUI.ZXingHelper;
 using System.Linq;
 using System.Threading.Tasks;
-//using ZXing.Net.Maui.Controls;
-using ZXing.Net.Maui;
+using ZXing.Net.Maui.Controls;
+//using ZXing.Net.Maui;
 
 namespace SixOSDatKhamAppMobile.Pages
 {
@@ -375,3 +375,4 @@ namespace SixOSDatKhamAppMobile.Pages
     }
 
 }
+
