@@ -1,16 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
- <PropertyGroup>
+  <PropertyGroup>
     <!-- CẬP NHẬT LÊN .NET 9.0 -->
     <TargetFramework>net9.0-ios</TargetFramework>
     <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
 
     <!-- iOS version -->
-    <TargetPlatformVersion>17.2</TargetPlatformVersion> <!-- Cập nhật iOS version -->
+    <TargetPlatformVersion>17.2</TargetPlatformVersion>
     <SupportedOSPlatformVersion>17.2</SupportedOSPlatformVersion>
-
-    <!-- XÓA CÁC PROPERTY EOL CHECK -->
-    <!-- KHÔNG CẦN CheckEolTargetFramework và CheckEolWorkload -->
-    <!-- KHÔNG CẦN DisableMauiEolWorkloadCheck -->
 
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
@@ -23,11 +19,13 @@
 
     <CodesignKey>Apple Development</CodesignKey>
     <CodesignProvision>Automatic</CodesignProvision>
+    
+    <!-- Bỏ các properties EOL check -->
   </PropertyGroup>
 
-<ItemGroup>
+ <ItemGroup>
     <!-- Camera -->
-    <PackageReference Include="Camera.MAUI" Version="2.0.0" /> <!-- Cập nhật phiên bản -->
+    <PackageReference Include="Camera.MAUI" Version="2.0.0" />
 
     <!-- MAUI 9.x -->
     <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0" />
@@ -38,7 +36,7 @@
   </ItemGroup>
 
   <!-- MAUI Resources (giữ nguyên) -->
-<ItemGroup>
+  <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\appicon.svg"
               ForegroundFile="Resources\AppIcon\appiconfg.svg"
               Color="#512BD4" />
@@ -198,6 +196,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
