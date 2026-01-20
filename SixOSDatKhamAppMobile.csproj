@@ -2,8 +2,6 @@
   <PropertyGroup>
   <!-- iOS ONLY -->
     <TargetFramework>net8.0-ios</TargetFramework>
-    <TargetPlatformVersion>16.0</TargetPlatformVersion>
-    <SupportedOSPlatformVersion>16.0</SupportedOSPlatformVersion>
     <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
 
     <OutputType>Exe</OutputType>
@@ -211,6 +209,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
