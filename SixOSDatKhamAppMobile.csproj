@@ -24,7 +24,9 @@
   <ItemGroup>
     <!-- Camera -->
     <PackageReference Include="Camera.MAUI" Version="1.5.1" />
-   <PackageReference Include="ZXing.Net.MAUI" Version="0.1.9" />
+    <PackageReference Include="ZXing.Net.MAUI" Version="0.1.9" />
+    <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.4.0" />
+   <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
 
     <!-- MAUI 9.x -->
     <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0" />
@@ -195,6 +197,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
