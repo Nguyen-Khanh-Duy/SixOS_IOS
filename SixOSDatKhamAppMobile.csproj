@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
+ <PropertyGroup>
     <!-- CẬP NHẬT LÊN .NET 9.0 -->
     <TargetFramework>net9.0-ios</TargetFramework>
     <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
@@ -13,13 +13,45 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
+    <!-- CẤU HÌNH IPA BẮT BUỘC -->
+    <OutputType>Exe</OutputType>
     <BuildIpa>true</BuildIpa>
     <ArchiveOnBuild>true</ArchiveOnBuild>
     <MtouchLink>SdkOnly</MtouchLink>
-
+    
+    <!-- TÊN FILE IPA -->
+    <IpaPackageName>SixOSDatKhamAppMobile.ipa</IpaPackageName>
+    <IpaPackageDir>bin\iPhone\Release\ipa</IpaPackageDir>
+    
+    <!-- THÔNG TIN ỨNG DỤNG -->
+    <ApplicationId>com.company.SixOSDatKhamAppMobile</ApplicationId>
+    <ApplicationTitle>SixOSDatKhamAppMobile</ApplicationTitle>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
+    
+    <!-- CODE SIGNING -->
     <CodesignKey>Apple Development</CodesignKey>
     <CodesignProvision>Automatic</CodesignProvision>
-  </PropertyGroup>
+    <ProvisioningType>automatic</ProvisioningType>
+    
+    <!-- TỐI ƯU HÓA BUILD -->
+    <Optimize>true</Optimize>
+    <UseDotnetNativeToolchain>true</UseDotnetNativeToolchain>
+    <UseLlvm>true</UseLlvm>
+    <EnableAssemblyILStripping>true</EnableAssemblyILStripping>
+    
+    <!-- CẤU HÌNH KHÁC -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <CreatePackage>true</CreatePackage>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <TieredCompilation>false</TieredCompilation>
+    <ServerAddress>0.0.0.0</ServerAddress>
+    <ServerPort>58181</ServerPort>
+    
+    <!-- XỬ LÝ CẢNH BÁO -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);XC0022</NoWarn> <!-- Bỏ qua warning x:DataType -->
+</PropertyGroup>
 
   <ItemGroup>
     <!-- Camera -->
@@ -197,6 +229,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
