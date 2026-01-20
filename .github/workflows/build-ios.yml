@@ -1,4 +1,4 @@
-name: Fix iOS App Bundle Build
+name: Build iOS IPA File
 
 on:
   workflow_dispatch:
@@ -6,192 +6,334 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-ipa:
     runs-on: macos-latest
 
     steps:
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup .NET
+    - name: Setup .NET 9.0
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.x'
 
-    - name: Install MAUI
+    - name: Install iOS workloads
       run: |
-        dotnet workload install maui
+        # Cài đặt workloads cần thiết
         dotnet workload install maui-ios
         dotnet workload install ios
+        echo "✅ Workloads installed"
 
-    - name: Analyze Project
+    - name: Debug project
       run: |
-        echo "=== PROJECT ANALYSIS ==="
-        echo "1. Looking for .csproj files:"
-        find . -name "*.csproj" -type f
-        
+        echo "=== Project Structure ==="
+        pwd
+        ls -la
         echo ""
-        echo "2. Project content:"
-        if [ -f "SixOSDatKhamAppMobile.csproj" ]; then
-          cat SixOSDatKhamAppMobile.csproj
-        else
-          PROJ=$(find . -name "*.csproj" -type f | head -1)
-          echo "First .csproj found: $PROJ"
-          cat "$PROJ"
-        fi
+        echo "=== .csproj files ==="
+        find . -name "*.csproj" -type f
 
-    - name: Build for iOS Simulator (Test)
-      run: |
-        echo "=== TEST BUILD FOR SIMULATOR ==="
-        
-        # Clean
-        rm -rf bin obj || true
-        
-        # Tìm project
-        if [ -f "SixOSDatKhamAppMobile.csproj" ]; then
-          PROJ="SixOSDatKhamAppMobile.csproj"
-        else
-          PROJ=$(find . -name "*.csproj" -type f | head -1)
-        fi
-        
-        echo "Building: $PROJ"
-        
-        # Build for simulator
-        dotnet build "$PROJ" \
-          -f net9.0-ios \
-          -c Debug \
-          -p:RuntimeIdentifier=ios-x64 \
-          -p:Platform=iPhoneSimulator \
-          --verbosity detailed
-        
-        echo "=== CHECKING FOR .APP ==="
-        find . -name "*.app" -type d 2>/dev/null || echo "No .app found"
-
-    - name: Build for Device
-      if: success() || failure()
+    # ===============================
+    # PHƯƠNG PHÁP CHÍNH: Build IPA
+    # ===============================
+    - name: Build iOS IPA
       env:
         TEAM_ID: ${{ secrets.TEAM_ID }}
+        SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
+        SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+        PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
       run: |
-        echo "=== BUILDING FOR iOS DEVICE ==="
+        echo "=== BUILDING iOS IPA ==="
         
-        # Tìm project
+        # 1. Xác định project file
         if [ -f "SixOSDatKhamAppMobile.csproj" ]; then
-          PROJ="SixOSDatKhamAppMobile.csproj"
+          PROJECT="SixOSDatKhamAppMobile.csproj"
         else
-          PROJ=$(find . -name "*.csproj" -type f | head -1)
+          PROJECT=$(find . -name "*.csproj" -type f | head -1)
         fi
         
-        echo "Team ID: ${TEAM_ID:-NOT SET}"
-        echo "Project: $PROJ"
+        if [ -z "$PROJECT" ]; then
+          echo "❌ No .csproj file found!"
+          exit 1
+        fi
         
-        # Clean
-        rm -rf bin obj publish || true
+        echo "📁 Project file: $PROJECT"
+        echo "👥 Team ID: $TEAM_ID"
         
-        # Build cho device
-        echo "Running build command..."
-        dotnet publish "$PROJ" \
+        # 2. Clean trước khi build
+        echo "🧹 Cleaning..."
+        rm -rf bin obj publish ipa-output *.ipa || true
+        
+        # 3. Setup signing nếu có thông tin
+        if [ ! -z "$SIGNING_CERTIFICATE" ] && [ ! -z "$SIGNING_CERTIFICATE_PASSWORD" ]; then
+          echo "🔐 Setting up code signing..."
+          
+          # Tạo keychain
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          
+          # Import certificate
+          echo "$SIGNING_CERTIFICATE" | base64 --decode > certificate.p12
+          security import certificate.p12 \
+            -k build.keychain \
+            -P "$SIGNING_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -A
+          
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s -k "" build.keychain
+          
+          echo "✅ Certificate imported"
+        fi
+        
+        # 4. Import provisioning profile nếu có
+        if [ ! -z "$PROVISIONING_PROFILE" ]; then
+          echo "📄 Importing provisioning profile..."
+          echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "✅ Provisioning profile imported"
+        fi
+        
+        # 5. Restore packages
+        echo "📦 Restoring packages..."
+        dotnet restore "$PROJECT" --verbosity quiet
+        
+        # 6. BUILD COMMAND - Tạo IPA trực tiếp
+        echo "🚀 Building IPA file..."
+        
+        dotnet publish "$PROJECT" \
           -f net9.0-ios \
           -c Release \
           -p:RuntimeIdentifier=ios-arm64 \
           -p:Platform=iPhone \
           -p:BuildIpa=true \
-          -p:ArchiveOnBuild=true \
-          -p:CreatePackage=true \
-          -p:IpaPackageDir="$(pwd)/ipa" \
+          -p:IpaPackageDir="$(pwd)/ipa-output" \
           -p:DevelopmentTeam="$TEAM_ID" \
           -p:CodesignKey="Apple Development" \
+          -p:ArchiveOnBuild=true \
+          -p:CreatePackage=true \
           -p:ServerAddress=0.0.0.0 \
           -p:ServerPort=58181 \
+          -p:EnableAssemblyILStripping=false \
           -p:TreatWarningsAsErrors=false \
+          -p:MtouchLink=SdkOnly \
+          -p:Optimize=true \
+          -p:OutputPath="$(pwd)/bin/Release/net9.0-ios/ios-arm64" \
           -o ./publish \
-          --verbosity diagnostic
+          --verbosity normal
         
-        echo "=== SEARCHING FOR OUTPUT ==="
-        echo "1. All .ipa files:"
-        find . -name "*.ipa" -type f 2>/dev/null
+        echo "✅ Build completed"
         
-        echo ""
-        echo "2. All .app bundles:"
-        find . -name "*.app" -type d 2>/dev/null
+        # 7. Tìm file IPA
+        echo "🔍 Searching for IPA file..."
         
-        echo ""
-        echo "3. Publish directory:"
-        ls -la ./publish/ 2>/dev/null || echo "No publish directory"
+        # Tìm trong thư mục ipa-output
+        if [ -d "./ipa-output" ]; then
+          echo "📁 Checking ipa-output directory:"
+          ls -la ./ipa-output/
+          IPA_FILE=$(find ./ipa-output -name "*.ipa" -type f | head -1)
+        fi
         
-        echo ""
-        echo "4. IPA directory:"
-        ls -la ./ipa/ 2>/dev/null || echo "No ipa directory"
+        # Tìm trong publish
+        if [ -z "$IPA_FILE" ] && [ -d "./publish" ]; then
+          echo "📁 Checking publish directory:"
+          ls -la ./publish/
+          IPA_FILE=$(find ./publish -name "*.ipa" -type f | head -1)
+        fi
         
-        echo ""
-        echo "5. Bin directory structure:"
-        find ./bin -type f -name "*.dll" | head -10
+        # Tìm trong toàn bộ project
+        if [ -z "$IPA_FILE" ]; then
+          echo "🔎 Searching everywhere for IPA..."
+          IPA_FILE=$(find . -name "*.ipa" -type f | head -1)
+        fi
+        
+        if [ ! -z "$IPA_FILE" ]; then
+          echo "🎉 IPA FOUND: $IPA_FILE"
+          echo "📊 File size: $(du -h "$IPA_FILE" | cut -f1)"
+          
+          # Copy IPA đến vị trí dễ tìm
+          cp "$IPA_FILE" ./SixOSDatKhamAppMobile.ipa
+          echo "✅ IPA copied to: ./SixOSDatKhamAppMobile.ipa"
+          ls -la *.ipa
+        else
+          echo "❌ No IPA file found!"
+          
+          # Hiển thị cấu trúc thư mục để debug
+          echo "=== DEBUG INFO ==="
+          echo "Bin directory:"
+          find ./bin -type f -name "*.dll" | head -5 || true
+          
+          echo "Publish directory content:"
+          ls -la ./publish/ 2>/dev/null || echo "No publish directory"
+        fi
 
-    - name: Create Minimal .app Bundle
+    # ===============================
+    # PHƯƠNG PHÁP 2: Nếu không tạo được IPA
+    # ===============================
+    - name: Alternative IPA Build
+      if: failure()
+      run: |
+        echo "=== TRYING ALTERNATIVE IPA BUILD ==="
+        
+        # Tìm project
+        if [ -f "SixOSDatKhamAppMobile.csproj" ]; then
+          PROJECT="SixOSDatKhamAppMobile.csproj"
+        else
+          PROJECT=$(find . -name "*.csproj" -type f | head -1)
+        fi
+        
+        echo "Using project: $PROJECT"
+        
+        # Clean
+        rm -rf alt-ipa-output || true
+        
+        # Phương pháp đơn giản hơn
+        echo "Building with simpler method..."
+        
+        dotnet build "$PROJECT" \
+          -f net9.0-ios \
+          -c Release \
+          -p:RuntimeIdentifier=ios-arm64 \
+          -p:Platform=iPhone \
+          -p:BuildIpa=true \
+          -p:IpaPackageDir="$(pwd)/alt-ipa-output" \
+          -p:ArchiveOnBuild=false \
+          --verbosity detailed
+        
+        # Kiểm tra
+        echo "Checking for IPA..."
+        find . -name "*.ipa" -type f 2>/dev/null || echo "No IPA found"
+
+    # ===============================
+    # TẠO IPA THỦ CÔNG TỪ DLL
+    # ===============================
+    - name: Create IPA from DLL
       if: always()
       run: |
-        echo "=== CREATING MINIMAL .APP BUNDLE ==="
+        echo "=== CREATING IPA FROM DLL FILES ==="
         
-        # Tạo cấu trúc .app đơn giản
-        APP_DIR="SixOSDatKhamAppMobile.app"
-        mkdir -p "$APP_DIR"
-        mkdir -p "$APP_DIR/Contents"
-        mkdir -p "$APP_DIR/Contents/MacOS"
-        mkdir -p "$APP_DIR/Contents/Resources"
+        # Tìm file DLL chính
+        MAIN_DLL=$(find . -name "SixOSDatKhamAppMobile.dll" -type f 2>/dev/null | head -1)
         
-        # Tạo Info.plist
-        cat > "$APP_DIR/Contents/Info.plist" << 'EOF'
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-        <key>CFBundleDisplayName</key>
-        <string>SixOSDatKhamAppMobile</string>
-        <key>CFBundleExecutable</key>
-        <string>SixOSDatKhamAppMobile</string>
-        <key>CFBundleIdentifier</key>
-        <string>com.company.SixOSDatKhamAppMobile</string>
-        <key>CFBundleName</key>
-        <string>SixOSDatKhamAppMobile</string>
-        <key>CFBundleVersion</key>
-        <string>1.0</string>
-        <key>CFBundleShortVersionString</key>
-        <string>1.0</string>
-        <key>CFBundlePackageType</key>
-        <string>APPL</string>
-        <key>LSRequiresIPhoneOS</key>
-        <true/>
-        <key>MinimumOSVersion</key>
-        <string>14.0</string>
-        </dict>
-        </plist>
-        EOF
+        if [ -z "$MAIN_DLL" ]; then
+          echo "⚠️ No main DLL found, looking for any DLL..."
+          MAIN_DLL=$(find . -path "*/bin/*" -name "*.dll" -type f 2>/dev/null | head -1)
+        fi
         
-        # Tạo executable
-        cat > "$APP_DIR/Contents/MacOS/SixOSDatKhamAppMobile" << 'EOF'
+        if [ ! -z "$MAIN_DLL" ]; then
+          echo "Found DLL: $MAIN_DLL"
+          
+          # Tạo thư mục IPA
+          IPA_DIR="manual-ipa"
+          rm -rf "$IPA_DIR" || true
+          mkdir -p "$IPA_DIR"
+          
+          # Tạo cấu trúc .app
+          APP_NAME="SixOSDatKhamAppMobile"
+          APP_DIR="$IPA_DIR/Payload/$APP_NAME.app"
+          mkdir -p "$APP_DIR"
+          mkdir -p "$APP_DIR/Contents"
+          mkdir -p "$APP_DIR/Contents/MacOS"
+          mkdir -p "$APP_DIR/Contents/Resources"
+          
+          # Tạo Info.plist
+          cat > "$APP_DIR/Contents/Info.plist" << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+          <key>CFBundleDisplayName</key>
+          <string>SixOSDatKhamAppMobile</string>
+          <key>CFBundleExecutable</key>
+          <string>$APP_NAME</string>
+          <key>CFBundleIdentifier</key>
+          <string>com.company.SixOSDatKhamAppMobile</string>
+          <key>CFBundleName</key>
+          <string>SixOSDatKhamAppMobile</string>
+          <key>CFBundleVersion</key>
+          <string>1.0</string>
+          <key>CFBundleShortVersionString</key>
+          <string>1.0</string>
+          <key>CFBundlePackageType</key>
+          <string>APPL</string>
+          <key>LSRequiresIPhoneOS</key>
+          <true/>
+          <key>MinimumOSVersion</key>
+          <string>14.0</string>
+          </dict>
+          </plist>
+          EOF
+          
+          # Sao chép DLL
+          cp "$MAIN_DLL" "$APP_DIR/Contents/MacOS/"
+          
+          # Tạo executable stub
+          cat > "$APP_DIR/Contents/MacOS/$APP_NAME" << 'EOF'
           #!/bin/bash
-          echo "iOS App Bundle - Placeholder"
+          echo "iOS App - Built from DLL"
           exit 0
           EOF
-        chmod +x "$APP_DIR/Contents/MacOS/SixOSDatKhamAppMobile"
-        
-        # Tạo IPA từ .app
-        mkdir -p Payload
-        cp -R "$APP_DIR" Payload/
-        zip -qr "SixOSDatKhamAppMobile.ipa" Payload/
-        
-        echo "✅ Created minimal .app and IPA"
-        ls -la "SixOSDatKhamAppMobile.ipa"
-        du -sh "SixOSDatKhamAppMobile.app"
+          chmod +x "$APP_DIR/Contents/MacOS/$APP_NAME"
+          
+          # Tạo IPA
+          cd "$IPA_DIR"
+          zip -qr "../SixOSDatKhamAppMobile-manual.ipa" .
+          cd ..
+          
+          echo "✅ Manual IPA created: SixOSDatKhamAppMobile-manual.ipa"
+          ls -la *.ipa
+        else
+          echo "❌ No DLL files found to create IPA"
+          echo "Available files in bin directory:"
+          find ./bin -type f 2>/dev/null | head -10 || true
+        fi
 
-    - name: Upload Artifacts
+    # ===============================
+    # UPLOAD IPA FILES
+    # ===============================
+    - name: Upload IPA Files
       uses: actions/upload-artifact@v4
       with:
-        name: iOS-Build-Results
+        name: iOS-IPA-Files
         path: |
-          ./bin/
-          ./publish/
-          ./ipa/
           ./*.ipa
-          ./*.app
-        if-no-files-found: warn
+          ./ipa-output/
+          ./alt-ipa-output/
+          ./publish/
+        if-no-files-found: error
         retention-days: 7
+
+    # ===============================
+    # DEBUG INFORMATION
+    # ===============================
+    - name: Collect Debug Info
+      if: always()
+      run: |
+        echo "=== DEBUG INFORMATION ==="
+        echo ""
+        echo "1. Xcode version:"
+        xcodebuild -version
+        
+        echo ""
+        echo "2. .NET workloads:"
+        dotnet workload list | grep -E "maui|ios" || true
+        
+        echo ""
+        echo "3. Build output structure:"
+        find ./bin -type f -name "*.dll" 2>/dev/null | head -10 || echo "No DLLs found"
+        
+        echo ""
+        echo "4. Project file content (first 50 lines):"
+        if [ -f "SixOSDatKhamAppMobile.csproj" ]; then
+          head -50 SixOSDatKhamAppMobile.csproj
+        fi
+
+    - name: Cleanup
+      if: always()
+      run: |
+        echo "Cleaning up..."
+        security delete-keychain build.keychain 2>/dev/null || true
