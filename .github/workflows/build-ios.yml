@@ -144,7 +144,7 @@ jobs:
           -p:BuildIpa=true \
           -p:ArchiveOnBuild=true \
           -p:DevelopmentTeam="$APPLE_TEAM_ID" \
-          -p:CodesignKey="Apple Distribution" \
+          -p:CodesignKey="Apple Development" \
           -p:MtouchLink=SdkOnly \
           -p:IpaPackageDir="$(pwd)/ipa-output" \
           -p:CreatePackage=true \
