@@ -133,17 +133,16 @@ jobs:
         
         # Build command - viết trên một dòng hoặc multi-line đúng cách
         dotnet publish SixOSDatKhamAppMobile.csproj \
-        -f net8.0-ios \
-        -c Release \
-        -p:RuntimeIdentifier=ios-arm64 \
-        -p:BuildIpa=true \
-        -p:ArchiveOnBuild=true \
-        -p:DevelopmentTeam="$APPLE_TEAM_ID" \
-        -p:TargetPlatformVersion=16.0 \
-        -p:SupportedOSPlatformVersion=16.0 \
-        -p:CodesignKey="Apple Development" \
-        -p:MtouchLink=SdkOnly \
-        -o ./publish
+         -f net8.0-ios \
+         -c Release \
+         -p:RuntimeIdentifier=ios-arm64 \
+         -p:BuildIpa=true \
+         -p:ArchiveOnBuild=true \
+         -p:DevelopmentTeam="$APPLE_TEAM_ID" \
+         -p:CodesignKey="Apple Development" \
+         -p:MtouchLink=SdkOnly \
+         -o ./publish
+
         
         echo "✅ Build completed. Checking output..."
         if [ -d "./publish" ]; then
