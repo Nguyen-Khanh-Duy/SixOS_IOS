@@ -1,25 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
 <PropertyGroup>
-  <TargetFramework>net9.0-ios</TargetFramework>
-  <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+    <!-- CẬP NHẬT LÊN .NET 9.0 -->
+    <TargetFramework>net9.0-ios</TargetFramework>
+    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
 
-  <!-- 🔴 BẮT BUỘC với net9.0-ios -->
-  <TargetPlatformVersion>26.0</TargetPlatformVersion>
-  <SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
+    <!-- CẬP NHẬT iOS version: 17.2 -> 18.0 hoặc 26.0 -->
+    <TargetPlatformVersion>18.0</TargetPlatformVersion>
+    <SupportedOSPlatformVersion>18.0</SupportedOSPlatformVersion>
 
-  <UseMaui>true</UseMaui>
-  <SingleProject>true</SingleProject>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
 
-  <BuildIpa>true</BuildIpa>
-  <ArchiveOnBuild>true</ArchiveOnBuild>
-  <MtouchLink>SdkOnly</MtouchLink>
+    <BuildIpa>true</BuildIpa>
+    <ArchiveOnBuild>true</ArchiveOnBuild>
+    <MtouchLink>SdkOnly</MtouchLink>
 
-  <CodesignKey>Apple Development</CodesignKey>
-  <CodesignProvision>Automatic</CodesignProvision>
-
-  <CheckEolWorkloads>false</CheckEolWorkloads>
-</PropertyGroup>
-
+    <CodesignKey>Apple Development</CodesignKey>
+    <CodesignProvision>Automatic</CodesignProvision>
+  </PropertyGroup> 
 
   <ItemGroup>
     <!-- Camera -->
@@ -197,6 +197,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
