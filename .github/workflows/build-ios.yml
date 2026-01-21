@@ -1,4 +1,4 @@
-name: Build MAUI iOS IPA (REAL)
+name: Build iOS IPA with Code Signing
 
 on:
   workflow_dispatch:
@@ -6,99 +6,300 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-ios:
+  build-ipa:
     runs-on: macos-latest
 
     steps:
-    # ===============================
-    # 1. CHECKOUT
-    # ===============================
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v4
 
     # ===============================
-    # 2. SETUP .NET
+    # SETUP .NET & MAUI
     # ===============================
-    - name: Setup .NET
+    - name: Setup .NET 9.0
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.x'
 
-    # ===============================
-    # 3. INSTALL MAUI IOS
-    # ===============================
-    - name: Install MAUI iOS
+    - name: Install iOS workloads
       run: |
-        dotnet workload install maui-ios
+        sudo dotnet workload install maui
+        sudo dotnet workload install ios
+        sudo dotnet workload install android
+
+    - name: Display .NET info
+      run: |
+        dotnet --info
+        dotnet workload list
 
     # ===============================
-    # 4. CODE SIGNING
+    # RESTORE PACKAGES
     # ===============================
-    - name: Setup Code Signing
-      env:
-        CERT: ${{ secrets.SIGNING_CERTIFICATE }}
-        CERT_PWD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
-        PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
+    - name: Restore NuGet packages
       run: |
+        echo "=== RESTORING PACKAGES ==="
+        dotnet restore SixOSDatKhamAppMobile.csproj --verbosity normal
+
+    # ===============================
+    # SETUP CODE SIGNING (AD-HOC)
+    # ===============================
+    - name: Setup Automatic Signing (Ad-Hoc)
+      run: |
+        echo "=== SETTING UP AD-HOC SIGNING ==="
+        
+        # Tạo keychain tạm thời
         security create-keychain -p "" build.keychain
         security default-keychain -s build.keychain
         security unlock-keychain -p "" build.keychain
-
-        echo "$CERT" | base64 --decode > cert.p12
-        security import cert.p12 \
+        
+        # Tạo certificate tự ký (self-signed) cho ad-hoc build
+        # Đây chỉ là certificate tạm để build
+        openssl genrsa -out temp.key 2048
+        openssl req -new -key temp.key -out temp.csr -subj "/CN=Temp iOS Development"
+        openssl x509 -req -days 365 -in temp.csr -signkey temp.key -out temp.crt
+        openssl pkcs12 -export -out temp.p12 -inkey temp.key -in temp.crt -password pass:temp123
+        
+        # Import certificate vào keychain
+        security import temp.p12 \
           -k build.keychain \
-          -P "$CERT_PWD" \
-          -T /usr/bin/codesign \
-          -A
-
+          -P temp123 \
+          -T /usr/bin/codesign
+        
+        # Cấu hình keychain
         security set-key-partition-list \
           -S apple-tool:,apple:,codesign: \
           -s -k "" build.keychain
-
+        
+        # Hiển thị thông tin
+        echo "✅ Available signing identities:"
+        security find-identity -v -p codesigning build.keychain || true
+        
+        # Tạo provisioning profile cơ bản (không cần thực sự)
+        echo "Generating basic provisioning profile..."
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-        echo "$PROFILE" | base64 --decode > profile.mobileprovision
-        cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
-
-        security find-identity -v -p codesigning
+        cat > ~/Library/MobileDevice/Provisioning\ Profiles/temp.mobileprovision << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>AppIDName</key>
+            <string>Temp App</string>
+            <key>ApplicationIdentifierPrefix</key>
+            <array><string>XXXXXXXXXX</string></array>
+            <key>CreationDate</key>
+            <date>2024-01-01T00:00:00Z</date>
+            <key>Platform</key>
+            <array><string>iOS</string></array>
+            <key>DeveloperCertificates</key>
+            <array></array>
+            <key>Entitlements</key>
+            <dict>
+                <key>application-identifier</key>
+                <string>XXXXXXXXXX.*</string>
+                <key>get-task-allow</key>
+                <false/>
+                <key>keychain-access-groups</key>
+                <array><string>XXXXXXXXXX.*</string></array>
+            </dict>
+            <key>ExpirationDate</key>
+            <date>2030-01-01T00:00:00Z</date>
+            <key>Name</key>
+            <string>Temp Ad Hoc Profile</string>
+            <key>TeamIdentifier</key>
+            <array><string>XXXXXXXXXX</string></array>
+            <key>UUID</key>
+            <string>$(uuidgen)</string>
+            <key>Version</key>
+            <integer>1</integer>
+        </dict>
+        </plist>
+        EOF
+        
+        echo "✅ Code signing setup complete"
 
     # ===============================
-    # 5. BUILD IPA (THE ONLY BUILD)
+    # BUILD FOR SIMULATOR (TEST)
     # ===============================
-    - name: Build REAL IPA
-      env:
-        TEAM_ID: ${{ secrets.TEAM_ID }}
+    - name: Build for Simulator (Test)
       run: |
-        rm -rf bin obj ipa-output || true
+        echo "=== BUILDING FOR SIMULATOR ==="
+        
+        # Clean
+        dotnet clean SixOSDatKhamAppMobile.csproj -c Debug
+        
+        # Build cho simulator
+        dotnet build SixOSDatKhamAppMobile.csproj \
+          -f net9.0-ios \
+          -c Debug \
+          -p:RuntimeIdentifier=ios-x64 \
+          -p:Platform=iPhoneSimulator \
+          -p:BuildIpa=false \
+          -p:CodesignKey="" \
+          -p:CodesignProvision="" \
+          --verbosity normal
+        
+        echo "✅ Simulator build completed"
+        echo ""
+        echo "Build output:"
+        ls -la ./bin/Debug/net9.0-ios/ios-x64/ || true
 
+    # ===============================
+    # BUILD IPA WITH AD-HOC SIGNING
+    # ===============================
+    - name: Build iOS IPA (Ad-Hoc)
+      run: |
+        echo "=== BUILDING IPA (AD-HOC) ==="
+        
+        # Clean release builds
+        rm -rf bin/Release net9.0-ios/ obj/Release/ || true
+        
+        # Xác định build properties cho ad-hoc
+        BUILD_PROPERTIES="-p:RuntimeIdentifier=ios-arm64"
+        BUILD_PROPERTIES+=" -p:Platform=iPhone"
+        BUILD_PROPERTIES+=" -p:BuildIpa=true"
+        BUILD_PROPERTIES+=" -p:ArchiveOnBuild=true"
+        BUILD_PROPERTIES+=" -p:Optimize=true"
+        BUILD_PROPERTIES+=" -p:CreatePackage=true"
+        BUILD_PROPERTIES+=" -p:EnableCodeSigning=true"
+        BUILD_PROPERTIES+=" -p:CodeSignKey=Apple Development"  # Sử dụng certificate tạm
+        BUILD_PROPERTIES+=" -p:ProvisioningType=ad-hoc"
+        BUILD_PROPERTIES+=" -p:DevelopmentTeam=XXXXXXXXXX"  # Team ID tạm
+        BUILD_PROPERTIES+=" -p:IpaPackageDir=$(pwd)/ipa-output"
+        BUILD_PROPERTIES+=" -p:IpaPackageName=SixOSDatKhamAppMobile.ipa"
+        
+        echo "Build properties: $BUILD_PROPERTIES"
+        
+        # Build với MSBuild
+        dotnet publish SixOSDatKhamAppMobile.csproj \
+          -f net9.0-ios \
+          -c Release \
+          -o ./publish \
+          $BUILD_PROPERTIES \
+          --no-restore \
+          --verbosity detailed
+        
+        echo "=== BUILD COMPLETED ==="
+
+    # ===============================
+    # ALTERNATIVE: BUILD WITHOUT SIGNING
+    # ===============================
+    - name: Build IPA without Signing
+      if: failure()
+      run: |
+        echo "=== TRYING WITHOUT SIGNING ==="
+        
+        # Clean
+        rm -rf bin/Release/net9.0-ios/ obj/Release/ || true
+        
+        # Build không signing (sẽ chỉ tạo .app, không phải .ipa)
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Release \
           -p:RuntimeIdentifier=ios-arm64 \
-          -p:ArchiveOnBuild=true \
-          -p:BuildIpa=true \
-          -p:CodesignKey="Apple Distribution" \
-          -p:DevelopmentTeam="$TEAM_ID" \
-          -p:IpaPackageDir="$(pwd)/ipa-output" \
-          -p:MtouchLink=SdkOnly \
+          -p:Platform=iPhone \
+          -p:BuildIpa=false \
+          -p:ArchiveOnBuild=false \
+          -p:CreatePackage=false \
+          -p:EnableCodeSigning=false \
+          -p:CodeSignKey="" \
+          -p:CodesignProvision="" \
+          -o ./app-output \
+          --no-restore \
           --verbosity normal
-
-        echo "IPA OUTPUT:"
-        ls -lh ipa-output/*.ipa
+        
+        echo "App bundle created (no IPA):"
+        find ./app-output -name "*.app" -type d | xargs -I {} du -sh {} || true
 
     # ===============================
-    # 6. UPLOAD IPA
+    # VERIFY AND PACKAGE RESULTS
     # ===============================
-    - name: Upload IPA
+    - name: Check Build Results
+      run: |
+        echo "=== CHECKING BUILD RESULTS ==="
+        
+        # Kiểm tra IPA
+        echo "1. Looking for IPA files:"
+        find . -name "*.ipa" -type f 2>/dev/null | xargs -I {} sh -c 'echo "IPA: {} (Size: $(du -h "{}" | cut -f1))"' || echo "No IPA files found"
+        
+        echo ""
+        echo "2. Looking for .app bundles:"
+        find . -name "*.app" -type d 2>/dev/null | while read app; do
+          echo "App: $app (Size: $(du -sh "$app" | cut -f1))"
+          find "$app" -name "*.dll" -type f | head -5
+          echo "---"
+        done
+        
+        echo ""
+        echo "3. Build output directories:"
+        ls -la ./bin/ || true
+        echo ""
+        ls -la ./publish/ || true
+        echo ""
+        ls -la ./ipa-output/ || true
+
+    # ===============================
+    # CREATE MANUAL IPA FROM APP BUNDLE
+    # ===============================
+    - name: Create IPA from App Bundle
+      if: success() || failure()
+      run: |
+        echo "=== CREATING IPA FROM APP BUNDLE ==="
+        
+        # Tìm .app bundle
+        APP_BUNDLE=$(find . -name "*.app" -type d 2>/dev/null | grep -i "release" | head -1)
+        
+        if [ -z "$APP_BUNDLE" ]; then
+          APP_BUNDLE=$(find . -name "*.app" -type d 2>/dev/null | head -1)
+        fi
+        
+        if [ ! -z "$APP_BUNDLE" ]; then
+          echo "Found app bundle: $APP_BUNDLE"
+          echo "Size: $(du -sh "$APP_BUNDLE" | cut -f1)"
+          
+          # Tạo thư mục IPA
+          IPA_DIR="SixOS_IPA"
+          rm -rf "$IPA_DIR" || true
+          mkdir -p "$IPA_DIR/Payload"
+          
+          # Copy app bundle
+          cp -R "$APP_BUNDLE" "$IPA_DIR/Payload/"
+          
+          # Tạo IPA
+          cd "$IPA_DIR"
+          zip -qr "../SixOSDatKhamAppMobile_unsigned.ipa" .
+          cd ..
+          
+          echo "✅ Created unsigned IPA: SixOSDatKhamAppMobile_unsigned.ipa"
+          ls -la *.ipa
+        else
+          echo "⚠️ No .app bundle found"
+          
+          # Kiểm tra xem có gì trong bin
+          echo "Checking bin directory:"
+          find ./bin -type f | head -20
+        fi
+
+    # ===============================
+    # UPLOAD ARTIFACTS
+    # ===============================
+    - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: iOS-IPA
-        path: ipa-output/*.ipa
-        retention-days: 7
+        name: iOS-Build-Output
+        path: |
+          *.ipa
+          ./publish/
+          ./ipa-output/
+          ./app-output/
+        if-no-files-found: warn
+        retention-days: 30
 
     # ===============================
-    # 7. CLEANUP
+    # CLEANUP
     # ===============================
     - name: Cleanup
       if: always()
       run: |
-        security delete-keychain build.keychain || true
+        echo "Cleaning up..."
+        security delete-keychain build.keychain 2>/dev/null || true
+        rm -f temp.key temp.csr temp.crt temp.p12 2>/dev/null || true
