@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 <PropertyGroup>
     <!-- CẬP NHẬT LÊN .NET 9.0 -->
-    <TargetFramework>net9.0-ios</TargetFramework>
+    <TargetFrameworks>net9.0-ios;net9.0-android</TargetFrameworks>
     <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
 
     <!-- CẬP NHẬT iOS version: 17.2 -> 18.0 hoặc 26.0 -->
@@ -197,6 +197,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
