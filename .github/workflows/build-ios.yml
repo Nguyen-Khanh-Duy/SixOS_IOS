@@ -8,87 +8,91 @@ on:
 jobs:
   build-ipa:
     runs-on: macos-latest
-    
-    env:
-      DOTNET_VERSION: '9.0.x'
-      MAUI_VERSION: '9.0.0'
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
     # ===============================
-    # SETUP .NET & MAUI
+    # SETUP .NET 9.0 SPECIFIC
     # ===============================
-    - name: Setup .NET
+    - name: Setup .NET 9.0
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        dotnet-version: '9.0.310'  # Dùng phiên bản cụ thể
 
     - name: Install MAUI Workloads
       run: |
         echo "=== INSTALLING MAUI WORKLOADS ==="
-        sudo dotnet workload install maui
-        sudo dotnet workload install ios
+        # Xóa workload cũ nếu có
+        sudo dotnet workload uninstall maui --verbosity normal || true
+        sudo dotnet workload uninstall ios --verbosity normal || true
+        
+        # Cài workload cho .NET 9
+        sudo dotnet workload install maui --sdk-version 9.0.310
+        sudo dotnet workload install ios --sdk-version 9.0.310
+        
+        echo "✅ Workloads installed"
         dotnet workload list
 
-    - name: Display .NET Info
+    - name: Force Use .NET 9
       run: |
-        echo "=== .NET INFORMATION ==="
-        dotnet --info
-        echo ""
-        echo "=== SDKS ==="
-        ls -la /usr/local/share/dotnet/sdk/
+        # Tạo global.json để bắt buộc dùng .NET 9
+        cat > global.json << EOF
+        {
+          "sdk": {
+            "version": "9.0.310",
+            "rollForward": "disable"
+          }
+        }
+        EOF
+        
+        echo "Using .NET SDK:"
+        dotnet --version
 
     # ===============================
-    # RESTORE PACKAGES
+    # CHECK PROJECT
     # ===============================
-    - name: Restore NuGet Packages
+    - name: Check Project Configuration
       run: |
-        echo "=== RESTORING PACKAGES ==="
-        dotnet restore SixOSDatKhamAppMobile.csproj --verbosity normal
+        echo "=== CHECKING PROJECT ==="
         
-        echo "✅ Restore completed"
+        # Sửa csproj nếu cần
+        if grep -q "net9.0-ios" SixOSDatKhamAppMobile.csproj; then
+          echo "✅ Project targets net9.0-ios"
+        else
+          echo "❌ Project does not target net9.0-ios"
+          exit 1
+        fi
+        
         echo ""
         echo "Project structure:"
         ls -la
 
     # ===============================
-    # SIMPLE CODE SIGNING SETUP
+    # RESTORE PACKAGES
     # ===============================
-    - name: Setup Basic Code Signing
+    - name: Restore Packages
       run: |
-        echo "=== SETUP BASIC CODE SIGNING ==="
+        echo "=== RESTORING PACKAGES ==="
         
-        # Tạo keychain tạm
-        security create-keychain -p "" build.keychain
-        security default-keychain -s build.keychain
-        security unlock-keychain -p "" build.keychain
+        # Xóa obj và bin cũ
+        rm -rf obj/ bin/
         
-        # Tạo certificate tự ký đơn giản
-        openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=iOS Development"
-        openssl pkcs12 -export -out cert.p12 -inkey key.pem -in cert.pem -password pass:password
+        # Restore với framework cụ thể
+        dotnet restore SixOSDatKhamAppMobile.csproj \
+          --runtime ios-arm64 \
+          --verbosity detailed
         
-        # Import vào keychain
-        security import cert.p12 -k build.keychain -P password -T /usr/bin/codesign
-        
-        # Cấu hình keychain
-        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
-        
-        echo "✅ Code signing identities:"
-        security find-identity -v -p codesigning build.keychain || true
+        echo "✅ Restore completed"
 
     # ===============================
-    # BUILD FOR SIMULATOR (TEST)
+    # BUILD FOR SIMULATOR
     # ===============================
     - name: Build for Simulator
       run: |
         echo "=== BUILDING FOR SIMULATOR ==="
         
-        # Clean
-        dotnet clean SixOSDatKhamAppMobile.csproj -c Debug
-        
-        # Build simulator
         dotnet build SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Debug \
@@ -97,24 +101,23 @@ jobs:
           -p:BuildIpa=false \
           --verbosity normal
         
-        echo "✅ Simulator build completed"
-        echo ""
+        echo "✅ Simulator build successful"
+        
+        # Kiểm tra
         echo "Simulator output:"
-        find ./bin -name "*.dll" -type f | head -5 || true
+        find ./bin -name "*.dll" | head -5
 
     # ===============================
-    # BUILD FOR DEVICE (NO COMPLEX SIGNING)
+    # BUILD FOR DEVICE (SIMPLE)
     # ===============================
-    - name: Build Device Version
+    - name: Build for Device
       run: |
         echo "=== BUILDING FOR DEVICE ==="
         
-        # Clean release
-        rm -rf bin/Release net9.0-ios/ obj/Release/ publish/ ipa-output/ || true
+        # Clean
+        rm -rf bin/Release/ net9.0-ios/ publish/ ipa-output/ || true
         
-        echo "Building with minimal properties..."
-        
-        # Build đơn giản với code signing cơ bản
+        # Build đơn giản - không code signing
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Release \
@@ -123,105 +126,75 @@ jobs:
           -p:BuildIpa=true \
           -p:ArchiveOnBuild=true \
           -p:CreatePackage=true \
-          -p:EnableCodeSigning=true \
-          -p:CodesignKey="" \
-          -p:DevelopmentTeam="" \
-          -p:ProvisioningType=ad-hoc \
+          -p:EnableCodeSigning=false \
           -p:IpaPackageDir="$(pwd)/ipa-output" \
           -o ./publish \
-          --verbosity normal
+          --verbosity detailed
         
         echo "=== BUILD COMPLETED ==="
 
     # ===============================
-    # CHECK BUILD RESULTS
+    # CHECK RESULTS
     # ===============================
-    - name: Check Build Output
+    - name: Check Build Results
       run: |
-        echo "=== CHECKING BUILD OUTPUT ==="
+        echo "=== BUILD RESULTS ==="
         
-        echo "1. All files in current directory:"
+        echo "1. Current directory:"
         ls -la
         
         echo ""
         echo "2. IPA files:"
         find . -name "*.ipa" -type f 2>/dev/null | while read ipa; do
-          echo "📦 IPA: $ipa"
+          echo "📦 $ipa"
           echo "   Size: $(du -h "$ipa" | cut -f1)"
-          echo ""
-        done || echo "No IPA files found"
+        done || echo "No IPA files"
         
         echo ""
         echo "3. App bundles:"
         find . -name "*.app" -type d 2>/dev/null | while read app; do
-          echo "📱 App: $app"
+          echo "📱 $app"
           echo "   Size: $(du -sh "$app" | cut -f1)"
-          echo "   Contents:"
-          ls -la "$app" | head -10
-          echo ""
-        done || echo "No app bundles found"
+        done || echo "No app bundles"
         
         echo ""
-        echo "4. Build directories:"
-        ls -la ./bin/ ./publish/ ./ipa-output/ 2>/dev/null || true
+        echo "4. Publish directory:"
+        ls -la ./publish/ 2>/dev/null || true
+        
+        echo ""
+        echo "5. IPA output directory:"
+        ls -la ./ipa-output/ 2>/dev/null || true
 
     # ===============================
-    # CREATE IPA MANUALLY IF NEEDED
+    # CREATE FALLBACK IPA
     # ===============================
-    - name: Create Manual IPA
-      if: success() || failure()
+    - name: Create Fallback IPA
+      if: failure()
       run: |
-        echo "=== CREATING MANUAL IPA (IF NEEDED) ==="
+        echo "=== CREATING FALLBACK IPA ==="
         
         # Tìm app bundle
-        APP_BUNDLE=$(find ./bin -name "*.app" -type d 2>/dev/null | grep -i release | head -1)
-        
-        if [ -z "$APP_BUNDLE" ]; then
-          APP_BUNDLE=$(find . -name "*.app" -type d 2>/dev/null | head -1)
-        fi
+        APP_BUNDLE=$(find ./bin -name "*.app" -type d 2>/dev/null | head -1)
         
         if [ ! -z "$APP_BUNDLE" ]; then
-          echo "Found app bundle: $APP_BUNDLE"
+          echo "Found: $APP_BUNDLE"
           
-          # Tạo thư mục IPA
-          IPA_DIR="manual-ipa"
-          rm -rf "$IPA_DIR" || true
-          mkdir -p "$IPA_DIR/Payload"
-          
-          # Copy app bundle
-          cp -R "$APP_BUNDLE" "$IPA_DIR/Payload/"
-          
-          # Tạo IPA
-          cd "$IPA_DIR"
-          zip -qr "../SixOS_Manual.ipa" .
+          # Tạo IPA thủ công
+          mkdir -p temp-ipa/Payload
+          cp -R "$APP_BUNDLE" temp-ipa/Payload/
+          cd temp-ipa
+          zip -qr "../SixOS_Fallback.ipa" .
           cd ..
           
-          echo "✅ Created manual IPA: SixOS_Manual.ipa"
+          echo "✅ Created fallback IPA"
           ls -la *.ipa
         else
-          echo "⚠️ No app bundle found for manual IPA creation"
+          echo "⚠️ Could not find app bundle"
           
-          # Kiểm tra bin directory
-          echo "Checking bin directory structure:"
-          find ./bin -type f | head -20 || true
+          # Kiểm tra build output
+          echo "Build output in bin:"
+          find ./bin -type f | head -20
         fi
-
-    # ===============================
-    # DEBUG INFO
-    # ===============================
-    - name: Debug Information
-      if: always()
-      run: |
-        echo "=== DEBUG INFORMATION ==="
-        echo ""
-        echo "1. Project file check:"
-        head -50 SixOSDatKhamAppMobile.csproj
-        echo ""
-        echo "2. Directory structure:"
-        find . -maxdepth 2 -type d | sort
-        echo ""
-        echo "3. .NET workloads:"
-        dotnet workload list
 
     # ===============================
     # UPLOAD ARTIFACTS
@@ -229,7 +202,7 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: iOS-Build-Artifacts
+        name: iOS-Build
         path: |
           *.ipa
           ./ipa-output/
@@ -239,11 +212,16 @@ jobs:
         retention-days: 30
 
     # ===============================
-    # CLEANUP
+    # DEBUG
     # ===============================
-    - name: Cleanup
+    - name: Debug Info
       if: always()
       run: |
-        echo "=== CLEANUP ==="
-        security delete-keychain build.keychain 2>/dev/null || true
-        rm -f key.pem cert.pem cert.p12 2>/dev/null || true
+        echo "=== DEBUG INFO ==="
+        echo "Dotnet version: $(dotnet --version)"
+        echo ""
+        echo "Project file head:"
+        head -30 SixOSDatKhamAppMobile.csproj
+        echo ""
+        echo "All files:"
+        find . -type f -name "*.csproj" -o -name "*.sln" | xargs -I {} echo "Found: {}"
