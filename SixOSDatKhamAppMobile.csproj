@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-<PropertyGroup>
+  <PropertyGroup>
     <!-- CẬP NHẬT LÊN .NET 9.0 -->
     <TargetFrameworks>net9.0-ios</TargetFrameworks>
-    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
-
-    <!-- CẬP NHẬT iOS version: 17.2 -> 18.0 hoặc 26.0 -->
+    <OutputType>Exe</OutputType> <!-- THÊM DÒNG NÀY -->
+    
+    <!-- CẬP NHẬT iOS version -->
     <TargetPlatformVersion>18.0</TargetPlatformVersion>
     <SupportedOSPlatformVersion>18.0</SupportedOSPlatformVersion>
 
@@ -13,14 +13,32 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
+    <!-- App Info -->
+    <ApplicationId>com.company.sixosdatkham</ApplicationId>
+    <ApplicationTitle>SixOS</ApplicationTitle>
+    <ApplicationVersion>1.0</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
+
+    <!-- iOS Build Settings -->
     <BuildIpa>true</BuildIpa>
     <ArchiveOnBuild>true</ArchiveOnBuild>
     <MtouchLink>SdkOnly</MtouchLink>
-
+    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+    
+    <!-- Code Signing (sẽ override trong GitHub Actions) -->
     <CodesignKey>Apple Development</CodesignKey>
     <CodesignProvision>Automatic</CodesignProvision>
-  </PropertyGroup> 
+    <DevelopmentTeam></DevelopmentTeam>
+  </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <MtouchDebug>true</MtouchDebug>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <CreatePackage>true</CreatePackage>
+  </PropertyGroup>
   <ItemGroup>
     <!-- Camera -->
     <PackageReference Include="Camera.MAUI" Version="1.5.1" />
@@ -197,6 +215,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
