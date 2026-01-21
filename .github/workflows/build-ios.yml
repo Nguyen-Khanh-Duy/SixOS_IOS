@@ -1,4 +1,4 @@
-name: Build iOS IPA
+name: Build iOS IPA (.NET 9)
 
 on:
   workflow_dispatch:
@@ -14,41 +14,60 @@ jobs:
       uses: actions/checkout@v4
 
     # ===============================
-    # SETUP .NET 9.0 SPECIFIC
+    # SETUP .NET 9 WITH GLOBAL.JSON FIRST
     # ===============================
-    - name: Setup .NET 9.0
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '9.0.310'  # Dùng phiên bản cụ thể
-
-    - name: Install MAUI Workloads
+    - name: Create global.json for .NET 9
       run: |
-        echo "=== INSTALLING MAUI WORKLOADS ==="
-        # Xóa workload cũ nếu có
-        sudo dotnet workload uninstall maui --verbosity normal || true
-        sudo dotnet workload uninstall ios --verbosity normal || true
-        
-        # Cài workload cho .NET 9
-        sudo dotnet workload install maui --sdk-version 9.0.310
-        sudo dotnet workload install ios --sdk-version 9.0.310
-        
-        echo "✅ Workloads installed"
-        dotnet workload list
-
-    - name: Force Use .NET 9
-      run: |
-        # Tạo global.json để bắt buộc dùng .NET 9
-        cat > global.json << EOF
+        echo "=== SETTING .NET 9 AS DEFAULT ==="
+        cat > global.json << 'EOF'
         {
           "sdk": {
             "version": "9.0.310",
-            "rollForward": "disable"
+            "rollForward": "disable",
+            "allowPrerelease": false
           }
         }
         EOF
         
-        echo "Using .NET SDK:"
+        echo "global.json created:"
+        cat global.json
+
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.310'
+
+    - name: Verify .NET Version
+      run: |
+        echo "Active .NET SDK:"
         dotnet --version
+        echo ""
+        echo "SDK location:"
+        which dotnet
+        echo ""
+        echo "All .NET SDKs:"
+        ls -la /Users/runner/.dotnet/sdk/
+
+    # ===============================
+    # INSTALL MAUI WORKLOADS
+    # ===============================
+    - name: Install MAUI Workloads
+      run: |
+        echo "=== INSTALLING MAUI WORKLOADS ==="
+        
+        # Kiểm tra workloads hiện tại
+        echo "Current workloads:"
+        dotnet workload list || true
+        
+        # Cài workload maui và ios
+        echo "Installing maui workload..."
+        sudo dotnet workload install maui
+        
+        echo "Installing ios workload..."
+        sudo dotnet workload install ios
+        
+        echo "✅ Workloads installed"
+        dotnet workload list
 
     # ===============================
     # CHECK PROJECT
@@ -57,11 +76,13 @@ jobs:
       run: |
         echo "=== CHECKING PROJECT ==="
         
-        # Sửa csproj nếu cần
+        # Kiểm tra target framework
         if grep -q "net9.0-ios" SixOSDatKhamAppMobile.csproj; then
           echo "✅ Project targets net9.0-ios"
         else
           echo "❌ Project does not target net9.0-ios"
+          echo "Project content:"
+          cat SixOSDatKhamAppMobile.csproj
           exit 1
         fi
         
@@ -77,38 +98,40 @@ jobs:
         echo "=== RESTORING PACKAGES ==="
         
         # Xóa obj và bin cũ
-        rm -rf obj/ bin/
+        rm -rf obj/ bin/ || true
         
-        # Restore với framework cụ thể
-        dotnet restore SixOSDatKhamAppMobile.csproj \
-          --runtime ios-arm64 \
-          --verbosity detailed
+        # Restore đơn giản
+        dotnet restore SixOSDatKhamAppMobile.csproj
         
         echo "✅ Restore completed"
+        echo ""
+        echo "Restore output:"
+        ls -la obj/ 2>/dev/null || echo "No obj directory"
 
     # ===============================
-    # BUILD FOR SIMULATOR
+    # BUILD FOR SIMULATOR (TEST)
     # ===============================
     - name: Build for Simulator
       run: |
         echo "=== BUILDING FOR SIMULATOR ==="
         
+        # Build simulator (không cần code signing)
         dotnet build SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Debug \
           -p:RuntimeIdentifier=ios-x64 \
           -p:Platform=iPhoneSimulator \
           -p:BuildIpa=false \
-          --verbosity normal
+          --verbosity minimal
         
         echo "✅ Simulator build successful"
         
-        # Kiểm tra
-        echo "Simulator output:"
-        find ./bin -name "*.dll" | head -5
+        # Kiểm tra output
+        echo "Build output:"
+        find ./bin -type f -name "*.dll" | head -5 || true
 
     # ===============================
-    # BUILD FOR DEVICE (SIMPLE)
+    # BUILD FOR DEVICE
     # ===============================
     - name: Build for Device
       run: |
@@ -117,7 +140,9 @@ jobs:
         # Clean
         rm -rf bin/Release/ net9.0-ios/ publish/ ipa-output/ || true
         
-        # Build đơn giản - không code signing
+        echo "Building with properties..."
+        
+        # Build cho device - đơn giản hóa
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Release \
@@ -126,10 +151,8 @@ jobs:
           -p:BuildIpa=true \
           -p:ArchiveOnBuild=true \
           -p:CreatePackage=true \
-          -p:EnableCodeSigning=false \
-          -p:IpaPackageDir="$(pwd)/ipa-output" \
           -o ./publish \
-          --verbosity detailed
+          --verbosity normal
         
         echo "=== BUILD COMPLETED ==="
 
@@ -144,57 +167,61 @@ jobs:
         ls -la
         
         echo ""
-        echo "2. IPA files:"
+        echo "2. All IPA files:"
         find . -name "*.ipa" -type f 2>/dev/null | while read ipa; do
-          echo "📦 $ipa"
+          echo "📦 IPA: $ipa"
           echo "   Size: $(du -h "$ipa" | cut -f1)"
-        done || echo "No IPA files"
+        done || echo "No IPA files found"
         
         echo ""
-        echo "3. App bundles:"
+        echo "3. All App bundles:"
         find . -name "*.app" -type d 2>/dev/null | while read app; do
-          echo "📱 $app"
+          echo "📱 App: $app"
           echo "   Size: $(du -sh "$app" | cut -f1)"
-        done || echo "No app bundles"
+          echo "   Contents:"
+          find "$app" -type f | head -5
+          echo ""
+        done || echo "No app bundles found"
         
         echo ""
-        echo "4. Publish directory:"
-        ls -la ./publish/ 2>/dev/null || true
+        echo "4. Bin directory structure:"
+        find ./bin -type d 2>/dev/null || echo "No bin directory"
         
         echo ""
-        echo "5. IPA output directory:"
-        ls -la ./ipa-output/ 2>/dev/null || true
+        echo "5. Publish directory:"
+        ls -la ./publish/ 2>/dev/null || echo "No publish directory"
 
     # ===============================
-    # CREATE FALLBACK IPA
+    # ALTERNATIVE: SIMPLE BUILD
     # ===============================
-    - name: Create Fallback IPA
+    - name: Simple Build (Fallback)
       if: failure()
       run: |
-        echo "=== CREATING FALLBACK IPA ==="
+        echo "=== SIMPLE BUILD FALLBACK ==="
         
-        # Tìm app bundle
-        APP_BUNDLE=$(find ./bin -name "*.app" -type d 2>/dev/null | head -1)
+        # Build cực đơn giản
+        dotnet build SixOSDatKhamAppMobile.csproj \
+          -f net9.0-ios \
+          -c Release \
+          -p:RuntimeIdentifier=ios-arm64 \
+          --verbosity minimal
         
-        if [ ! -z "$APP_BUNDLE" ]; then
-          echo "Found: $APP_BUNDLE"
+        echo "✅ Simple build completed"
+        
+        # Kiểm tra app bundle
+        echo "Looking for app bundle..."
+        find ./bin -name "*.app" -type d | while read app; do
+          echo "Found: $app"
+          du -sh "$app"
           
           # Tạo IPA thủ công
           mkdir -p temp-ipa/Payload
-          cp -R "$APP_BUNDLE" temp-ipa/Payload/
+          cp -R "$app" temp-ipa/Payload/
           cd temp-ipa
-          zip -qr "../SixOS_Fallback.ipa" .
+          zip -qr "../SixOS_Simple.ipa" .
           cd ..
-          
-          echo "✅ Created fallback IPA"
-          ls -la *.ipa
-        else
-          echo "⚠️ Could not find app bundle"
-          
-          # Kiểm tra build output
-          echo "Build output in bin:"
-          find ./bin -type f | head -20
-        fi
+          echo "Created: SixOS_Simple.ipa"
+        done
 
     # ===============================
     # UPLOAD ARTIFACTS
@@ -202,26 +229,29 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: iOS-Build
+        name: iOS-Build-Output
         path: |
           *.ipa
-          ./ipa-output/
           ./publish/
           ./bin/
         if-no-files-found: warn
         retention-days: 30
 
     # ===============================
-    # DEBUG
+    # DEBUG INFO
     # ===============================
-    - name: Debug Info
+    - name: Debug Information
       if: always()
       run: |
-        echo "=== DEBUG INFO ==="
-        echo "Dotnet version: $(dotnet --version)"
+        echo "=== DEBUG INFORMATION ==="
         echo ""
-        echo "Project file head:"
-        head -30 SixOSDatKhamAppMobile.csproj
+        echo "1. .NET Version: $(dotnet --version)"
         echo ""
-        echo "All files:"
-        find . -type f -name "*.csproj" -o -name "*.sln" | xargs -I {} echo "Found: {}"
+        echo "2. Project File:"
+        head -40 SixOSDatKhamAppMobile.csproj
+        echo ""
+        echo "3. Global.json:"
+        cat global.json 2>/dev/null || echo "No global.json"
+        echo ""
+        echo "4. Directory Tree:"
+        find . -maxdepth 3 -type f \( -name "*.csproj" -o -name "*.sln" -o -name "*.ipa" -o -name "*.app" \) 2>/dev/null
