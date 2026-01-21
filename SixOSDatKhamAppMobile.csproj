@@ -1,17 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
+   <!-- ===============================
+       GLOBAL SETTINGS (KHÔNG SIGN)
+       =============================== -->
   <PropertyGroup>
-    <!-- CẬP NHẬT LÊN .NET 9.0 -->
+    <!-- MAUI -->
     <TargetFrameworks>net9.0-ios</TargetFrameworks>
-    <OutputType>Exe</OutputType> <!-- THÊM DÒNG NÀY -->
-    
-    <!-- CẬP NHẬT iOS version -->
-    <TargetPlatformVersion>18.0</TargetPlatformVersion>
-    <SupportedOSPlatformVersion>18.0</SupportedOSPlatformVersion>
-
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <!-- iOS -->
+    <TargetPlatformVersion>18.0</TargetPlatformVersion>
+    <SupportedOSPlatformVersion>18.0</SupportedOSPlatformVersion>
 
     <!-- App Info -->
     <ApplicationId>com.company.sixosdatkham</ApplicationId>
@@ -19,26 +20,50 @@
     <ApplicationVersion>1.0</ApplicationVersion>
     <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
 
-    <!-- iOS Build Settings -->
-    <BuildIpa>true</BuildIpa>
-    <ArchiveOnBuild>true</ArchiveOnBuild>
+    <!-- Linker -->
     <MtouchLink>SdkOnly</MtouchLink>
-    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
-    
-    <!-- Code Signing (sẽ override trong GitHub Actions) -->
-    <CodesignKey>Apple Development</CodesignKey>
-    <CodesignProvision>Automatic</CodesignProvision>
-    <DevelopmentTeam></DevelopmentTeam>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+  <!-- ===============================
+       DEVICE BUILD (IPA – KÝ CODE)
+       =============================== -->
+  <PropertyGroup Condition="'$(Configuration)|$(RuntimeIdentifier)'=='Release|ios-arm64'">
+    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+
+    <!-- IPA -->
+    <BuildIpa>true</BuildIpa>
+    <ArchiveOnBuild>true</ArchiveOnBuild>
+
+    <!-- Code Signing -->
+    <CodesignKey>Apple Distribution</CodesignKey>
+    <CodesignProvision>Automatic</CodesignProvision>
+
+    <!-- Team ID lấy từ GitHub Actions -->
+    <DevelopmentTeam>$(APPLE_TEAM_ID)</DevelopmentTeam>
+  </PropertyGroup>
+
+  <!-- ===============================
+       SIMULATOR BUILD (KHÔNG SIGN)
+       =============================== -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)'=='ios-x64'">
+    <RuntimeIdentifier>ios-x64</RuntimeIdentifier>
+    <CodesignKey></CodesignKey>
+    <CodesignProvision></CodesignProvision>
+  </PropertyGroup>
+
+  <!-- ===============================
+       DEBUG / RELEASE FLAGS
+       =============================== -->
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <MtouchDebug>true</MtouchDebug>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <Optimize>true</Optimize>
     <CreatePackage>true</CreatePackage>
   </PropertyGroup>
+
+
   <ItemGroup>
     <!-- Camera -->
     <PackageReference Include="Camera.MAUI" Version="1.5.1" />
@@ -215,6 +240,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 
