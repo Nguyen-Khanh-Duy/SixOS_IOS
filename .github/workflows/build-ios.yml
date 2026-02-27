@@ -17,21 +17,18 @@ jobs:
       uses: actions/checkout@v4
 
     # ===============================
-    # SETUP .NET 9 (KHỚP PROJECT)
+    # SETUP .NET
     # ===============================
     - name: Setup .NET 9
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.200'
-
-    - name: Verify .NET
-      run: dotnet --info
+        dotnet-version: '9.0.x'
 
     - name: Install MAUI iOS workload
       run: dotnet workload install maui-ios
 
     # ===============================
-    # SETUP CODE SIGNING
+    # CODE SIGNING
     # ===============================
     - name: Setup Code Signing
       env:
@@ -39,8 +36,6 @@ jobs:
         SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
         PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
       run: |
-        echo "🔐 Setting up signing..."
-
         security create-keychain -p "" build.keychain
         security default-keychain -s build.keychain
         security unlock-keychain -p "" build.keychain
@@ -60,41 +55,35 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-        echo "✅ Available identities:"
-        security find-identity -v -p codesigning
-
     # ===============================
-    # BUILD IPA (NET 9)
+    # BUILD IPA
     # ===============================
     - name: Build iOS IPA
       env:
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
-        echo "🚀 Building IPA..."
-
         dotnet restore SixOSDatKhamAppMobile.csproj
 
         dotnet publish SixOSDatKhamAppMobile.csproj \
-            -f net9.0-ios \
-            -c Release \
-            -p:RuntimeIdentifier=ios-arm64 \
-            -p:ArchiveOnBuild=true \
-            -p:BuildIpa=true \
-            -p:CodesignKey="Apple Distribution" \
-            -p:DevelopmentTeam="$TEAM_ID" \
-            --verbosity normal
-          
-          echo "📦 IPA Files:"
-          find . -name "*.ipa"
+          -f net9.0-ios \
+          -c Release \
+          -p:RuntimeIdentifier=ios-arm64 \
+          -p:ArchiveOnBuild=true \
+          -p:BuildIpa=true \
+          -p:CodesignKey="Apple Distribution" \
+          -p:DevelopmentTeam="$TEAM_ID"
+
+        echo "🔍 Checking IPA location..."
+        find bin -name "*.ipa"
 
     # ===============================
-    # UPLOAD IPA
+    # UPLOAD IPA (FIXED)
     # ===============================
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
         name: iOS-IPA
-        path: ipa-output/*.ipa
+        path: bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
         retention-days: 7
 
     # ===============================
