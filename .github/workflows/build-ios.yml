@@ -84,8 +84,41 @@ jobs:
             -p:DevelopmentTeam="2DQG584W52" \
             --verbosity normal
           
-          echo "📦 IPA Files:"
-          find . -name "*.ipa"
+    # ===============================
+    # DEBUG: TÌM FILE IPA (TÙY CHỌN)
+    # ===============================
+    - name: Debug - Find IPA location
+      if: always()
+      run: |
+        echo "🔍 Searching for IPA files..."
+        find . -name "*.ipa" -type f
+        
+        echo "\n📁 Listing bin/Release directory:"
+        ls -la bin/Release/ || echo "bin/Release/ not found"
+        
+        echo "\n📁 Checking publish directory:"
+        find . -path "*/publish/*.ipa" -type f || echo "No IPA in publish folders"
+
+    # ===============================
+    # COPY IPA TO OUTPUT FOLDER
+    # ===============================
+    - name: Copy IPA to output folder
+      run: |
+        echo "🔍 Searching for IPA file..."
+        IPA_PATH=$(find . -name "*.ipa" -type f | head -1)
+        
+        if [ -n "$IPA_PATH" ]; then
+          echo "✅ Found IPA at: $IPA_PATH"
+          mkdir -p ipa-output
+          cp "$IPA_PATH" ipa-output/
+          echo "📋 Copied to ipa-output/"
+          ls -la ipa-output/
+        else
+          echo "❌ No IPA file found!"
+          echo "📂 Current directory structure:"
+          find . -type f -name "*.ipa" -o -name "*.app" | head -20
+          exit 1
+        fi
 
     # ===============================
     # UPLOAD IPA
@@ -96,6 +129,7 @@ jobs:
         name: iOS-IPA
         path: ipa-output/*.ipa
         retention-days: 7
+        if-no-files-found: error  # Sẽ báo lỗi rõ ràng nếu không tìm thấy file
 
     # ===============================
     # CLEANUP
