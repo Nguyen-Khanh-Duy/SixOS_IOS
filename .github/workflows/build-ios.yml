@@ -38,7 +38,6 @@ jobs:
         SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
         PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
       run: |
-        echo "🔐 Creating keychain..."
         security create-keychain -p "" build.keychain
         security default-keychain -s build.keychain
         security unlock-keychain -p "" build.keychain
@@ -59,93 +58,49 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-        echo "✅ Available identities:"
         security find-identity -v -p codesigning
 
     # ===============================
-    # RESTORE PROJECT
+    # RESTORE
     # ===============================
     - name: Restore Project
       run: dotnet restore SixOSDatKhamAppMobile.csproj
 
     # ===============================
-    # BUILD ARCHIVE (.xcarchive)
+    # BUILD IPA DIRECTLY (FIX CHÍNH)
     # ===============================
-    - name: Build Archive
+    - name: Build IPA
       env:
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
-        echo "🚀 Building archive..."
-    
+        echo "🚀 Building IPA..."
+
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Release \
           -p:RuntimeIdentifier=ios-arm64 \
           -p:ArchiveOnBuild=true \
-          -p:BuildIpa=false \
+          -p:BuildIpa=true \
           -p:CodesignKey="Apple Distribution" \
           -p:DevelopmentTeam="$TEAM_ID" \
-          --verbosity detailed
-    
-        echo "🔍 Checking archive..."
-        find bin -type d -name "*.xcarchive"
+          --verbosity normal
 
-    # ===============================
-    # EXPORT IPA
-    # ===============================
-    - name: Export IPA
-      run: |
-        echo "🔍 Searching for xcarchive..."
-        ARCHIVE_PATH=$(find bin -type d -name "*.xcarchive" | head -n 1)
-
-        if [ -z "$ARCHIVE_PATH" ]; then
-          echo "❌ No xcarchive found!"
-          ls -R bin || true
-          exit 1
-        fi
-
-        echo "✅ Found archive at:"
-        echo "$ARCHIVE_PATH"
-
-        cat > exportOptions.plist <<EOF
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-        "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-          <key>method</key>
-          <string>app-store</string>
-          <key>signingStyle</key>
-          <string>manual</string>
-          <key>stripSwiftSymbols</key>
-          <true/>
-          <key>compileBitcode</key>
-          <false/>
-        </dict>
-        </plist>
-        EOF
-
-        xcodebuild -exportArchive \
-          -archivePath "$ARCHIVE_PATH" \
-          -exportPath ipa-output \
-          -exportOptionsPlist exportOptions.plist
-
-        echo "📦 IPA FILES:"
-        find ipa-output -name "*.ipa"
+        echo "🔍 Searching for IPA..."
+        find bin -name "*.ipa"
 
     # ===============================
     # UPLOAD IPA
     # ===============================
-    - name: Upload IPA Artifact
+    - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
         name: iOS-IPA
-        path: ipa-output/*.ipa
+        path: "**/*.ipa"
         retention-days: 7
 
     # ===============================
     # CLEANUP
     # ===============================
-    - name: Cleanup Keychain
+    - name: Cleanup
       if: always()
       run: security delete-keychain build.keychain || true
