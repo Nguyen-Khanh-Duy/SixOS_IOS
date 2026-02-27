@@ -17,7 +17,7 @@ jobs:
       uses: actions/checkout@v4
 
     # ===============================
-    # SETUP .NET 9
+    # SETUP .NET 9 (KHỚP PROJECT)
     # ===============================
     - name: Setup .NET 9
       uses: actions/setup-dotnet@v4
@@ -82,49 +82,20 @@ jobs:
             -p:BuildIpa=true \
             -p:CodesignKey="Apple Distribution" \
             -p:DevelopmentTeam="$TEAM_ID" \
-            -p:OutputPath=bin/Release/net9.0-ios/ios-arm64/ \
-            -p:PublishDir=bin/Release/net9.0-ios/ios-arm64/publish/ \
             --verbosity normal
+          
+          echo "📦 IPA Files:"
+          find . -name "*.ipa"
 
     # ===============================
-    # TÌM VÀ UPLOAD IPA
-    # ===============================
-    - name: Find and Upload IPA
-      run: |
-        echo "🔍 Tìm kiếm file IPA trong thư mục bin/Release/net9.0-ios/ios-arm64/publish/"
-        
-        # Tạo thư mục output
-        mkdir -p ipa-output
-        
-        # Đường dẫn chính xác đến file IPA
-        IPA_PATH="bin/Release/net9.0-ios/ios-arm64/publish/*.ipa"
-        
-        # Kiểm tra file IPA có tồn tại không
-        if ls $IPA_PATH 1> /dev/null 2>&1; then
-          echo "✅ Tìm thấy file IPA:"
-          ls -la $IPA_PATH
-          
-          # Copy file IPA vào thư mục upload
-          cp $IPA_PATH ipa-output/
-          
-          echo "📦 Danh sách file trong ipa-output:"
-          ls -la ipa-output/
-        else
-          echo "❌ KHÔNG TÌM THẤY FILE IPA!"
-          echo "Kiểm tra cấu trúc thư mục bin:"
-          find bin -type f -name "*.ipa" -o -name "*.app" 2>/dev/null || echo "Không tìm thấy"
-        fi
-
-    # ===============================
-    # UPLOAD IPA ARTIFACT
+    # UPLOAD IPA
     # ===============================
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
         name: iOS-IPA
-        path: ipa-output/
+        path: ipa-output/*.ipa
         retention-days: 7
-        if-no-files-found: error
 
     # ===============================
     # CLEANUP
