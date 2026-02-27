@@ -84,8 +84,8 @@ jobs:
             -p:DevelopmentTeam="$TEAM_ID" \
             --verbosity normal
           
-          echo "📦 IPA Files:"
-          find . -name "*.ipa"
+          echo "📦 IPA location:"
+          ls -R bin/Release/net9.0-ios/ios-arm64/publish || true
 
     # ===============================
     # UPLOAD IPA
