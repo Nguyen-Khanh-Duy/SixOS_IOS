@@ -10,19 +10,25 @@ jobs:
     runs-on: macos-latest
 
     steps:
+    # ===============================
+    # CHECKOUT
+    # ===============================
     - name: Checkout code
       uses: actions/checkout@v4
 
     # ===============================
-    # FORCE .NET 8 (KHÔNG DÙNG .NET 9)
+    # SETUP .NET 9 (KHỚP PROJECT)
     # ===============================
-    - name: Setup .NET 8
+    - name: Setup .NET 9
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.100'
+        dotnet-version: '9.0.200'
 
-    - name: Install MAUI workload
-      run: dotnet workload install maui
+    - name: Verify .NET
+      run: dotnet --info
+
+    - name: Install MAUI iOS workload
+      run: dotnet workload install maui-ios
 
     # ===============================
     # SETUP CODE SIGNING
@@ -58,7 +64,7 @@ jobs:
         security find-identity -v -p codesigning
 
     # ===============================
-    # BUILD IPA THẬT
+    # BUILD IPA (NET 9)
     # ===============================
     - name: Build iOS IPA
       env:
@@ -69,7 +75,7 @@ jobs:
         dotnet restore SixOSDatKhamAppMobile.csproj
 
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net8.0-ios \
+          -f net9.0-ios \
           -c Release \
           -p:RuntimeIdentifier=ios-arm64 \
           -p:ArchiveOnBuild=true \
