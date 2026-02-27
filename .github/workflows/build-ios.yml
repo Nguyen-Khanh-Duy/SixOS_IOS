@@ -6,27 +6,31 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-ios:
+  build-ipa:
     runs-on: macos-latest
 
     steps:
     # ===============================
     # CHECKOUT
     # ===============================
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v4
 
     # ===============================
     # SETUP .NET 9
     # ===============================
-    - name: Setup .NET
+    - name: Setup .NET 9
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.0.x
+        dotnet-version: '9.0.200'
 
-    - name: Install MAUI workload
+    - name: Verify .NET
+      run: dotnet --info
+
+    - name: Install MAUI iOS workload
       run: |
-        dotnet workload install maui-ios
+        dotnet workload install maui-ios --source https://api.nuget.org/v3/index.json
+        dotnet workload install ios --source https://api.nuget.org/v3/index.json
         dotnet workload list
 
     # ===============================
@@ -40,10 +44,12 @@ jobs:
       run: |
         echo "🔐 Setting up signing..."
 
+        # Tạo keychain
         security create-keychain -p "" build.keychain
         security default-keychain -s build.keychain
         security unlock-keychain -p "" build.keychain
 
+        # Import certificate
         echo "$SIGNING_CERTIFICATE" | base64 --decode > certificate.p12
         security import certificate.p12 \
           -k build.keychain \
@@ -51,44 +57,162 @@ jobs:
           -T /usr/bin/codesign \
           -A
 
+        # Cấu hình keychain
         security set-key-partition-list \
           -S apple-tool:,apple:,codesign: \
           -s -k "" build.keychain
+        security set-keychain-settings -t 3600 -l ~/Library/Keychains/build.keychain
 
+        # Import provisioning profile
         echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+
+        # Lấy tên provisioning profile
+        PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' /dev/stdin <<< $(security cms -D -i profile.mobileprovision 2>/dev/null) 2>/dev/null || echo "iOS Team Provisioning Profile: *")
+        echo "PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
 
         echo "✅ Available identities:"
         security find-identity -v -p codesigning
 
     # ===============================
-    # RESTORE
+    # BUILD IPA ĐÚNG CÁCH VỚI .NET MAUI
     # ===============================
-    - name: Restore
-      run: dotnet restore SixOSDatKhamAppMobile.csproj
-
-    # ===============================
-    # PUBLISH IPA (QUAN TRỌNG NHẤT)
-    # ===============================
-    - name: Publish iOS IPA
+    - name: Build iOS IPA
       run: |
+        echo "🚀 Building iOS IPA đúng cách..."
+        
+        # Clean
+        dotnet clean SixOSDatKhamAppMobile.csproj -c Release || true
+        
+        # Restore
+        dotnet restore SixOSDatKhamAppMobile.csproj
+        
+        # Publish với đầy đủ tham số để tạo IPA
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net9.0-ios \
-          -c Release \
-          -r ios-arm64 \
-          -p:ArchiveOnBuild=true \
-          -p:BuildIpa=true \
-          -p:CodesignKey="Apple Distribution" \
-          -p:DevelopmentTeam="2DQG584W52"
+            -f net9.0-ios \
+            -c Release \
+            -r ios-arm64 \
+            -p:ArchiveOnBuild=true \
+            -p:BuildIpa=true \
+            -p:CodesignKey="Apple Distribution" \
+            -p:CodesignProvision="${{ env.PROFILE_NAME }}" \
+            -p:DevelopmentTeam="2DQG584W52" \
+            -p:EnableCodeSigning=true \
+            -p:RuntimeIdentifier=ios-arm64 \
+            -p:UseInterpreter=true \
+            -p:MtouchLink=SdkOnly \
+            -p:MtouchUseLlvm=true \
+            -p:MtouchEnableSGenConc=true \
+            -p:Optimize=true \
+            -p:DebugType=None \
+            -p:DebugSymbols=false \
+            -p:CreatePackage=false \
+            -p:IpaPackageDir=$(pwd)/ipa-output \
+            -o ./publish-output \
+            --verbosity normal
+
+        echo "✅ Build completed"
 
     # ===============================
-    # VERIFY IPA
+    # KIỂM TRA KẾT QUẢ BUILD
     # ===============================
-    - name: Verify IPA
+    - name: Check Build Output
+      if: always()
       run: |
-        echo "📦 Searching for IPA..."
-        find . -name "*.ipa"
+        echo "📁 Kiểm tra files sau build..."
+        
+        echo "1. Tìm tất cả .ipa files:"
+        find . -name "*.ipa" -type f || echo "No IPA files found"
+        
+        echo "\n2. Tìm tất cả .app bundles:"
+        find . -name "*.app" -type d || echo "No .app bundles found"
+        
+        echo "\n3. Kiểm tra thư mục ipa-output:"
+        ls -la ipa-output/ 2>/dev/null || echo "No ipa-output directory"
+        
+        echo "\n4. Kiểm tra thư mục publish-output:"
+        ls -la publish-output/ 2>/dev/null || echo "No publish-output directory"
+        
+        echo "\n5. Kiểm tra thư mục bin:"
+        find ./bin -type d 2>/dev/null | head -10 || echo "No bin directory"
+
+    # ===============================
+    # TÌM VÀ COPY IPA (NẾU CHƯA Ở ĐÚNG VỊ TRÍ)
+    # ===============================
+    - name: Find and copy IPA
+      run: |
+        echo "🔍 Tìm kiếm IPA files..."
+        
+        # Tạo thư mục output nếu chưa có
+        mkdir -p ipa-output
+        
+        # Tìm tất cả IPA files
+        IPA_FILES=$(find . -name "*.ipa" -type f)
+        
+        if [ -n "$IPA_FILES" ]; then
+          echo "✅ Found IPA files:"
+          echo "$IPA_FILES"
+          
+          # Copy tất cả IPA files vào thư mục ipa-output
+          for ipa in $IPA_FILES; do
+            cp "$ipa" ipa-output/ 2>/dev/null || true
+          done
+          
+          echo "\n📁 ipa-output contents:"
+          ls -la ipa-output/
+        else
+          echo "❌ No IPA files found"
+          
+          # Tìm .app bundles để tạo IPA thủ công
+          APP_BUNDLE=$(find . -name "*.app" -type d | head -1)
+          
+          if [ -n "$APP_BUNDLE" ]; then
+            echo "✅ Found .app bundle at: $APP_BUNDLE"
+            
+            # Tạo IPA từ .app bundle
+            APP_NAME=$(basename "$APP_BUNDLE" .app)
+            mkdir -p Payload
+            cp -r "$APP_BUNDLE" Payload/
+            
+            # Codesign lại để đảm bảo
+            codesign -f -s "Apple Distribution" -v "Payload/$APP_NAME.app" --deep --preserve-metadata=identifier,entitlements || true
+            
+            # Tạo IPA
+            zip -r "$APP_NAME.ipa" Payload/
+            
+            if [ -f "$APP_NAME.ipa" ]; then
+              echo "✅ Created IPA: $APP_NAME.ipa"
+              cp "$APP_NAME.ipa" ipa-output/
+            fi
+          else
+            echo "❌ No .app bundle found"
+            
+            # Tìm thư mục chứa app
+            echo "Searching for app directories:"
+            find . -type d -name "*.app" -o -name "*.xarchive" 2>/dev/null | head -10
+          fi
+        fi
+
+    # ===============================
+    # XÁC THỰC IPA
+    # ===============================
+    - name: Validate IPA
+      run: |
+        echo "🔍 Kiểm tra tính hợp lệ của IPA..."
+        
+        if [ -f "ipa-output/SixOSDatKhamAppMobile.ipa" ] || [ -f "ipa-output/*.ipa" ]; then
+          IPA_FILE=$(ls ipa-output/*.ipa | head -1)
+          echo "✅ IPA file found: $IPA_FILE"
+          echo "File size: $(wc -c < "$IPA_FILE") bytes"
+          
+          # Kiểm tra cấu trúc IPA
+          unzip -l "$IPA_FILE" | head -20
+        else
+          echo "❌ No IPA file in ipa-output directory"
+          ls -la ipa-output/ || true
+          exit 1
+        fi
 
     # ===============================
     # UPLOAD IPA
@@ -97,9 +221,45 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: iOS-IPA
-        path: |
-          **/bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
+        path: ipa-output/*.ipa
         retention-days: 7
+        if-no-files-found: error
+        compression-level: 6
+
+    # ===============================
+    # UPLOAD ADDITIONAL ARTIFACTS (CHO DEBUG)
+    # ===============================
+    - name: Upload Debug Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: Debug-Artifacts-${{ github.sha }}
+        path: |
+          publish-output/
+          bin/Release/
+          **/*.app
+        retention-days: 3
+        if-no-files-found: warn
+
+    # ===============================
+    # DEBUG INFO
+    # ===============================
+    - name: Debug Information
+      if: failure()
+      run: |
+        echo "🔍 Debug Information:"
+        
+        echo "1. Xcode version:"
+        xcodebuild -version
+        
+        echo "\n2. iOS SDKs:"
+        xcodebuild -showsdks
+        
+        echo "\n3. .NET info:"
+        dotnet --info
+        
+        echo "\n4. Disk space:"
+        df -h
 
     # ===============================
     # CLEANUP
