@@ -64,6 +64,14 @@ jobs:
         security find-identity -v -p codesigning
 
     # ===============================
+    # CREATE OUTPUT DIRECTORY
+    # ===============================
+    - name: Create output directory
+      run: |
+        mkdir -p ipa-output
+        echo "✅ Created ipa-output directory at $(pwd)/ipa-output"
+
+    # ===============================
     # BUILD IPA (NET 9)
     # ===============================
     - name: Build iOS IPA
@@ -72,20 +80,60 @@ jobs:
       run: |
         echo "🚀 Building IPA..."
 
+        # Restore packages
         dotnet restore SixOSDatKhamAppMobile.csproj
 
+        # Clean previous builds
+        dotnet clean SixOSDatKhamAppMobile.csproj -c Release
+
+        # Publish with explicit output path
         dotnet publish SixOSDatKhamAppMobile.csproj \
-            -f net9.0-ios \
-            -c Release \
-            -p:RuntimeIdentifier=ios-arm64 \
-            -p:ArchiveOnBuild=true \
-            -p:BuildIpa=true \
-            -p:CodesignKey="Apple Distribution" \
-            -p:DevelopmentTeam="$TEAM_ID" \
-            --verbosity normal
-          
-          echo "📦 IPA Files:"
-          find . -name "*.ipa"
+          -f net9.0-ios \
+          -c Release \
+          -p:RuntimeIdentifier=ios-arm64 \
+          -p:CodesignKey="Apple Distribution" \
+          -p:CodesignProvision="Your Provisioning Profile Name" \
+          -p:DevelopmentTeam="$TEAM_ID" \
+          -p:BuildIpa=true \
+          -p:ArchiveOnBuild=true \
+          -p:EnableCodeSigning=true \
+          -p:IpaPackageDir="$(pwd)/ipa-output" \
+          --verbosity normal
+
+        echo "📦 Build completed. Checking output directory..."
+
+    # ===============================
+    # VERIFY AND LIST IPA OUTPUT
+    # ===============================
+    - name: Verify IPA Output
+      run: |
+        echo "📂 Current directory: $(pwd)"
+        echo "📂 Contents of ipa-output directory:"
+        ls -la ipa-output/ || echo "❌ ipa-output directory is empty or doesn't exist"
+        
+        echo "🔍 Searching for IPA files in entire workspace..."
+        find . -name "*.ipa" -type f | while read -r file; do
+          echo "Found IPA: $file"
+          echo "Size: $(ls -lh "$file" | awk '{print $5}')"
+        done
+        
+        # If IPA exists but in wrong location, copy it to ipa-output
+        IPA_FILE=$(find . -name "*.ipa" -type f | head -n 1)
+        if [ -n "$IPA_FILE" ] && [ ! -f "ipa-output/$(basename "$IPA_FILE")" ]; then
+          echo "📋 Copying IPA from $IPA_FILE to ipa-output/"
+          cp "$IPA_FILE" ipa-output/
+        fi
+        
+        # Final check
+        if [ -n "$(ls -A ipa-output/ 2>/dev/null)" ]; then
+          echo "✅ IPA files found in ipa-output directory:"
+          ls -lh ipa-output/
+        else
+          echo "❌ No IPA files found in ipa-output directory"
+          echo "📁 Listing bin/Release directory structure:"
+          find bin/Release -type f -name "*.ipa" -o -name "*.app" | head -n 10
+          exit 1
+        fi
 
     # ===============================
     # UPLOAD IPA
@@ -95,6 +143,7 @@ jobs:
       with:
         name: iOS-IPA
         path: ipa-output/*.ipa
+        if-no-files-found: error
         retention-days: 7
 
     # ===============================
@@ -102,4 +151,6 @@ jobs:
     # ===============================
     - name: Cleanup
       if: always()
-      run: security delete-keychain build.keychain || true
+      run: |
+        security delete-keychain build.keychain || true
+        echo "🧹 Cleanup completed"
