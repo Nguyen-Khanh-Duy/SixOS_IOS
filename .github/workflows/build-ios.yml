@@ -29,7 +29,7 @@ jobs:
       run: dotnet workload install maui-ios
 
     # ===============================
-    # SETUP CODE SIGNING
+    # SETUP CODE SIGNING (DISTRIBUTION)
     # ===============================
     - name: Setup Code Signing
       env:
@@ -58,10 +58,11 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
+        echo "🔎 Installed identities:"
         security find-identity -v -p codesigning
 
     # ===============================
-    # BUILD IPA
+    # BUILD IPA (DISTRIBUTION MODE)
     # ===============================
     - name: Publish iOS IPA
       env:
@@ -70,23 +71,24 @@ jobs:
         echo "🚀 Restoring..."
         dotnet restore SixOSDatKhamAppMobile.csproj
 
-        echo "🚀 Publishing..."
+        echo "🚀 Publishing IPA..."
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Release \
           -p:RuntimeIdentifier=ios-arm64 \
           -p:ArchiveOnBuild=true \
           -p:BuildIpa=true \
-          -p:CodesignKey="Apple Development" \
-          -p:CodesignProvision="profile" \
+          -p:CodesignKey="Apple Distribution" \
           -p:DevelopmentTeam="$TEAM_ID" \
+          -p:EnableAssemblyILStripping=false \
           --verbosity normal
 
-        echo "🔎 Searching IPA..."
+        echo "🔎 Checking build output..."
+        find . -name "*.app"
         find . -name "*.ipa"
 
     # ===============================
-    # UPLOAD IPA (SAFE VERSION)
+    # UPLOAD IPA
     # ===============================
     - name: Upload IPA
       uses: actions/upload-artifact@v4
