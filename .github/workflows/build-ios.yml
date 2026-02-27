@@ -28,9 +28,7 @@ jobs:
       run: dotnet --info
 
     - name: Install MAUI iOS workload
-      run: |
-        dotnet workload install maui-ios
-        dotnet workload install ios
+      run: dotnet workload install maui-ios
 
     # ===============================
     # SETUP CODE SIGNING
@@ -64,160 +62,30 @@ jobs:
 
         echo "✅ Available identities:"
         security find-identity -v -p codesigning
-        
-        # Get provisioning profile name
-        PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' /dev/stdin <<< $(security cms -D -i profile.mobileprovision) 2>/dev/null || echo "")
-        echo "PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
-        echo "📱 Provisioning Profile: $PROFILE_NAME"
 
     # ===============================
-    # CREATE OUTPUT DIRECTORY
+    # BUILD IPA (NET 9)
     # ===============================
-    - name: Create output directory
-      run: |
-        mkdir -p ipa-output
-        mkdir -p artifacts
-        echo "✅ Created output directories"
-
-    # ===============================
-    # BUILD IPA (NET 9) - CÁCH 1: SỬ DỤNG MSBUILD
-    # ===============================
-    - name: Build IPA with MSBuild
+    - name: Build iOS IPA
       env:
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
-        echo "🚀 Building IPA with MSBuild..."
-        
-        # Restore packages
+        echo "🚀 Building IPA..."
+
         dotnet restore SixOSDatKhamAppMobile.csproj
-        
-        # Build with MSBuild
-        msbuild SixOSDatKhamAppMobile.csproj \
-          /p:Configuration=Release \
-          /p:Platform=iPhone \
-          /p:RuntimeIdentifier=ios-arm64 \
-          /p:TargetFramework=net9.0-ios \
-          /p:CodesignKey="Apple Distribution" \
-          /p:CodesignProvision="$PROFILE_NAME" \
-          /p:DevelopmentTeam="$TEAM_ID" \
-          /p:BuildIpa=true \
-          /p:ArchiveOnBuild=true \
-          /p:EnableCodeSigning=true \
-          /p:IpaPackageDir="$(pwd)/ipa-output" \
-          /verbosity:normal
 
-    # ===============================
-    # BUILD IPA (NET 9) - CÁCH 2: SỬ DỤNG DOTNET PUBLISH (FALLBACK)
-    # ===============================
-    - name: Build IPA with Dotnet Publish (if MSBuild fails)
-      if: failure()
-      env:
-        TEAM_ID: ${{ secrets.TEAM_ID }}
-      run: |
-        echo "🚀 Building IPA with Dotnet Publish (fallback)..."
-        
-        # Clean
-        dotnet clean SixOSDatKhamAppMobile.csproj -c Release
-        
-        # Publish
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net9.0-ios \
-          -c Release \
-          -r ios-arm64 \
-          -p:ArchiveOnBuild=true \
-          -p:BuildIpa=true \
-          -p:CodesignKey="Apple Distribution" \
-          -p:CodesignProvision="$PROFILE_NAME" \
-          -p:DevelopmentTeam="$TEAM_ID" \
-          -p:EnableCodeSigning=true \
-          -p:IpaPackageDir="$(pwd)/ipa-output" \
-          --self-contained \
-          --verbosity normal
-
-    # ===============================
-    # MANUAL IPA CREATION (BACKUP PLAN)
-    # ===============================
-    - name: Manual IPA creation (if needed)
-      if: failure()
-      run: |
-        echo "🔧 Attempting manual IPA creation..."
-        
-        # Find the .app file
-        APP_PATH=$(find . -name "*.app" -type d | head -n 1)
-        
-        if [ -n "$APP_PATH" ]; then
-          echo "📱 Found .app at: $APP_PATH"
+            -f net9.0-ios \
+            -c Release \
+            -p:RuntimeIdentifier=ios-arm64 \
+            -p:ArchiveOnBuild=true \
+            -p:BuildIpa=true \
+            -p:CodesignKey="Apple Distribution" \
+            -p:DevelopmentTeam="$TEAM_ID" \
+            --verbosity normal
           
-          # Create Payload directory
-          mkdir -p Payload
-          cp -r "$APP_PATH" Payload/
-          
-          # Create IPA
-          zip -r "ipa-output/SixOSDatKhamApp.ipa" Payload/
-          
-          echo "✅ Manually created IPA at ipa-output/SixOSDatKhamApp.ipa"
-        else
-          echo "❌ No .app file found"
-          exit 1
-        fi
-
-    # ===============================
-    # VERIFY AND LIST IPA OUTPUT
-    # ===============================
-    - name: Verify IPA Output
-      run: |
-        echo "📂 Current directory: $(pwd)"
-        
-        # List all contents of ipa-output
-        echo "📂 Contents of ipa-output directory:"
-        ls -la ipa-output/ || echo "❌ ipa-output directory is empty"
-        
-        # List all contents of bin/Release
-        echo "📂 Contents of bin/Release:"
-        find bin/Release -type d -name "*.app" -o -name "*.ipa" | head -n 20
-        
-        # Search for IPA files
-        echo "🔍 Searching for IPA files in entire workspace..."
-        find . -name "*.ipa" -type f | while read -r file; do
-          echo "Found IPA: $file"
-          echo "Size: $(ls -lh "$file" | awk '{print $5}')"
-          
-          # Copy to ipa-output if not already there
-          if [[ "$file" != *"ipa-output"* ]]; then
-            echo "📋 Copying to ipa-output/"
-            cp "$file" ipa-output/
-          fi
-        done
-        
-        # Search for .app bundles
-        echo "🔍 Searching for .app bundles..."
-        find . -name "*.app" -type d | while read -r app; do
-          echo "Found .app: $app"
-          ls -ld "$app"
-        done
-        
-        # Final check for ipa-output
-        if [ -n "$(ls -A ipa-output/ 2>/dev/null)" ]; then
-          echo "✅ Files found in ipa-output directory:"
-          ls -lh ipa-output/
-        else
-          echo "❌ No files found in ipa-output directory"
-          
-          # Check if there's an .app we can manually package
-          APP_BUNDLE=$(find . -name "*.app" -type d | head -n 1)
-          if [ -n "$APP_BUNDLE" ]; then
-            echo "📦 Manually creating IPA from $APP_BUNDLE"
-            mkdir -p Payload
-            cp -r "$APP_BUNDLE" Payload/
-            cd Payload
-            zip -r "../ipa-output/app.ipa" *
-            cd ..
-            echo "✅ Manually created IPA at ipa-output/app.ipa"
-          else
-            echo "❌ No .app bundle found to create IPA"
-            exit 1
-          fi
-        fi
+          echo "📦 IPA Files:"
+          find . -name "*.ipa"
 
     # ===============================
     # UPLOAD IPA
@@ -226,10 +94,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: iOS-IPA
-        path: |
-          ipa-output/*.ipa
-          ipa-output/*.app
-        if-no-files-found: error
+        path: ipa-output/*.ipa
         retention-days: 7
 
     # ===============================
@@ -237,6 +102,4 @@ jobs:
     # ===============================
     - name: Cleanup
       if: always()
-      run: |
-        security delete-keychain build.keychain || true
-        echo "🧹 Cleanup completed"
+      run: security delete-keychain build.keychain || true
