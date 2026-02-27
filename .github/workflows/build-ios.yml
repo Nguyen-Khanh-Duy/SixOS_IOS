@@ -6,32 +6,31 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-ipa:
+  build-ios:
     runs-on: macos-latest
 
     steps:
     # ===============================
     # CHECKOUT
     # ===============================
-    - name: Checkout code
+    - name: Checkout source
       uses: actions/checkout@v4
 
     # ===============================
-    # SETUP .NET 9 (KHỚP PROJECT)
+    # SETUP .NET 9
     # ===============================
     - name: Setup .NET 9
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.200'
+        dotnet-version: 9.0.x
 
-    - name: Verify .NET
-      run: dotnet --info
-
-    - name: Install MAUI iOS workload
-      run: dotnet workload install maui-ios
+    - name: Install MAUI Workload
+      run: |
+        dotnet workload install maui-ios
+        dotnet workload restore
 
     # ===============================
-    # SETUP CODE SIGNING
+    # SETUP KEYCHAIN & SIGNING
     # ===============================
     - name: Setup Code Signing
       env:
@@ -39,11 +38,11 @@ jobs:
         SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
         PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
       run: |
-        echo "🔐 Setting up signing..."
-
+        echo "🔐 Creating temporary keychain..."
         security create-keychain -p "" build.keychain
         security default-keychain -s build.keychain
         security unlock-keychain -p "" build.keychain
+        security set-keychain-settings -lut 21600 build.keychain
 
         echo "$SIGNING_CERTIFICATE" | base64 --decode > certificate.p12
         security import certificate.p12 \
@@ -64,42 +63,56 @@ jobs:
         security find-identity -v -p codesigning
 
     # ===============================
-    # BUILD IPA (NET 9)
+    # RESTORE PROJECT
     # ===============================
-    - name: Build iOS IPA
+    - name: Restore Project
+      run: dotnet restore SixOSDatKhamAppMobile.csproj
+
+    # ===============================
+    # BUILD & EXPORT IPA
+    # ===============================
+    - name: Build IPA
       env:
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
-        echo "🚀 Building IPA..."
-
-        dotnet restore SixOSDatKhamAppMobile.csproj
+        echo "🚀 Publishing iOS IPA..."
 
         dotnet publish SixOSDatKhamAppMobile.csproj \
-            -f net9.0-ios \
-            -c Release \
-            -p:RuntimeIdentifier=ios-arm64 \
-            -p:ArchiveOnBuild=true \
-            -p:BuildIpa=true \
-            -p:CodesignKey="Apple Distribution" \
-            -p:DevelopmentTeam="$TEAM_ID" \
-            --verbosity normal
-          
-          echo "📦 IPA Files:"
-          find . -name "*.ipa"
+          -f net9.0-ios \
+          -c Release \
+          -p:RuntimeIdentifier=ios-arm64 \
+          -p:ArchiveOnBuild=true \
+          -p:BuildIpa=true \
+          -p:CodesignKey="Apple Distribution" \
+          -p:CodesignProvision="profile" \
+          -p:DevelopmentTeam="$TEAM_ID" \
+          --verbosity normal
+
+        echo "📦 IPA files found:"
+        find . -name "*.ipa"
+
+    # ===============================
+    # DEBUG (QUAN TRỌNG)
+    # ===============================
+    - name: Debug Release Folder
+      run: |
+        echo "==== RELEASE FOLDER STRUCTURE ===="
+        ls -R bin/Release || true
 
     # ===============================
     # UPLOAD IPA
     # ===============================
-    - name: Upload IPA
+    - name: Upload IPA Artifact
       uses: actions/upload-artifact@v4
       with:
         name: iOS-IPA
-        path: ipa-output/*.ipa
+        path: |
+          **/*.ipa
         retention-days: 7
 
     # ===============================
     # CLEANUP
     # ===============================
-    - name: Cleanup
+    - name: Cleanup Keychain
       if: always()
       run: security delete-keychain build.keychain || true
