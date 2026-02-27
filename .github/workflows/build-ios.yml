@@ -79,7 +79,7 @@ jobs:
           -p:ArchiveOnBuild=true \
           -p:BuildIpa=true \
           -p:CodesignKey="Apple Distribution" \
-          -p:DevelopmentTeam="$TEAM_ID" \
+          -p:DevelopmentTeam="2DQG584W52" \
           -p:EnableAssemblyILStripping=false \
           --verbosity normal
 
