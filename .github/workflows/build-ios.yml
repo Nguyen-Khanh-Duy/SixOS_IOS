@@ -10,7 +10,6 @@ jobs:
     runs-on: macos-latest
 
     steps:
-
     # ===============================
     # CHECKOUT
     # ===============================
@@ -18,18 +17,21 @@ jobs:
       uses: actions/checkout@v4
 
     # ===============================
-    # SETUP .NET 9
+    # SETUP .NET 9 (KHỚP PROJECT)
     # ===============================
-    - name: Setup .NET
+    - name: Setup .NET 9
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.0.200
+        dotnet-version: '9.0.200'
 
-    - name: Install MAUI workload
+    - name: Verify .NET
+      run: dotnet --info
+
+    - name: Install MAUI iOS workload
       run: dotnet workload install maui-ios
 
     # ===============================
-    # SETUP CODE SIGNING (DISTRIBUTION)
+    # SETUP CODE SIGNING
     # ===============================
     - name: Setup Code Signing
       env:
@@ -37,55 +39,53 @@ jobs:
         SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
         PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
       run: |
-        security create-keychain -p build build.keychain
+        echo "🔐 Setting up signing..."
+
+        security create-keychain -p "" build.keychain
         security default-keychain -s build.keychain
-        security unlock-keychain -p build build.keychain
-        security set-keychain-settings -lut 21600 build.keychain
+        security unlock-keychain -p "" build.keychain
 
         echo "$SIGNING_CERTIFICATE" | base64 --decode > certificate.p12
         security import certificate.p12 \
           -k build.keychain \
           -P "$SIGNING_CERTIFICATE_PASSWORD" \
           -T /usr/bin/codesign \
-          -T /usr/bin/security \
           -A
 
         security set-key-partition-list \
           -S apple-tool:,apple:,codesign: \
-          -s -k build build.keychain
+          -s -k "" build.keychain
 
         echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-        echo "🔎 Installed identities:"
+        echo "✅ Available identities:"
         security find-identity -v -p codesigning
 
     # ===============================
-    # BUILD IPA (DISTRIBUTION MODE)
+    # BUILD IPA (NET 9)
     # ===============================
-    - name: Publish iOS IPA
+    - name: Build iOS IPA
       env:
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
-        echo "🚀 Restoring..."
+        echo "🚀 Building IPA..."
+
         dotnet restore SixOSDatKhamAppMobile.csproj
 
-        echo "🚀 Publishing IPA..."
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net9.0-ios \
-          -c Release \
-          -p:RuntimeIdentifier=ios-arm64 \
-          -p:ArchiveOnBuild=true \
-          -p:BuildIpa=true \
-          -p:CodesignKey="Apple Distribution" \
-          -p:DevelopmentTeam="2DQG584W52" \
-          -p:EnableAssemblyILStripping=false \
-          --verbosity normal
-
-        echo "🔎 Checking build output..."
-        find . -name "*.app"
-        find . -name "*.ipa"
+            -f net9.0-ios \
+            -c Release \
+            -p:RuntimeIdentifier=ios-arm64 \
+            -p:ArchiveOnBuild=true \
+            -p:BuildIpa=true \
+            -p:CodesignKey="Apple Distribution" \
+            -p:DevelopmentTeam="2DQG584W52"\
+            --verbosity normal
+          
+          echo "📦 IPA Files:"
+          find . -name "*.ipa"
 
     # ===============================
     # UPLOAD IPA
@@ -94,13 +94,11 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: iOS-IPA
-        path: '**/*.ipa'
+        path: ipa-output/*.ipa
         retention-days: 7
-        if-no-files-found: error
 
     # ===============================
     # CLEANUP
     # ===============================
     - name: Cleanup
       if: always()
-      run: security delete-keychain build.keychain || true
