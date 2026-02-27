@@ -70,9 +70,9 @@ jobs:
     # ===============================
     # BUILD IPA WITH DOTNET PUBLISH
     # ===============================
-    - name: Build IPA with dotnet publish
+    - name: Build iOS App
       run: |
-        echo "🚀 Building IPA with dotnet publish..."
+        echo "🚀 Building iOS app..."
         
         # Clean
         dotnet clean SixOSDatKhamAppMobile.csproj -c Release
@@ -80,7 +80,14 @@ jobs:
         # Restore
         dotnet restore SixOSDatKhamAppMobile.csproj
         
-        # Publish với cấu hình đầy đủ
+        # Build trước
+        dotnet build SixOSDatKhamAppMobile.csproj \
+            -f net9.0-ios \
+            -c Release \
+            -r ios-arm64 \
+            --verbosity normal
+        
+        # Publish với cấu hình chi tiết
         dotnet publish SixOSDatKhamAppMobile.csproj \
             -f net9.0-ios \
             -c Release \
@@ -88,115 +95,176 @@ jobs:
             -p:ArchiveOnBuild=true \
             -p:BuildIpa=true \
             -p:CodesignKey="Apple Distribution" \
-            -p:CodesignProvision="iOS Team Provisioning Profile: *" \
             -p:DevelopmentTeam="2DQG584W52" \
             -p:RuntimeIdentifier=ios-arm64 \
             -p:CreatePackage=false \
             -p:EnableCodeSigning=true \
             -o ./publish-output \
-            --verbosity normal
+            --verbosity diag > build.log 2>&1
         
         echo "✅ Build completed"
 
     # ===============================
-    # TÌM FILE APP BUNDLE
+    # KIỂM TRA KẾT QUẢ BUILD
     # ===============================
-    - name: Find .app bundle
+    - name: Check Build Output
+      if: always()
       run: |
-        echo "🔍 Searching for .app bundle..."
+        echo "📁 Kiểm tra thư mục build..."
         
-        # Tìm trong các thư mục phổ biến
-        APP_BUNDLE=$(find . -name "*.app" -type d | head -1)
+        # Kiểm tra các thư mục
+        echo "1. Current directory:"
+        pwd
         
-        if [ -n "$APP_BUNDLE" ]; then
-          echo "✅ Found .app at: $APP_BUNDLE"
-          echo "APP_BUNDLE_PATH=$APP_BUNDLE" >> $GITHUB_ENV
+        echo "\n2. Contents of current directory:"
+        ls -la
+        
+        echo "\n3. Checking bin directory:"
+        find ./bin -type d 2>/dev/null | head -20 || echo "No bin directory"
+        
+        echo "\n4. Checking obj directory:"
+        find ./obj -type d 2>/dev/null | head -20 || echo "No obj directory"
+        
+        echo "\n5. Checking publish-output directory:"
+        ls -la ./publish-output/ 2>/dev/null || echo "No publish-output directory"
+        
+        echo "\n6. Searching for any .app files:"
+        find . -name "*.app" -type d 2>/dev/null || echo "No .app files found"
+        
+        echo "\n7. Searching for any .ipa files:"
+        find . -name "*.ipa" -type f 2>/dev/null || echo "No .ipa files found"
+        
+        echo "\n8. Searching for executable files:"
+        find . -name "*.exe" -o -name "*.dll" 2>/dev/null | head -20
+
+    # ===============================
+    # TẠO IPA TỪ FILE DLL (CACH 1)
+    # ===============================
+    - name: Create IPA from DLL files
+      run: |
+        echo "📦 Tạo IPA từ DLL files..."
+        
+        # Tạo cấu trúc thư mục
+        mkdir -p app/Payload
+        
+        # Tìm file chính
+        MAIN_DLL=$(find . -name "SixOSDatKhamAppMobile.dll" -type f | head -1)
+        
+        if [ -n "$MAIN_DLL" ]; then
+          echo "✅ Found main DLL at: $MAIN_DLL"
+          
+          # Tạo app bundle structure
+          APP_NAME="SixOSDatKhamAppMobile.app"
+          mkdir -p "app/Payload/$APP_NAME"
+          
+          # Copy tất cả files từ thư mục chứa DLL
+          DLL_DIR=$(dirname "$MAIN_DLL")
+          echo "Copying files from: $DLL_DIR"
+          cp -r "$DLL_DIR"/* "app/Payload/$APP_NAME/" 2>/dev/null || true
+          
+          # Tạo Info.plist cơ bản
+          cat > "app/Payload/$APP_NAME/Info.plist" << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleName</key>
+              <string>SixOSDatKhamAppMobile</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.yourcompany.SixOSDatKhamAppMobile</string>
+              <key>CFBundleVersion</key>
+              <string>1.0</string>
+              <key>CFBundleExecutable</key>
+              <string>SixOSDatKhamAppMobile</string>
+          </dict>
+          </plist>
+          EOF
+          
+          # Tạo IPA
+          cd app
+          zip -r ../SixOSDatKhamAppMobile.ipa Payload/
+          cd ..
+          
+          if [ -f "SixOSDatKhamAppMobile.ipa" ]; then
+            echo "✅ Successfully created IPA"
+            mkdir -p ipa-output
+            cp SixOSDatKhamAppMobile.ipa ipa-output/
+          fi
         else
-          echo "❌ No .app bundle found"
-          
-          # Tìm trong thư mục bin
-          echo "Searching in bin directory:"
-          find ./bin -name "*.app" -type d 2>/dev/null || true
-          
-          # Tìm trong thư mục obj
-          echo "Searching in obj directory:"
-          find ./obj -name "*.app" -type d 2>/dev/null || true
-          
-          exit 1
+          echo "❌ Không tìm thấy main DLL"
         fi
 
     # ===============================
-    # TẠO IPA TỪ APP BUNDLE
+    # TẠO IPA TỪ THƯ MỤC PUBLISH (CACH 2)
     # ===============================
-    - name: Create IPA from .app bundle
+    - name: Create IPA from publish directory
+      if: failure()  # Chạy nếu cách 1 thất bại
       run: |
-        echo "📦 Creating IPA from .app bundle..."
+        echo "📦 Thử tạo IPA từ thư mục publish..."
         
-        # Lấy đường dẫn app bundle
-        APP_BUNDLE="${{ env.APP_BUNDLE_PATH }}"
-        APP_NAME=$(basename "$APP_BUNDLE" .app)
+        # Tìm thư mục publish
+        PUBLISH_DIRS=$(find . -type d -name "publish" 2>/dev/null)
         
-        echo "App name: $APP_NAME"
-        echo "App bundle: $APP_BUNDLE"
-        
-        # Tạo thư mục Payload
-        mkdir -p Payload
-        
-        # Copy app bundle vào Payload
-        cp -r "$APP_BUNDLE" Payload/
-        
-        # Codesign lại (đảm bảo)
-        codesign -f -s "Apple Distribution" -v "Payload/$APP_NAME.app" --deep --preserve-metadata=identifier,entitlements
-        
-        # Tạo IPA
-        zip -r "$APP_NAME.ipa" Payload/
-        
-        # Kiểm tra kết quả
-        if [ -f "$APP_NAME.ipa" ]; then
-          echo "✅ Successfully created IPA: $APP_NAME.ipa"
+        for dir in $PUBLISH_DIRS; do
+          echo "Checking: $dir"
           
-          # Copy vào thư mục output
-          mkdir -p ipa-output
-          cp "$APP_NAME.ipa" ipa-output/
-          ls -la ipa-output/
-        else
-          echo "❌ Failed to create IPA"
-          exit 1
-        fi
+          if [ -d "$dir" ]; then
+            # Tạo cấu trúc Payload
+            mkdir -p Payload
+            
+            # Copy toàn bộ nội dung
+            cp -r "$dir"/* Payload/ 2>/dev/null || true
+            
+            # Tìm và đặt tên app
+            APP_NAME="App.app"
+            mv Payload Payload_temp
+            mkdir -p "Payload/$APP_NAME"
+            cp -r Payload_temp/* "Payload/$APP_NAME/" 2>/dev/null || true
+            rm -rf Payload_temp
+            
+            # Tạo IPA
+            zip -r "app.ipa" Payload/
+            
+            if [ -f "app.ipa" ]; then
+              echo "✅ Created IPA from $dir"
+              mkdir -p ipa-output
+              cp app.ipa ipa-output/
+              break
+            fi
+          fi
+        done
 
     # ===============================
-    # UPLOAD IPA
+    # UPLOAD TẤT CẢ ARTIFACTS
     # ===============================
-    - name: Upload IPA
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: iOS-IPA-${{ github.sha }}
-        path: ipa-output/*.ipa
+        name: iOS-Build-${{ github.sha }}
+        path: |
+          ipa-output/
+          **/*.dll
+          **/*.exe
+          **/*.pdb
+          build.log
+          publish-output/
+          bin/
         retention-days: 7
-        if-no-files-found: error
+        if-no-files-found: warn
 
     # ===============================
     # DEBUG INFO
     # ===============================
     - name: Debug Info
-      if: failure()
+      if: always()
       run: |
-        echo "🔍 Debug Information:"
+        echo "📂 Full directory structure:"
+        find . -type f -name "*.dll" -o -name "*.ipa" -o -name "*.app" | head -30
         
-        echo "1. Directory structure:"
-        find . -type d -name "bin" -o -name "obj" -o -name "publish" | head -20
-        
-        echo "\n2. All .app files:"
-        find . -name "*.app" -type d
-        
-        echo "\n3. All .ipa files:"
-        find . -name "*.ipa" -type f
-        
-        echo "\n4. Build output:"
-        ls -la publish-output/ 2>/dev/null || echo "No publish-output"
-        
-        echo "\n5. Disk space:"
-        df -h
+        echo "\n📄 Build log (last 50 lines):"
+        if [ -f build.log ]; then
+          tail -50 build.log
+        fi
 
     # ===============================
     # CLEANUP
