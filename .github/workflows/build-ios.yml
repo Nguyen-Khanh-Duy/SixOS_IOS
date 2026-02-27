@@ -19,18 +19,18 @@ jobs:
     # ===============================
     # SETUP .NET 9
     # ===============================
-    - name: Setup .NET 9
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.0.x
 
-    - name: Install MAUI Workload
+    - name: Install MAUI iOS
       run: |
         dotnet workload install maui-ios
         dotnet workload restore
 
     # ===============================
-    # SETUP KEYCHAIN & SIGNING
+    # SETUP SIGNING
     # ===============================
     - name: Setup Code Signing
       env:
@@ -38,7 +38,6 @@ jobs:
         SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
         PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
       run: |
-        echo "🔐 Creating temporary keychain..."
         security create-keychain -p "" build.keychain
         security default-keychain -s build.keychain
         security unlock-keychain -p "" build.keychain
@@ -59,60 +58,79 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-        echo "✅ Available identities:"
         security find-identity -v -p codesigning
 
     # ===============================
-    # RESTORE PROJECT
+    # RESTORE
     # ===============================
     - name: Restore Project
       run: dotnet restore SixOSDatKhamAppMobile.csproj
 
     # ===============================
-    # BUILD & EXPORT IPA
+    # BUILD ARCHIVE
     # ===============================
-    - name: Build IPA
+    - name: Build Archive
       env:
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
-        echo "🚀 Publishing iOS IPA..."
-
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Release \
-          -p:RuntimeIdentifier=ios-arm64 \
+          -r ios-arm64 \
           -p:ArchiveOnBuild=true \
-          -p:BuildIpa=true \
+          -p:EnableAssemblyILStripping=false \
           -p:CodesignKey="Apple Distribution" \
-          -p:CodesignProvision="profile" \
-          -p:DevelopmentTeam="$TEAM_ID" \
-          --verbosity normal
+          -p:DevelopmentTeam="$TEAM_ID"
 
-        echo "📦 IPA files found:"
-        find . -name "*.ipa"
+        echo "=== ARCHIVE CREATED ==="
+        find . -name "*.xcarchive"
 
     # ===============================
-    # DEBUG (QUAN TRỌNG)
+    # EXPORT IPA
     # ===============================
-    - name: Debug Release Folder
+    - name: Export IPA
       run: |
-        echo "==== RELEASE FOLDER STRUCTURE ===="
-        ls -R bin/Release || true
+        ARCHIVE_PATH=$(find . -name "*.xcarchive" | head -n 1)
+
+        cat > exportOptions.plist <<EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+        "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+          <key>method</key>
+          <string>app-store</string>
+          <key>signingStyle</key>
+          <string>manual</string>
+          <key>stripSwiftSymbols</key>
+          <true/>
+          <key>compileBitcode</key>
+          <false/>
+        </dict>
+        </plist>
+        EOF
+
+        xcodebuild -exportArchive \
+          -archivePath "$ARCHIVE_PATH" \
+          -exportPath ipa-output \
+          -exportOptionsPlist exportOptions.plist
+
+        echo "=== IPA FILES ==="
+        find ipa-output -name "*.ipa"
 
     # ===============================
     # UPLOAD IPA
     # ===============================
-    - name: Upload IPA Artifact
+    - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
         name: iOS-IPA
-        path: |
-          **/*.ipa
+        path: ipa-output/*.ipa
         retention-days: 7
 
     # ===============================
     # CLEANUP
     # ===============================
-    - name: Cleanup Keychain
+    - name: Cleanup
       if: always()
       run: security delete-keychain build.keychain || true
