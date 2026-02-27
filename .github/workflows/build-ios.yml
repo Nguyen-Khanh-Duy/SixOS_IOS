@@ -76,18 +76,18 @@ jobs:
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
         echo "🚀 Building archive..."
-
+    
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Release \
-          -r ios-arm64 \
+          -p:RuntimeIdentifier=ios-arm64 \
           -p:ArchiveOnBuild=true \
-          -p:EnableAssemblyILStripping=false \
+          -p:BuildIpa=false \
           -p:CodesignKey="Apple Distribution" \
           -p:DevelopmentTeam="$TEAM_ID" \
-          --verbosity normal
-
-        echo "🔍 Checking for archive..."
+          --verbosity detailed
+    
+        echo "🔍 Checking archive..."
         find bin -type d -name "*.xcarchive"
 
     # ===============================
