@@ -75,18 +75,17 @@ jobs:
         dotnet restore SixOSDatKhamAppMobile.csproj
 
         dotnet publish SixOSDatKhamAppMobile.csproj \
-          -f net9.0-ios \
-          -c Release \
-          -p:RuntimeIdentifier=ios-arm64 \
-          -p:ArchiveOnBuild=true \
-          -p:BuildIpa=true \
-          -p:CodesignKey="Apple Distribution" \
-          -p:DevelopmentTeam="$TEAM_ID" \
-          -p:IpaPackageDir="$(pwd)/ipa-output" \
-          --verbosity normal
-
-        echo "📦 IPA Output:"
-        ls -lh ipa-output
+            -f net9.0-ios \
+            -c Release \
+            -p:RuntimeIdentifier=ios-arm64 \
+            -p:ArchiveOnBuild=true \
+            -p:BuildIpa=true \
+            -p:CodesignKey="Apple Distribution" \
+            -p:DevelopmentTeam="$TEAM_ID" \
+            --verbosity normal
+          
+          echo "📦 IPA Files:"
+          find . -name "*.ipa"
 
     # ===============================
     # UPLOAD IPA
