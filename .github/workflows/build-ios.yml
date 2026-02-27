@@ -10,6 +10,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
+
     # ===============================
     # CHECKOUT
     # ===============================
@@ -19,12 +20,12 @@ jobs:
     # ===============================
     # SETUP .NET 9
     # ===============================
-    - name: Setup .NET 9
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.200'
+        dotnet-version: 9.0.200
 
-    - name: Install MAUI iOS workload
+    - name: Install MAUI workload
       run: dotnet workload install maui-ios
 
     # ===============================
@@ -57,42 +58,43 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-        echo "🔎 Installed identities:"
         security find-identity -v -p codesigning
 
     # ===============================
     # BUILD IPA
     # ===============================
-    - name: Build iOS IPA
+    - name: Publish iOS IPA
       env:
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
-        echo "🚀 Building IPA..."
-
+        echo "🚀 Restoring..."
         dotnet restore SixOSDatKhamAppMobile.csproj
 
+        echo "🚀 Publishing..."
         dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Release \
           -p:RuntimeIdentifier=ios-arm64 \
           -p:ArchiveOnBuild=true \
           -p:BuildIpa=true \
-          -p:CodesignKey="Apple Development: nkduy.nvla2.2019@gmail.com" \
+          -p:CodesignKey="Apple Development" \
+          -p:CodesignProvision="profile" \
           -p:DevelopmentTeam="$TEAM_ID" \
           --verbosity normal
 
-        echo "📦 IPA location:"
-        find bin/Release/net9.0-ios -name "*.ipa"
+        echo "🔎 Searching IPA..."
+        find . -name "*.ipa"
 
     # ===============================
-    # UPLOAD IPA (FIXED PATH)
+    # UPLOAD IPA (SAFE VERSION)
     # ===============================
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
         name: iOS-IPA
-        path: bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
+        path: '**/*.ipa'
         retention-days: 7
+        if-no-files-found: error
 
     # ===============================
     # CLEANUP
