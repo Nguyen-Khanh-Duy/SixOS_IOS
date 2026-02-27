@@ -81,7 +81,7 @@ jobs:
             -p:ArchiveOnBuild=true \
             -p:BuildIpa=true \
             -p:CodesignKey="Apple Distribution" \
-            -p:DevelopmentTeam="2DQG584W52"\
+            -p:DevelopmentTeam="2DQG584W52" \
             --verbosity normal
           
           echo "📦 IPA Files:"
@@ -102,3 +102,4 @@ jobs:
     # ===============================
     - name: Cleanup
       if: always()
+      run: security delete-keychain build.keychain || true
