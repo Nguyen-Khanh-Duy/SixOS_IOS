@@ -78,9 +78,9 @@ jobs:
     # ===============================
     # BUILD IPA VỚI .NET MAUI
     # ===============================
-    - name: Build iOS IPA
+    - name: Build iOS App
       run: |
-        echo "🚀 Building iOS IPA..."
+        echo "🚀 Building iOS App..."
         
         # Clean
         dotnet clean SixOSDatKhamAppMobile.csproj -c Release || true
@@ -88,10 +88,14 @@ jobs:
         # Restore
         dotnet restore SixOSDatKhamAppMobile.csproj
         
-        # Tạo thư mục output
-        mkdir -p ipa-output
+        # Build trước
+        dotnet build SixOSDatKhamAppMobile.csproj \
+            -f net9.0-ios \
+            -c Release \
+            -r ios-arm64 \
+            --verbosity normal
         
-        # Publish với đầy đủ tham số để tạo IPA
+        # Publish
         dotnet publish SixOSDatKhamAppMobile.csproj \
             -f net9.0-ios \
             -c Release \
@@ -102,36 +106,82 @@ jobs:
             -p:CodesignProvision="${{ env.PROFILE_NAME }}" \
             -p:DevelopmentTeam="2DQG584W52" \
             -p:EnableCodeSigning=true \
-            -p:RuntimeIdentifier=ios-arm64 \
             -p:UseInterpreter=true \
             -p:MtouchLink=SdkOnly \
-            -p:MtouchUseLlvm=true \
-            -p:MtouchEnableSGenConc=true \
             -p:Optimize=true \
             -p:DebugType=None \
             -p:DebugSymbols=false \
-            -p:CreatePackage=false \
-            -p:IpaPackageDir=$(pwd)/ipa-output \
+            -o ./publish-output \
             --verbosity normal
 
         echo "✅ Build completed"
 
     # ===============================
-    # KIỂM TRA KẾT QUẢ BUILD
+    # TÌM KIẾM VÀ COPY IPA
     # ===============================
-    - name: Check Build Output
-      if: always()
+    - name: Find and Copy IPA
       run: |
-        echo "📁 Kiểm tra files sau build..."
+        echo "🔍 Tìm kiếm IPA files..."
         
-        echo "1. Kiểm tra thư mục ipa-output:"
-        ls -la ipa-output/ || echo "No ipa-output directory"
+        # Tạo thư mục output
+        mkdir -p ipa-output
         
-        echo "\n2. Tìm tất cả .ipa files:"
-        find . -name "*.ipa" -type f || echo "No IPA files found"
+        # Tìm tất cả IPA files
+        IPA_FILES=$(find . -name "*.ipa" -type f)
         
-        echo "\n3. Tìm tất cả .app bundles:"
-        find . -name "*.app" -type d || echo "No .app bundles found"
+        if [ -n "$IPA_FILES" ]; then
+          echo "✅ Found IPA files:"
+          echo "$IPA_FILES"
+          
+          # Copy tất cả IPA files vào thư mục ipa-output
+          for ipa in $IPA_FILES; do
+            cp "$ipa" ipa-output/
+            echo "Copied: $ipa"
+          done
+        else
+          echo "❌ No IPA files found directly"
+          
+          # Tìm .app bundles
+          APP_BUNDLES=$(find . -name "*.app" -type d)
+          
+          if [ -n "$APP_BUNDLES" ]; then
+            echo "✅ Found .app bundles:"
+            echo "$APP_BUNDLES"
+            
+            # Tạo IPA từ .app bundle đầu tiên
+            FIRST_APP=$(echo "$APP_BUNDLES" | head -1)
+            APP_NAME=$(basename "$FIRST_APP" .app)
+            
+            echo "Creating IPA from: $FIRST_APP"
+            
+            # Tạo cấu trúc Payload
+            mkdir -p Payload
+            cp -r "$FIRST_APP" Payload/
+            
+            # Tạo IPA
+            zip -r "$APP_NAME.ipa" Payload/
+            
+            if [ -f "$APP_NAME.ipa" ]; then
+              echo "✅ Created IPA: $APP_NAME.ipa"
+              cp "$APP_NAME.ipa" ipa-output/
+            fi
+          else
+            echo "❌ No .app bundles found"
+            
+            # Liệt kê cấu trúc thư mục để debug
+            echo "📂 Directory structure:"
+            find . -type d -name "bin" -o -name "obj" -o -name "publish" | head -20
+            
+            echo "\n📄 Files in publish-output:"
+            ls -la publish-output/ 2>/dev/null || echo "No publish-output"
+            
+            exit 1
+          fi
+        fi
+        
+        # Kiểm tra kết quả
+        echo "\n📁 Final ipa-output contents:"
+        ls -la ipa-output/
 
     # ===============================
     # XÁC THỰC IPA
@@ -140,15 +190,14 @@ jobs:
       run: |
         echo "🔍 Kiểm tra tính hợp lệ của IPA..."
         
-        # Kiểm tra file IPA trong thư mục ipa-output
         if ls ipa-output/*.ipa 1> /dev/null 2>&1; then
           IPA_FILE=$(ls ipa-output/*.ipa | head -1)
           echo "✅ IPA file found: $IPA_FILE"
           echo "File size: $(wc -c < "$IPA_FILE") bytes"
           
-          # Kiểm tra cấu trúc IPA (phải có thư mục Payload)
+          # Kiểm tra cấu trúc IPA
           echo "\n📦 IPA contents:"
-          unzip -l "$IPA_FILE" | grep -E "Payload/.*\.app" | head -5
+          unzip -l "$IPA_FILE" | head -10
         else
           echo "❌ No IPA file in ipa-output directory"
           exit 1
@@ -167,7 +216,7 @@ jobs:
         compression-level: 6
 
     # ===============================
-    # UPLOADDITIONAL ARTIFACTS (CHO DEBUG)
+    # UPLOAD DEBUG ARTIFACTS
     # ===============================
     - name: Upload Debug Artifacts
       if: always()
@@ -179,11 +228,12 @@ jobs:
           bin/Release/
           **/*.app
           **/*.dll
+          build.log
         retention-days: 3
         if-no-files-found: warn
 
     # ===============================
-    # DEBUG INFO (CHỈ KHI LỖI)
+    # DEBUG INFO
     # ===============================
     - name: Debug Information
       if: failure()
@@ -193,13 +243,10 @@ jobs:
         echo "1. Xcode version:"
         xcodebuild -version
         
-        echo "\n2. iOS SDKs:"
-        xcodebuild -showsdks
-        
-        echo "\n3. .NET info:"
+        echo "\n2. .NET info:"
         dotnet --info
         
-        echo "\n4. Disk space:"
+        echo "\n3. Disk space:"
         df -h
 
     # ===============================
