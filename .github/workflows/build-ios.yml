@@ -17,15 +17,12 @@ jobs:
       uses: actions/checkout@v4
 
     # ===============================
-    # SETUP .NET 9 (KHỚP PROJECT)
+    # SETUP .NET 9
     # ===============================
     - name: Setup .NET 9
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.200'
-
-    - name: Verify .NET
-      run: dotnet --info
 
     - name: Install MAUI iOS workload
       run: dotnet workload install maui-ios
@@ -39,32 +36,32 @@ jobs:
         SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
         PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
       run: |
-        echo "🔐 Setting up signing..."
-
-        security create-keychain -p "" build.keychain
+        security create-keychain -p build build.keychain
         security default-keychain -s build.keychain
-        security unlock-keychain -p "" build.keychain
+        security unlock-keychain -p build build.keychain
+        security set-keychain-settings -lut 21600 build.keychain
 
         echo "$SIGNING_CERTIFICATE" | base64 --decode > certificate.p12
         security import certificate.p12 \
           -k build.keychain \
           -P "$SIGNING_CERTIFICATE_PASSWORD" \
           -T /usr/bin/codesign \
+          -T /usr/bin/security \
           -A
 
         security set-key-partition-list \
           -S apple-tool:,apple:,codesign: \
-          -s -k "" build.keychain
+          -s -k build build.keychain
 
         echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-        echo "✅ Available identities:"
+        echo "🔎 Installed identities:"
         security find-identity -v -p codesigning
 
     # ===============================
-    # BUILD IPA (NET 9)
+    # BUILD IPA
     # ===============================
     - name: Build iOS IPA
       env:
@@ -75,25 +72,26 @@ jobs:
         dotnet restore SixOSDatKhamAppMobile.csproj
 
         dotnet publish SixOSDatKhamAppMobile.csproj \
-            -f net9.0-ios \
-            -c Release \
-            -p:RuntimeIdentifier=ios-arm64 \
-            -p:ArchiveOnBuild=true \
-            -p:BuildIpa=true \
-            -p:CodesignKey="Apple Distribution" \
-            -p:DevelopmentTeam="$TEAM_ID" \
-            --verbosity normal
-          
-          find bin/Release/net9.0-ios -name "*.ipa"
+          -f net9.0-ios \
+          -c Release \
+          -p:RuntimeIdentifier=ios-arm64 \
+          -p:ArchiveOnBuild=true \
+          -p:BuildIpa=true \
+          -p:CodesignKey="Apple Development: nkduy.nvla2.2019@gmail.com" \
+          -p:DevelopmentTeam="$TEAM_ID" \
+          --verbosity normal
+
+        echo "📦 IPA location:"
+        find bin/Release/net9.0-ios -name "*.ipa"
 
     # ===============================
-    # UPLOAD IPA
+    # UPLOAD IPA (FIXED PATH)
     # ===============================
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
         name: iOS-IPA
-        path: ipa-output/*.ipa
+        path: bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
         retention-days: 7
 
     # ===============================
