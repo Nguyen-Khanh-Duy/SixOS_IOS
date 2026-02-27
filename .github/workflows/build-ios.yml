@@ -6,31 +6,27 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-ipa:
+  build-ios:
     runs-on: macos-latest
 
     steps:
     # ===============================
     # CHECKOUT
     # ===============================
-    - name: Checkout code
+    - name: Checkout
       uses: actions/checkout@v4
 
     # ===============================
     # SETUP .NET 9
     # ===============================
-    - name: Setup .NET 9
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.200'
+        dotnet-version: 9.0.x
 
-    - name: Verify .NET
-      run: dotnet --info
-
-    - name: Install MAUI iOS workload
+    - name: Install MAUI workload
       run: |
-        dotnet workload install maui-ios --source https://api.nuget.org/v3/index.json
-        dotnet workload install ios --source https://api.nuget.org/v3/index.json
+        dotnet workload install maui-ios
         dotnet workload list
 
     # ===============================
@@ -58,7 +54,6 @@ jobs:
         security set-key-partition-list \
           -S apple-tool:,apple:,codesign: \
           -s -k "" build.keychain
-        security set-keychain-settings -t 3600 -l ~/Library/Keychains/build.keychain
 
         echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
@@ -68,168 +63,43 @@ jobs:
         security find-identity -v -p codesigning
 
     # ===============================
-    # BUILD IOS APP
+    # RESTORE
     # ===============================
-    - name: Build iOS App
+    - name: Restore
+      run: dotnet restore SixOSDatKhamAppMobile.csproj
+
+    # ===============================
+    # PUBLISH IPA (QUAN TRỌNG NHẤT)
+    # ===============================
+    - name: Publish iOS IPA
       run: |
-        echo "🚀 Building iOS app..."
-        
-        # Clean
-        dotnet clean SixOSDatKhamAppMobile.csproj -c Release || true
-        
-        # Restore
-        dotnet restore SixOSDatKhamAppMobile.csproj
-        
-        # Build
-        dotnet build SixOSDatKhamAppMobile.csproj \
-            -f net9.0-ios \
-            -c Release \
-            -r ios-arm64 \
-            --verbosity normal
-        
-        # Publish
         dotnet publish SixOSDatKhamAppMobile.csproj \
-            -f net9.0-ios \
-            -c Release \
-            -r ios-arm64 \
-            -p:ArchiveOnBuild=true \
-            -p:BuildIpa=true \
-            -p:CodesignKey="Apple Distribution" \
-            -p:DevelopmentTeam="2DQG584W52" \
-            -p:EnableCodeSigning=true \
-            -o ./publish-output
+          -f net9.0-ios \
+          -c Release \
+          -r ios-arm64 \
+          -p:ArchiveOnBuild=true \
+          -p:BuildIpa=true \
+          -p:CodesignKey="Apple Distribution" \
+          -p:DevelopmentTeam="2DQG584W52"
 
     # ===============================
-    # KIỂM TRA FILE SAU BUILD
+    # VERIFY IPA
     # ===============================
-    - name: Check Build Output
+    - name: Verify IPA
       run: |
-        echo "📁 Kiểm tra files sau build..."
-        echo "1. Tìm tất cả .dll files:"
-        find . -name "*.dll" -type f | head -20 || echo "No DLL files found"
-        
-        echo "\n2. Tìm file SixOSDatKhamAppMobile.dll cụ thể:"
-        find . -name "SixOSDatKhamAppMobile.dll" -type f || echo "Not found"
+        echo "📦 Searching for IPA..."
+        find . -name "*.ipa"
 
     # ===============================
-    # TẠO IPA TỪ DLL (ĐÃ FIX LỖI)
+    # UPLOAD IPA
     # ===============================
-    - name: Create IPA from DLL files
-      run: |
-        echo "📦 Tạo IPA từ DLL files..."
-        
-        # Tạo cấu trúc thư mục
-        mkdir -p app/Payload
-        
-        # Tìm file chính
-        echo "Tìm kiếm SixOSDatKhamAppMobile.dll..."
-        MAIN_DLL=$(find . -name "SixOSDatKhamAppMobile.dll" -type f | head -1)
-        
-        if [ -n "$MAIN_DLL" ]; then
-          echo "✅ Found main DLL at: $MAIN_DLL"
-          
-          # Tạo app bundle structure
-          APP_NAME="SixOSDatKhamAppMobile.app"
-          mkdir -p "app/Payload/$APP_NAME"
-          
-          # Copy tất cả files từ thư mục chứa DLL
-          DLL_DIR=$(dirname "$MAIN_DLL")
-          echo "Copying files from: $DLL_DIR"
-          cp -r "$DLL_DIR"/* "app/Payload/$APP_NAME/" 2>/dev/null || true
-          
-          # Copy thêm các DLL khác (dependencies)
-          echo "Copying additional DLLs..."
-          find . -name "*.dll" -type f -exec cp {} "app/Payload/$APP_NAME/" 2>/dev/null \;
-          
-          # Tạo file Info.plist (dùng echo thay vì heredoc)
-          echo "Tạo file Info.plist..."
-          echo '<?xml version="1.0" encoding="UTF-8"?>' > "app/Payload/$APP_NAME/Info.plist"
-          echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '<plist version="1.0">' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '<dict>' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '    <key>CFBundleName</key>' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '    <string>SixOSDatKhamAppMobile</string>' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '    <key>CFBundleIdentifier</key>' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '    <string>com.yourcompany.SixOSDatKhamAppMobile</string>' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '    <key>CFBundleVersion</key>' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '    <string>1.0</string>' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '    <key>CFBundleExecutable</key>' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '    <string>SixOSDatKhamAppMobile</string>' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '    <key>CFBundlePackageType</key>' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '    <string>APPL</string>' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '</dict>' >> "app/Payload/$APP_NAME/Info.plist"
-          echo '</plist>' >> "app/Payload/$APP_NAME/Info.plist"
-          
-          # Tạo file executable (cần thiết cho iOS)
-          touch "app/Payload/$APP_NAME/SixOSDatKhamAppMobile"
-          chmod +x "app/Payload/$APP_NAME/SixOSDatKhamAppMobile"
-          
-          # Tạo IPA
-          echo "Tạo file IPA..."
-          cd app
-          zip -r ../SixOSDatKhamAppMobile.ipa Payload/
-          cd ..
-          
-          # Kiểm tra và copy IPA
-          if [ -f "SixOSDatKhamAppMobile.ipa" ]; then
-            echo "✅ Successfully created IPA"
-            mkdir -p ipa-output
-            cp SixOSDatKhamAppMobile.ipa ipa-output/
-            ls -la ipa-output/
-          else
-            echo "❌ Failed to create IPA"
-          fi
-        else
-          echo "❌ Không tìm thấy main DLL"
-          
-          # Liệt kê tất cả DLL files để debug
-          echo "Tất cả DLL files found:"
-          find . -name "*.dll" -type f | head -20
-        fi
-
-    # ===============================
-    # CÁCH 2: TẠO IPA TỪ THƯ MỤC BIN
-    # ===============================
-    - name: Alternative - Create IPA from bin directory
-      if: failure()
-      run: |
-        echo "📦 Thử tạo IPA từ thư mục bin..."
-        
-        # Tìm thư mục Release chứa nhiều DLL nhất
-        RELEASE_DIR=$(find . -type d -path "*/bin/Release/*" | head -1)
-        
-        if [ -n "$RELEASE_DIR" ]; then
-          echo "Found release directory: $RELEASE_DIR"
-          
-          # Tạo cấu trúc Payload
-          mkdir -p Payload/App.app
-          
-          # Copy all files
-          cp -r "$RELEASE_DIR"/* Payload/App.app/ 2>/dev/null || true
-          
-          # Tạo IPA
-          zip -r app.ipa Payload/
-          
-          if [ -f "app.ipa" ]; then
-            echo "✅ Created IPA"
-            mkdir -p ipa-output
-            cp app.ipa ipa-output/
-          fi
-        fi
-
-    # ===============================
-    # UPLOAD ARTIFACTS
-    # ===============================
-    - name: Upload Artifacts
+    - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
-        name: iOS-Build-${{ github.sha }}
+        name: iOS-IPA
         path: |
-          ipa-output/
-          **/*.dll
-          publish-output/
+          **/bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
         retention-days: 7
-        if-no-files-found: warn
 
     # ===============================
     # CLEANUP
