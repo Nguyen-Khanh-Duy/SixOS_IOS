@@ -10,46 +10,96 @@ jobs:
     runs-on: macos-latest
 
     steps:
+
+    # ===============================
+    # CHECKOUT SOURCE
+    # ===============================
     - name: Checkout code
       uses: actions/checkout@v4
 
+    # ===============================
+    # SETUP .NET 9
+    # ===============================
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.0.x
 
-    - name: Install MAUI workload
+    # ===============================
+    # INSTALL MAUI WORKLOAD
+    # ===============================
+    - name: Install MAUI
       run: dotnet workload install maui
 
-    # Import Certificate
-    - name: Install Apple Certificate
+    # ===============================
+    # SETUP CODE SIGNING
+    # ===============================
+    - name: Setup Apple Signing
+      env:
+        CERT_BASE64: ${{ secrets.SIGNING_CERTIFICATE }}
+        CERT_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+        PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE }}
       run: |
-        echo "${{ secrets.APPLE_CERTIFICATE }}" | base64 --decode > certificate.p12
+        echo "🔐 Creating keychain..."
         security create-keychain -p "" build.keychain
-        security import certificate.p12 -k build.keychain -P "${{ secrets.APPLE_CERT_PASSWORD }}" -T /usr/bin/codesign
-        security list-keychains -s build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p "" build.keychain
 
-    # Install Provisioning Profile
-    - name: Install Provisioning Profile
-      run: |
-        echo "${{ secrets.APPLE_PROVISION_PROFILE }}" | base64 --decode > profile.mobileprovision
+        echo "📥 Installing certificate..."
+        echo "$CERT_BASE64" | base64 --decode > certificate.p12
+        security import certificate.p12 \
+          -k build.keychain \
+          -P "$CERT_PASSWORD" \
+          -T /usr/bin/codesign -A
+
+        security set-key-partition-list \
+          -S apple-tool:,apple:,codesign: \
+          -s -k "" build.keychain
+
+        echo "📥 Installing provisioning profile..."
+        echo "$PROFILE_BASE64" | base64 --decode > profile.mobileprovision
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-    # Build IPA
-    - name: Build iOS
+        echo "🔎 Available identities:"
+        security find-identity -v -p codesigning
+
+    # ===============================
+    # RESTORE PROJECT
+    # ===============================
+    - name: Restore
+      run: dotnet restore SixOSDatKhamAppMobile.csproj
+
+    # ===============================
+    # BUILD IPA
+    # ===============================
+    - name: Publish iOS IPA
       run: |
-        dotnet publish YourProject.csproj \
+        dotnet publish SixOSDatKhamAppMobile.csproj \
           -f net9.0-ios \
           -c Release \
-          -p:RuntimeIdentifier=ios-arm64 \
+          -r ios-arm64 \
           -p:ArchiveOnBuild=true \
           -p:BuildIpa=true \
+          -p:EnableCodeSigning=true \
           -p:CodesignKey="Apple Distribution" \
-          -p:DevelopmentTeam=${{ secrets.TEAM_ID }}
+          -p:CodesignProvision="YOUR_PROFILE_NAME" \
+          -p:DevelopmentTeam="2DQG584W52"
 
+    # ===============================
+    # DEBUG OUTPUT
+    # ===============================
+    - name: Show IPA location
+      run: |
+        echo "🔍 Searching for IPA..."
+        find . -name "*.ipa"
+
+    # ===============================
+    # UPLOAD IPA
+    # ===============================
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
-        name: iOS-IPA
-        path: bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
+        name: iOS-IPA-${{ github.sha }}
+        path: '**/*.ipa'
+        retention-days: 7
